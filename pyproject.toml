@@ -34,7 +34,7 @@ venvPath = "."
 venv = ".venv"
 
 [tool.pytest.ini_options]
-addopts = "-q"
+addopts = "-q -m 'not live'"
 testpaths = ["tests"]
 asyncio_mode = "auto"
 markers = [

@@ -13,7 +13,7 @@ joining back to a snapshot manifest.
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import datetime
 from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -25,14 +25,9 @@ from civix.core.identity import (
     SnapshotId,
     SourceId,
 )
+from civix.core.temporal import require_utc
 
 _FROZEN_MODEL = ConfigDict(frozen=True, extra="forbid", strict=True)
-
-
-def _require_utc(value: datetime) -> datetime:
-    if value.tzinfo is None or value.utcoffset() != UTC.utcoffset(value):
-        raise ValueError("datetime must be timezone-aware and in UTC")
-    return value
 
 
 class MapperVersion(BaseModel):
@@ -72,4 +67,4 @@ class ProvenanceRef(BaseModel):
     @field_validator("fetched_at")
     @classmethod
     def _utc_only(cls, value: datetime) -> datetime:
-        return _require_utc(value)
+        return require_utc(value)

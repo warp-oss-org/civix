@@ -11,20 +11,12 @@ and HTTP API. Sync callers wrap with `asyncio.run(adapter.fetch())`.
 
 from __future__ import annotations
 
-from collections.abc import AsyncIterable, Callable
+from collections.abc import AsyncIterable
 from dataclasses import dataclass
-from datetime import datetime
 from typing import Protocol, runtime_checkable
 
 from civix.core.identity import DatasetId, Jurisdiction, SourceId
 from civix.core.observations import RawRecord, SourceSnapshot
-
-Clock = Callable[[], datetime]
-"""A zero-argument callable returning the current UTC datetime.
-
-Adapters call this once per fetch to stamp the snapshot. Tests pass
-`lambda: datetime(...)` to get deterministic timestamps.
-"""
 
 
 @dataclass(frozen=True, slots=True)
