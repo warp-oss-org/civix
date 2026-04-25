@@ -125,6 +125,7 @@ Use the project tools:
 uv run pytest
 uv run ruff check .
 uv run ruff format --check .
+uv run pyright
 ```
 
 Run focused tests while developing, then run the relevant full checks before finishing a behavior change.

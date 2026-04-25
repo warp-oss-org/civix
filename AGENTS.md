@@ -74,6 +74,7 @@ If a capability does not fit an existing boundary, extend the boundary deliberat
 - Use `uv` for dependency syncing and command execution.
 - Use `pyproject.toml` as the source of truth for package metadata and tool configuration.
 - Use Ruff for linting and formatting; do not hand-format against a different style.
+- Use Pyright in strict mode for type checking. Type errors are part of the change, not a follow-up.
 - Keep package code under `src/civix`.
 - Keep tests under `tests`.
 - Keep imports explicit. Avoid `import *`.
