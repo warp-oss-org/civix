@@ -1,0 +1,80 @@
+"""Business licence domain model.
+
+The normalized shape every business-licence source maps into. Source
+quirks (Vancouver's column names, Toronto's date formats, etc.) belong
+in source adapters; this layer is source-agnostic.
+
+Civic fields are wrapped in `MappedField[T]`. Missing values are
+expressed through the wrapper's `quality` (NOT_PROVIDED, REDACTED, etc.)
+rather than by making the field optional, so the record's contract is
+uniform across mappers.
+"""
+
+from __future__ import annotations
+
+from datetime import date
+from enum import StrEnum
+from typing import Annotated
+
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+from civix.core.provenance import ProvenanceRef
+from civix.core.quality import MappedField
+from civix.core.spatial import Address, Coordinate
+
+_FROZEN_MODEL = ConfigDict(frozen=True, extra="forbid", strict=True)
+
+
+class LicenceStatus(StrEnum):
+    """Normalized business licence status.
+
+    Intentionally minimal. Mappers should produce `UNKNOWN` (with
+    `MappedField.quality=INFERRED`) for source values that don't fit
+    these states, which is a clean signal that the enum needs to grow.
+    """
+
+    ACTIVE = "active"
+    INACTIVE = "inactive"
+    PENDING = "pending"
+    EXPIRED = "expired"
+    CANCELLED = "cancelled"
+    UNKNOWN = "unknown"
+
+
+class CategoryRef(BaseModel):
+    """A reference into a versioned category taxonomy.
+
+    The taxonomy version travels with the category itself rather than
+    living at the record level: if a record carries multiple normalized
+    vocabularies in the future, each can version independently.
+    """
+
+    model_config = _FROZEN_MODEL
+
+    code: Annotated[str, Field(min_length=1)]
+    label: Annotated[str, Field(min_length=1)]
+    taxonomy_id: Annotated[str, Field(min_length=1)]
+    taxonomy_version: Annotated[str, Field(min_length=1)]
+
+    @field_validator("code", "label", "taxonomy_id", "taxonomy_version")
+    @classmethod
+    def _no_surrounding_whitespace(cls, value: str) -> str:
+        if value != value.strip():
+            raise ValueError("category parts must not have surrounding whitespace")
+        return value
+
+
+class BusinessLicence(BaseModel):
+    """A normalized business licence record."""
+
+    model_config = _FROZEN_MODEL
+
+    provenance: ProvenanceRef
+    business_name: MappedField[str]
+    licence_number: MappedField[str]
+    status: MappedField[LicenceStatus]
+    category: MappedField[CategoryRef]
+    issued_at: MappedField[date]
+    expires_at: MappedField[date]
+    address: MappedField[Address]
+    coordinate: MappedField[Coordinate]
