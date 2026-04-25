@@ -9,14 +9,11 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from datetime import UTC, datetime
-from typing import Annotated, Any, NewType
+from typing import Annotated, Any
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-SourceId = NewType("SourceId", str)
-DatasetId = NewType("DatasetId", str)
-SnapshotId = NewType("SnapshotId", str)
-
+from civix.core.identity import DatasetId, Jurisdiction, SnapshotId, SourceId
 
 _FROZEN_MODEL = ConfigDict(frozen=True, extra="forbid", strict=True)
 
@@ -25,30 +22,6 @@ def _require_utc(value: datetime) -> datetime:
     if value.tzinfo is None or value.utcoffset() != UTC.utcoffset(value):
         raise ValueError("datetime must be timezone-aware and in UTC")
     return value
-
-
-class Jurisdiction(BaseModel):
-    """The civic scope a dataset describes.
-
-    `region` and `locality` are optional so the same type can describe a
-    federal dataset, a province- or state-wide dataset, or a city dataset
-    without lying about a level that does not exist for that source.
-    """
-
-    model_config = _FROZEN_MODEL
-
-    country: Annotated[str, Field(min_length=1)]
-    region: Annotated[str | None, Field(min_length=1)] = None
-    locality: Annotated[str | None, Field(min_length=1)] = None
-
-    @field_validator("country", "region", "locality")
-    @classmethod
-    def _no_surrounding_whitespace(cls, value: str | None) -> str | None:
-        if value is None:
-            return None
-        if value != value.strip():
-            raise ValueError("jurisdiction parts must not have surrounding whitespace")
-        return value
 
 
 class SourceSnapshot(BaseModel):

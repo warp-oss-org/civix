@@ -4,14 +4,8 @@ from typing import Any
 import pytest
 from pydantic import ValidationError
 
-from civix.core.observations import (
-    DatasetId,
-    Jurisdiction,
-    RawRecord,
-    SnapshotId,
-    SourceId,
-    SourceSnapshot,
-)
+from civix.core.identity import DatasetId, Jurisdiction, SnapshotId, SourceId
+from civix.core.observations import RawRecord, SourceSnapshot
 
 
 def _snapshot(**overrides: Any) -> SourceSnapshot:
@@ -25,37 +19,6 @@ def _snapshot(**overrides: Any) -> SourceSnapshot:
     }
     defaults.update(overrides)
     return SourceSnapshot(**defaults)
-
-
-class TestJurisdiction:
-    def test_city_level(self) -> None:
-        j = Jurisdiction(country="CA", region="BC", locality="Vancouver")
-        assert (j.country, j.region, j.locality) == ("CA", "BC", "Vancouver")
-
-    def test_region_only(self) -> None:
-        j = Jurisdiction(country="CA", region="BC")
-        assert j.locality is None
-
-    def test_country_only(self) -> None:
-        j = Jurisdiction(country="CA")
-        assert j.region is None and j.locality is None
-
-    def test_country_required(self) -> None:
-        with pytest.raises(ValidationError):
-            Jurisdiction()  # type: ignore[call-arg]
-
-    def test_empty_country_rejected(self) -> None:
-        with pytest.raises(ValidationError):
-            Jurisdiction(country="")
-
-    def test_surrounding_whitespace_rejected(self) -> None:
-        with pytest.raises(ValidationError):
-            Jurisdiction(country="CA", region=" BC ")
-
-    def test_frozen(self) -> None:
-        j = Jurisdiction(country="CA")
-        with pytest.raises(ValidationError):
-            j.country = "US"  # type: ignore[misc]
 
 
 class TestSourceSnapshot:
