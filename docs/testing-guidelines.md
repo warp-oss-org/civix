@@ -50,6 +50,38 @@ CLI tests should assert the user-visible command contract:
 
 For the current `argparse` scaffold, subprocess tests are acceptable. If the CLI later moves to Click, prefer Click's test runner for command-level tests while keeping end-to-end subprocess smoke coverage for installed-module behavior.
 
+## Test Structure
+
+Within each test, separate the Arrange, Act, and Assert steps with one
+blank line so the three phases are visually distinct:
+
+```python
+def test_redacted_business_name(self) -> None:
+    raw = _raw(businessname="REDACTED")
+
+    licence = mapper(RawRecord(raw_data=raw, ...), snapshot).record
+
+    assert licence.business_name.value is None
+    assert licence.business_name.quality is FieldQuality.REDACTED
+```
+
+When arrange and act collapse onto one line (e.g. `result = pure_fn(x)`),
+still leave a blank line before the assertions. Apply this even to
+short tests; the readability win is consistent.
+
+Do not add section-divider comments (`# ---- foo ----`) between test
+classes. The class names already group related cases, and a blank line
+between classes is enough.
+
+## Privates And Suppressions
+
+Test through the public interface of the module under test. Do not
+promote a `_`-prefixed helper to public solely so a test can import it,
+and do not silence the resulting warning (`# type: ignore`,
+`# pyright: ignore`, `# noqa`, `warnings.filterwarnings`, ...). If a
+behavior is hard to observe through the public surface, treat that as a
+design signal rather than a license to expose internals.
+
 ## Assertions
 
 Assert on public outcomes:

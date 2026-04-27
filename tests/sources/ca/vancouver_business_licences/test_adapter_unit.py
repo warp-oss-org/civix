@@ -10,7 +10,7 @@ import respx
 
 from civix.core.identity import DatasetId, Jurisdiction
 from civix.core.sources import FetchError
-from civix.sources.ca.bc.vancouver.business_licenses import (
+from civix.sources.ca.vancouver_business_licences import (
     DEFAULT_BASE_URL,
     SOURCE_ID,
     VancouverBusinessLicencesAdapter,
@@ -41,6 +41,7 @@ class TestProperties:
     async def test_dataset_id_and_jurisdiction_round_trip(self) -> None:
         async with httpx.AsyncClient() as client:
             adapter = _adapter(client)
+
             assert adapter.dataset_id == DATASET
             assert adapter.jurisdiction == JURISDICTION
 

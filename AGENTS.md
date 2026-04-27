@@ -124,3 +124,9 @@ At a minimum:
 - use fixtures instead of live civic APIs by default
 - mock only true boundaries such as HTTP clients, clocks, filesystems, and third-party services
 - keep tests deterministic, readable, and cheap enough to run during normal development
+- separate Arrange, Act, and Assert with one blank line per test, even for short tests
+- test through the public interface; do not promote `_`-prefixed helpers or suppress the resulting type/lint warnings (`# type: ignore`, `# pyright: ignore`, `# noqa`, `warnings.filterwarnings`)
+
+## Comments
+
+Comments are a last resort, not a band-aid for sloppy implementation. Before adding one, fix the code first: rename the function or variable, extract a helper, name a magic value as a constant, or shrink an oversized block. A comment is justified when the WHY is non-obvious — a hidden constraint, a deliberate decision, a workaround, or a source-quirk note. Do not write multi-line block comments that restate what the next few lines do, and do not add section-divider comments (`# ---- foo ----`) inside files that already use classes or functions for grouping.

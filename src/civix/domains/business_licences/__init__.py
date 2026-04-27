@@ -1,6 +1,6 @@
 """Business licence domain model and normalization rules."""
 
-from civix.domains.business_licenses.models import (
+from civix.domains.business_licences.models import (
     BusinessLicence,
     CategoryRef,
     LicenceStatus,

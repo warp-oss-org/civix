@@ -10,7 +10,7 @@ import httpx
 import respx
 
 from civix.core.identity import DatasetId, Jurisdiction
-from civix.sources.ca.bc.vancouver.business_licenses import (
+from civix.sources.ca.vancouver_business_licences import (
     DEFAULT_BASE_URL,
     VancouverBusinessLicencesAdapter,
 )
@@ -62,6 +62,7 @@ class TestVancouverShapedFixtures:
                 records = [r async for r in result.records]
 
         first = records[0]
+
         assert first.raw_data["businessname"] == "Joe's Cafe"
         assert first.raw_data["geo_point_2d"] == {"lon": -123.1207, "lat": 49.2827}
         assert first.raw_data["postalcode"] == "V6B 1A1"
@@ -79,9 +80,8 @@ class TestVancouverShapedFixtures:
                 result = await _adapter(client).fetch()
                 records = [r async for r in result.records]
 
-        # Adapter does not interpret REDACTED — that's a mapper concern.
-        # The raw token must reach raw_data unchanged.
         redacted = records[1]
+
         assert redacted.raw_data["businessname"] == "REDACTED"
         assert redacted.raw_data["geo_point_2d"] is None
         assert redacted.raw_data["postalcode"] is None

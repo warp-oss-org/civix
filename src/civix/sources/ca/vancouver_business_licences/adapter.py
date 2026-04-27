@@ -29,7 +29,7 @@ import json
 from collections.abc import AsyncIterable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
-from typing import Any, Final, cast
+from typing import Any, ClassVar, Final, cast
 
 import httpx
 from pydantic import ValidationError
@@ -70,6 +70,17 @@ class VancouverBusinessLicencesAdapter:
     across fetches if appropriate. The clock is injected so tests can
     pin `fetched_at` deterministically.
     """
+
+    # Source fields the adapter consumes and surfaces via RawRecord
+    # metadata rather than leaving in `raw_data` for the mapper to
+    # reinterpret. Imported by the mapper so its `unmapped_source_fields`
+    # report stays accurate without manual sync.
+    CONSUMED_FIELDS: ClassVar[frozenset[str]] = frozenset(
+        {
+            "licencersn",  # → record.source_record_id
+            "extractdate",  # → record.source_updated_at
+        }
+    )
 
     dataset_id: DatasetId
     jurisdiction: Jurisdiction

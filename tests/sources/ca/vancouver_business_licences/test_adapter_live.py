@@ -15,7 +15,7 @@ import pytest
 
 from civix.core.identity import DatasetId, Jurisdiction
 from civix.core.sources import default_http_client
-from civix.sources.ca.bc.vancouver.business_licenses import (
+from civix.sources.ca.vancouver_business_licences import (
     VancouverBusinessLicencesAdapter,
 )
 
