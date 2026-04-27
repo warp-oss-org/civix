@@ -76,6 +76,7 @@ def _raw(**fields: Any) -> dict[str, Any]:
         "geo_point_2d": {"lon": -123.1207, "lat": 49.2827},
     }
     base.update(fields)
+
     return base
 
 
@@ -87,6 +88,7 @@ def _map(*, source_record_id: str | None = "VAN-1", **raw_overrides: Any) -> Bus
         raw_data=_raw(**raw_overrides),
         source_record_id=source_record_id,
     )
+
     return VancouverBusinessLicencesMapper()(raw, snap).record
 
 
@@ -94,6 +96,7 @@ def _map_with_report(**raw_overrides: Any) -> tuple[BusinessLicence, tuple[str, 
     snap = _snapshot()
     raw = RawRecord(snapshot_id=snap.snapshot_id, raw_data=_raw(**raw_overrides))
     result = VancouverBusinessLicencesMapper()(raw, snap)
+
     return result.record, result.report.unmapped_source_fields
 
 

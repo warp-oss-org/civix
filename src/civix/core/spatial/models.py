@@ -56,4 +56,5 @@ class Address(BaseModel):
             return None
         if value != value.strip():
             raise ValueError("address parts must not have surrounding whitespace")
+
         return value

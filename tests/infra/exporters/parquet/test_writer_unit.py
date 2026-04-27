@@ -1,19 +1,16 @@
-"""Unit tests for the JSON snapshot writer.
-
-The pipeline is faked so the writer is exercised in isolation: a small
-generic record type, a hand-rolled async iterator of `PipelineRecord`,
-and `tmp_path` for output. Round-trip tests load the files back from
-disk and reparse them through their own pydantic models.
-"""
+"""Unit tests for the Parquet snapshot writer."""
 
 from __future__ import annotations
 
 import hashlib
+import importlib
 import json
 from collections.abc import AsyncIterable, Iterable
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
+import pytest
 from pydantic import BaseModel, ConfigDict
 
 from civix.core.export import ExportManifest
@@ -29,7 +26,7 @@ from civix.core.pipeline import PipelineRecord, PipelineResult
 from civix.core.provenance import MapperVersion, ProvenanceRef
 from civix.core.quality import FieldQuality, MappedField
 from civix.core.snapshots import RawRecord, SourceSnapshot
-from civix.infra.exporters.json import write_snapshot
+from civix.infra.exporters.parquet import write_snapshot
 
 PINNED_NOW = datetime(2026, 4, 25, 12, 0, tzinfo=UTC)
 SNAP = SnapshotId("snap-1")
@@ -37,11 +34,10 @@ SOURCE = SourceId("vancouver-open-data")
 DATASET = DatasetId("business-licences")
 JURISDICTION = Jurisdiction(country="CA", region="BC", locality="Vancouver")
 MAPPER = MapperVersion(mapper_id=MapperId("vancouver-business-licences"), version="0.1.0")
+PQ: Any = importlib.import_module("pyarrow.parquet")
 
 
 class _FakeRecord(BaseModel):
-    """A minimal normalized record for writer tests."""
-
     model_config = ConfigDict(frozen=True, extra="forbid", strict=True)
 
     provenance: ProvenanceRef
@@ -81,12 +77,17 @@ def _record(
 ) -> PipelineRecord[_FakeRecord]:
     raw = RawRecord(snapshot_id=SNAP, raw_data={"n": name}, source_record_id=source_record_id)
     name_value: str | None = None if name_quality is FieldQuality.NOT_PROVIDED else name
-    name_sources: tuple[str, ...] = ("n",)
     normalized = _FakeRecord(
         provenance=_provenance(source_record_id=source_record_id),
-        name=MappedField[str](value=name_value, quality=name_quality, source_fields=name_sources),
+        name=MappedField[str](
+            value=name_value,
+            quality=name_quality,
+            source_fields=("n",),
+        ),
         score=MappedField[int](
-            value=score, quality=FieldQuality.STANDARDIZED, source_fields=("s",)
+            value=score,
+            quality=FieldQuality.STANDARDIZED,
+            source_fields=("s",),
         ),
     )
     mapped = MapResult[_FakeRecord](record=normalized, report=MappingReport())
@@ -111,6 +112,10 @@ def _read_jsonl(path: Path) -> list[dict[str, object]]:
     return [json.loads(line) for line in path.read_text().splitlines() if line]
 
 
+def _read_parquet(path: Path) -> list[dict[str, object]]:
+    return PQ.read_table(path).to_pylist()
+
+
 class TestDirectoryLayout:
     async def test_writes_four_files_named_for_the_contract(self, tmp_path: Path) -> None:
         result = _result([_record(source_record_id="r1", name="A", score=1)])
@@ -119,7 +124,7 @@ class TestDirectoryLayout:
 
         snap_dir = tmp_path / SNAP
         assert {p.name for p in snap_dir.iterdir()} == {
-            "records.jsonl",
+            "records.parquet",
             "reports.jsonl",
             "schema.json",
             "manifest.json",
@@ -130,20 +135,23 @@ class TestDirectoryLayout:
 
         await write_snapshot(result, output_dir=tmp_path, record_type=_FakeRecord)
 
-        snap_dir = tmp_path / SNAP
-        assert not list(snap_dir.glob("*.tmp"))
-
-    async def test_creates_parent_directories(self, tmp_path: Path) -> None:
-        nested = tmp_path / "a" / "b"
-        result = _result([_record(source_record_id="r1", name="A", score=1)])
-
-        await write_snapshot(result, output_dir=nested, record_type=_FakeRecord)
-
-        assert (nested / SNAP / "manifest.json").exists()
+        assert not list((tmp_path / SNAP).glob("*.tmp"))
 
 
 class TestRecordsFile:
-    async def test_one_line_per_record_in_pipeline_order(self, tmp_path: Path) -> None:
+    async def test_records_round_trip_as_nested_rows(self, tmp_path: Path) -> None:
+        original = [
+            _record(source_record_id="r1", name="A", score=1),
+            _record(source_record_id="r2", name="B", score=2),
+        ]
+        result = _result(original)
+
+        await write_snapshot(result, output_dir=tmp_path, record_type=_FakeRecord)
+
+        rows = _read_parquet(tmp_path / SNAP / "records.parquet")
+        assert rows == [pair.mapped.record.model_dump(mode="json") for pair in original]
+
+    async def test_one_row_per_record_in_pipeline_order(self, tmp_path: Path) -> None:
         result = _result(
             [
                 _record(source_record_id="r1", name="A", score=1),
@@ -154,22 +162,8 @@ class TestRecordsFile:
 
         await write_snapshot(result, output_dir=tmp_path, record_type=_FakeRecord)
 
-        lines = _read_jsonl(tmp_path / SNAP / "records.jsonl")
-        names = [line["name"]["value"] for line in lines]  # type: ignore[index]
-        assert names == ["A", "B", "C"]
-
-    async def test_records_round_trip_through_record_type(self, tmp_path: Path) -> None:
-        original = [
-            _record(source_record_id="r1", name="A", score=1),
-            _record(source_record_id="r2", name="B", score=2),
-        ]
-        result = _result(original)
-
-        await write_snapshot(result, output_dir=tmp_path, record_type=_FakeRecord)
-
-        lines = (tmp_path / SNAP / "records.jsonl").read_text().splitlines()
-        loaded = [_FakeRecord.model_validate_json(line) for line in lines]
-        assert loaded == [pair.mapped.record for pair in original]
+        rows = _read_parquet(tmp_path / SNAP / "records.parquet")
+        assert [row["name"]["value"] for row in rows] == ["A", "B", "C"]  # type: ignore[index]
 
 
 class TestReportsFile:
@@ -197,7 +191,6 @@ class TestReportsFile:
                 ),
             ),
         )
-        raw = RawRecord(snapshot_id=SNAP, raw_data={}, source_record_id="r1")
         normalized = _FakeRecord(
             provenance=_provenance(source_record_id="r1"),
             name=MappedField[str](
@@ -210,7 +203,7 @@ class TestReportsFile:
         result = _result(
             [
                 PipelineRecord(
-                    raw=raw,
+                    raw=RawRecord(snapshot_id=SNAP, raw_data={}, source_record_id="r1"),
                     mapped=MapResult[_FakeRecord](record=normalized, report=report),
                 )
             ]
@@ -221,16 +214,6 @@ class TestReportsFile:
         line = _read_jsonl(tmp_path / SNAP / "reports.jsonl")[0]
         round_tripped = MappingReport.model_validate_json(json.dumps(line["report"]))
         assert round_tripped == report
-
-
-class TestSchemaFile:
-    async def test_schema_matches_record_type_model_json_schema(self, tmp_path: Path) -> None:
-        result = _result([_record(source_record_id="r1", name="A", score=1)])
-
-        await write_snapshot(result, output_dir=tmp_path, record_type=_FakeRecord)
-
-        on_disk = json.loads((tmp_path / SNAP / "schema.json").read_text())
-        assert on_disk == _FakeRecord.model_json_schema()
 
 
 class TestManifest:
@@ -249,19 +232,6 @@ class TestManifest:
         )
         assert returned == on_disk
 
-    async def test_manifest_carries_snapshot_metadata_and_mapper(self, tmp_path: Path) -> None:
-        result = _result([_record(source_record_id="r1", name="A", score=1)])
-
-        manifest = await write_snapshot(result, output_dir=tmp_path, record_type=_FakeRecord)
-
-        assert manifest.snapshot_id == SNAP
-        assert manifest.source_id == SOURCE
-        assert manifest.dataset_id == DATASET
-        assert manifest.jurisdiction == JURISDICTION
-        assert manifest.fetched_at == PINNED_NOW
-        assert manifest.record_count == 1
-        assert manifest.mapper == MAPPER
-
     async def test_file_index_includes_three_data_files_with_correct_hashes(
         self, tmp_path: Path
     ) -> None:
@@ -271,7 +241,7 @@ class TestManifest:
 
         snap_dir = tmp_path / SNAP
         index = {f.filename: f for f in manifest.files}
-        assert set(index) == {"records.jsonl", "reports.jsonl", "schema.json"}
+        assert set(index) == {"records.parquet", "reports.jsonl", "schema.json"}
         for filename, entry in index.items():
             on_disk = (snap_dir / filename).read_bytes()
             assert entry.sha256 == hashlib.sha256(on_disk).hexdigest()
@@ -292,7 +262,6 @@ class TestManifest:
 
         manifest = await write_snapshot(result, output_dir=tmp_path, record_type=_FakeRecord)
 
-        # Two records × two MappedFields each = four field qualities total.
         assert manifest.mapping_summary.quality_counts == {
             FieldQuality.DIRECT: 1,
             FieldQuality.NOT_PROVIDED: 1,
@@ -313,7 +282,9 @@ class TestManifest:
         normalized = _FakeRecord(
             provenance=_provenance(source_record_id="r1"),
             name=MappedField[str](
-                value=None, quality=FieldQuality.CONFLICTED, source_fields=("n1", "n2")
+                value=None,
+                quality=FieldQuality.CONFLICTED,
+                source_fields=("n1", "n2"),
             ),
             score=MappedField[int](value=1, quality=FieldQuality.DIRECT, source_fields=("s",)),
         )
@@ -333,14 +304,13 @@ class TestManifest:
 
 
 class TestEmptyDataset:
-    async def test_empty_pipeline_writes_files_with_no_records(self, tmp_path: Path) -> None:
+    async def test_empty_pipeline_writes_empty_parquet_and_reports(self, tmp_path: Path) -> None:
         result = _result([])
 
         manifest = await write_snapshot(result, output_dir=tmp_path, record_type=_FakeRecord)
 
-        snap_dir = tmp_path / SNAP
-        assert (snap_dir / "records.jsonl").read_text() == ""
-        assert (snap_dir / "reports.jsonl").read_text() == ""
+        assert _read_parquet(tmp_path / SNAP / "records.parquet") == []
+        assert (tmp_path / SNAP / "reports.jsonl").read_text() == ""
         assert manifest.record_count == 0
 
     async def test_empty_pipeline_has_no_observed_mapper(self, tmp_path: Path) -> None:
@@ -350,10 +320,22 @@ class TestEmptyDataset:
 
         assert manifest.mapper is None
 
-    async def test_empty_pipeline_still_writes_schema(self, tmp_path: Path) -> None:
+
+class TestMissingDependency:
+    async def test_missing_pyarrow_has_actionable_message(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
+        writer = importlib.import_module("civix.infra.exporters.parquet.writer")
+        real_import_module = importlib.import_module
+
+        def fake_import_module(name: str) -> Any:
+            if name == "pyarrow":
+                raise ModuleNotFoundError(name)
+
+            return real_import_module(name)
+
+        monkeypatch.setattr(writer.importlib, "import_module", fake_import_module)
         result = _result([])
 
-        await write_snapshot(result, output_dir=tmp_path, record_type=_FakeRecord)
-
-        on_disk = json.loads((tmp_path / SNAP / "schema.json").read_text())
-        assert on_disk == _FakeRecord.model_json_schema()
+        with pytest.raises(RuntimeError, match=r"civix\[parquet\]"):
+            await write_snapshot(result, output_dir=tmp_path, record_type=_FakeRecord)

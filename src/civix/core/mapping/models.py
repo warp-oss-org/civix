@@ -45,6 +45,7 @@ class FieldConflict(BaseModel):
         self._check_field_name()
         self._check_cardinality()
         self._check_source_fields_strings()
+
         return self
 
     def _check_field_name(self) -> None:
@@ -91,6 +92,7 @@ class MappingReport(BaseModel):
                 raise ValueError(
                     f"unmapped_source_fields entry {name!r} has surrounding whitespace"
                 )
+
         return self
 
 

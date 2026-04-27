@@ -18,6 +18,7 @@ def _snapshot(**overrides: Any) -> SourceSnapshot:
         "record_count": 2,
     }
     defaults.update(overrides)
+
     return SourceSnapshot(**defaults)
 
 

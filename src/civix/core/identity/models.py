@@ -39,4 +39,5 @@ class Jurisdiction(BaseModel):
             return None
         if value != value.strip():
             raise ValueError("jurisdiction parts must not have surrounding whitespace")
+
         return value

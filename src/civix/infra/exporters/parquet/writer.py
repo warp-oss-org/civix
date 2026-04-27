@@ -1,25 +1,24 @@
-"""Stream a `PipelineResult` to a JSON snapshot directory.
+"""Write a `PipelineResult` to a Parquet snapshot directory.
 
 Layout written under `{output_dir}/{snapshot_id}/`:
 
-- `records.jsonl`  one normalized record per line
-- `reports.jsonl`  one wrapped `MappingReport` per line, keyed by
-                   `source_record_id`
-- `schema.json`    JSON Schema generated from `record_type`
-- `manifest.json`  `ExportManifest` written last; its presence implies
-                   the other three are complete
+- `records.parquet`  normalized records, one nested row per record
+- `reports.jsonl`    one wrapped `MappingReport` per line
+- `schema.json`      JSON Schema generated from `record_type`
+- `manifest.json`    `ExportManifest` written last
 
-Each file is staged as `*.tmp` and renamed in place, so a partial export
-never advertises itself as complete via `manifest.json`.
+Parquet support is optional. Install with `civix[parquet]`.
 """
 
 from __future__ import annotations
 
 import hashlib
+import importlib
 import json
 from collections import Counter
 from collections.abc import Iterator
 from pathlib import Path
+from typing import Any
 
 from pydantic import BaseModel
 
@@ -28,7 +27,7 @@ from civix.core.pipeline import PipelineResult
 from civix.core.provenance import MapperVersion
 from civix.core.quality import FieldQuality, MappedField
 
-_RECORDS_FILE = "records.jsonl"
+_RECORDS_FILE = "records.parquet"
 _REPORTS_FILE = "reports.jsonl"
 _SCHEMA_FILE = "schema.json"
 _MANIFEST_FILE = "manifest.json"
@@ -40,13 +39,9 @@ async def write_snapshot[TNorm: BaseModel](
     output_dir: Path,
     record_type: type[TNorm],
 ) -> ExportManifest:
-    """Write `result` to a JSON snapshot directory and return the manifest.
+    """Write `result` to a Parquet snapshot directory and return the manifest."""
+    pa, pq = _load_pyarrow()
 
-    The pipeline is consumed lazily: records and reports stream to disk
-    one line at a time. The mapper version recorded on the manifest is
-    observed from the first record's `provenance.mapper`; for an empty
-    snapshot it is `None`.
-    """
     snapshot = result.snapshot
     snapshot_dir = output_dir / snapshot.snapshot_id
     snapshot_dir.mkdir(parents=True, exist_ok=True)
@@ -56,20 +51,15 @@ async def write_snapshot[TNorm: BaseModel](
     quality_counts: Counter[FieldQuality] = Counter()
     unmapped_total = 0
     conflicts_total = 0
-    record_count = 0
     mapper: MapperVersion | None = None
+    rows: list[dict[str, Any]] = []
 
-    records_path = snapshot_dir / _RECORDS_FILE
     reports_path = snapshot_dir / _REPORTS_FILE
-    records_tmp = _tmp_path(records_path)
     reports_tmp = _tmp_path(reports_path)
-
-    records_hasher = hashlib.sha256()
     reports_hasher = hashlib.sha256()
-    records_bytes = 0
     reports_bytes = 0
 
-    with records_tmp.open("wb") as records_fh, reports_tmp.open("wb") as reports_fh:
+    with reports_tmp.open("wb") as reports_fh:
         async for paired in result.records:
             normalized = paired.mapped.record
             report = paired.mapped.report
@@ -82,10 +72,7 @@ async def write_snapshot[TNorm: BaseModel](
             unmapped_total += len(report.unmapped_source_fields)
             conflicts_total += len(report.conflicts)
 
-            record_line = normalized.model_dump_json().encode("utf-8") + b"\n"
-            records_fh.write(record_line)
-            records_hasher.update(record_line)
-            records_bytes += len(record_line)
+            rows.append(normalized.model_dump(mode="json"))
 
             report_line = (
                 json.dumps(
@@ -102,10 +89,13 @@ async def write_snapshot[TNorm: BaseModel](
             reports_hasher.update(report_line)
             reports_bytes += len(report_line)
 
-            record_count += 1
-
-    records_tmp.rename(records_path)
     reports_tmp.rename(reports_path)
+
+    records_path = snapshot_dir / _RECORDS_FILE
+    records_tmp = _tmp_path(records_path)
+    table = pa.Table.from_pylist(rows) if rows else pa.table({})
+    pq.write_table(table, records_tmp)
+    records_tmp.rename(records_path)
 
     manifest = ExportManifest(
         snapshot_id=snapshot.snapshot_id,
@@ -113,15 +103,11 @@ async def write_snapshot[TNorm: BaseModel](
         dataset_id=snapshot.dataset_id,
         jurisdiction=snapshot.jurisdiction,
         fetched_at=snapshot.fetched_at,
-        record_count=record_count,
+        record_count=len(rows),
         mapper=mapper,
         files=(
             schema_file,
-            ExportedFile(
-                filename=_RECORDS_FILE,
-                sha256=records_hasher.hexdigest(),
-                byte_count=records_bytes,
-            ),
+            _file_entry(records_path, filename=_RECORDS_FILE),
             ExportedFile(
                 filename=_REPORTS_FILE,
                 sha256=reports_hasher.hexdigest(),
@@ -143,6 +129,19 @@ async def write_snapshot[TNorm: BaseModel](
     return manifest
 
 
+def _load_pyarrow() -> tuple[Any, Any]:
+    try:
+        pyarrow = importlib.import_module("pyarrow")
+        parquet = importlib.import_module("pyarrow.parquet")
+    except ModuleNotFoundError as e:
+        raise RuntimeError(
+            "Parquet export requires the optional dependency pyarrow; "
+            "install it with `civix[parquet]`."
+        ) from e
+
+    return pyarrow, parquet
+
+
 def _write_schema[TNorm: BaseModel](path: Path, record_type: type[TNorm]) -> ExportedFile:
     body = json.dumps(record_type.model_json_schema(), indent=2, sort_keys=True).encode("utf-8")
     tmp = _tmp_path(path)
@@ -159,6 +158,7 @@ def _write_schema[TNorm: BaseModel](path: Path, record_type: type[TNorm]) -> Exp
 def _walk_qualities(record: BaseModel) -> Iterator[FieldQuality]:
     for field_name in record.__class__.model_fields:
         attr = getattr(record, field_name)
+
         if isinstance(attr, MappedField):
             yield attr.quality
 
@@ -171,6 +171,16 @@ def _extract_mapper(record: BaseModel) -> MapperVersion | None:
     mapper = getattr(provenance, "mapper", None)
 
     return mapper if isinstance(mapper, MapperVersion) else None
+
+
+def _file_entry(path: Path, *, filename: str) -> ExportedFile:
+    body = path.read_bytes()
+
+    return ExportedFile(
+        filename=filename,
+        sha256=hashlib.sha256(body).hexdigest(),
+        byte_count=len(body),
+    )
 
 
 def _tmp_path(path: Path) -> Path:

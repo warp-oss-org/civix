@@ -78,6 +78,7 @@ class CategoryRef(BaseModel):
     def _no_surrounding_whitespace(cls, value: str) -> str:
         if value != value.strip():
             raise ValueError("category parts must not have surrounding whitespace")
+
         return value
 
 

@@ -69,4 +69,5 @@ class RawRecord(BaseModel):
     def _utc_only(cls, value: datetime | None) -> datetime | None:
         if value is None:
             return None
+
         return require_utc(value)

@@ -98,6 +98,7 @@ class VancouverBusinessLicencesMapper:
         report = MappingReport(
             unmapped_source_fields=_unmapped_source_fields(raw, licence),
         )
+
         return MapResult[BusinessLicence](record=licence, report=report)
 
     def _build_provenance(self, *, record: RawRecord, snapshot: SourceSnapshot) -> ProvenanceRef:
@@ -127,6 +128,7 @@ def _map_business_name(raw: Mapping[str, Any]) -> MappedField[str]:
             quality=FieldQuality.REDACTED,
             source_fields=("businessname",),
         )
+
     return MappedField[str](
         value=str(value),
         quality=FieldQuality.DIRECT,
@@ -142,6 +144,7 @@ def _map_licence_number(raw: Mapping[str, Any]) -> MappedField[str]:
             quality=FieldQuality.NOT_PROVIDED,
             source_fields=("licencenumber",),
         )
+
     return MappedField[str](
         value=str(value),
         quality=FieldQuality.DIRECT,
@@ -165,6 +168,7 @@ def _map_status(raw: Mapping[str, Any]) -> MappedField[LicenceStatus]:
             quality=FieldQuality.INFERRED,
             source_fields=("status",),
         )
+
     normalized = _STATUS_MAP.get(value.strip().lower())
 
     if normalized is not None:
@@ -220,6 +224,7 @@ def _map_issued_at(raw: Mapping[str, Any]) -> MappedField[date]:
             quality=FieldQuality.NOT_PROVIDED,
             source_fields=("issueddate",),
         )
+
     return MappedField[date](
         value=parsed,
         quality=FieldQuality.STANDARDIZED,
@@ -243,6 +248,7 @@ def _map_expires_at(raw: Mapping[str, Any]) -> MappedField[date]:
             quality=FieldQuality.NOT_PROVIDED,
             source_fields=("expireddate",),
         )
+
     return MappedField[date](
         value=parsed,
         quality=FieldQuality.STANDARDIZED,
@@ -299,15 +305,18 @@ def _map_coordinate(raw: Mapping[str, Any]) -> MappedField[Coordinate]:
             quality=FieldQuality.NOT_PROVIDED,
             source_fields=("geo_point_2d",),
         )
+
     geo = cast(dict[str, Any], value)
     lat = geo.get("lat")
     lon = geo.get("lon")
+
     if not isinstance(lat, int | float) or not isinstance(lon, int | float):
         return MappedField[Coordinate](
             value=None,
             quality=FieldQuality.NOT_PROVIDED,
             source_fields=("geo_point_2d",),
         )
+
     try:
         coord = Coordinate(latitude=float(lat), longitude=float(lon))
     except ValidationError:
@@ -318,6 +327,7 @@ def _map_coordinate(raw: Mapping[str, Any]) -> MappedField[Coordinate]:
             quality=FieldQuality.NOT_PROVIDED,
             source_fields=("geo_point_2d",),
         )
+
     return MappedField[Coordinate](
         value=coord,
         quality=FieldQuality.STANDARDIZED,
@@ -333,6 +343,7 @@ def _map_neighbourhood(raw: Mapping[str, Any]) -> MappedField[str]:
             quality=FieldQuality.NOT_PROVIDED,
             source_fields=("localarea",),
         )
+
     return MappedField[str](
         value=value,
         quality=FieldQuality.DIRECT,
@@ -354,6 +365,7 @@ def _unmapped_source_fields(raw: Mapping[str, Any], licence: BusinessLicence) ->
         if isinstance(attr, MappedField):
             consumed.update(attr.source_fields)
     consumed |= ADAPTER_CONSUMED_FIELDS
+
     return tuple(sorted(name for name in raw if name not in consumed))
 
 
@@ -362,6 +374,7 @@ def _str_or_none(value: object) -> str | None:
     if value is None:
         return None
     s = str(value).strip()
+
     return s if s else None
 
 
@@ -379,6 +392,7 @@ def _assemble_street(
     if unit:
         unit_label = unittype if unittype else "Unit"
         return f"{base} {unit_label} {unit}"
+
     return base
 
 
@@ -397,10 +411,12 @@ def _parse_local_date_from_iso_datetime(value: object) -> date | None:
         return None
     if parsed.tzinfo is None:
         parsed = parsed.replace(tzinfo=UTC)
+
     return parsed.astimezone(_LOCAL_TZ).date()
 
 
 def _slugify(text: str) -> str:
     """Lowercase, replace any non-alphanumeric run with a single hyphen."""
     s = re.sub(r"[^a-z0-9]+", "-", text.lower().strip())
+
     return s.strip("-")

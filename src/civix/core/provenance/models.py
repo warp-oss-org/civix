@@ -48,6 +48,7 @@ class MapperVersion(BaseModel):
     def _no_surrounding_whitespace(cls, value: str) -> str:
         if value != value.strip():
             raise ValueError("mapper identity parts must not have surrounding whitespace")
+
         return value
 
 

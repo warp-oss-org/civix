@@ -55,6 +55,7 @@ def _parse_extract_date(value: object) -> datetime | None:
         return None
     if parsed.tzinfo is None:
         return None
+
     return parsed.astimezone(UTC)
 
 
@@ -123,6 +124,7 @@ class VancouverBusinessLicencesAdapter:
                 dataset_id=self.dataset_id,
                 operation="count",
             )
+
         return total_count
 
     async def _stream_records(self, *, snapshot_id: SnapshotId) -> AsyncIterable[RawRecord]:
@@ -181,6 +183,7 @@ class VancouverBusinessLicencesAdapter:
 
     def _build_snapshot(self, *, fetched_at: datetime, record_count: int) -> SourceSnapshot:
         snapshot_id = SnapshotId(f"{self.source_id}:{self.dataset_id}:{fetched_at.isoformat()}")
+
         return SourceSnapshot(
             snapshot_id=snapshot_id,
             source_id=self.source_id,

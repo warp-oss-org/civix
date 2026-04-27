@@ -20,6 +20,7 @@ def _mapper(**overrides: Any) -> MapperVersion:
         "version": "0.1.0",
     }
     defaults.update(overrides)
+
     return MapperVersion(**defaults)
 
 
@@ -33,6 +34,7 @@ def _ref(**overrides: Any) -> ProvenanceRef:
         "mapper": _mapper(),
     }
     defaults.update(overrides)
+
     return ProvenanceRef(**defaults)
 
 

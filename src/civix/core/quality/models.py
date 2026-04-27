@@ -76,6 +76,7 @@ class MappedField[T](BaseModel):
         self._check_value_presence()
         self._check_source_fields_count()
         self._check_source_fields_strings()
+
         return self
 
     def _check_value_presence(self) -> None:

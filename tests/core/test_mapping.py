@@ -165,6 +165,7 @@ class _FakeMapper:
                 source_fields=("name",),
             ),
         )
+
         return MapResult[_FakeNormalized](record=normalized, report=MappingReport())
 
 

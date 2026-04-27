@@ -101,6 +101,7 @@ def _licence(**overrides: Any) -> BusinessLicence:
         ),
     }
     defaults.update(overrides)
+
     return BusinessLicence(**defaults)
 
 

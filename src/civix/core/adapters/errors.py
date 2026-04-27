@@ -40,6 +40,7 @@ class FetchError(Exception):
 
     def __str__(self) -> str:
         base = super().__str__()
+
         return (
             f"{base} "
             f"[source={self.source_id!r} dataset={self.dataset_id!r} "

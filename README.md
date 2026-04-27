@@ -18,8 +18,8 @@ documented in [`AGENTS.md`](AGENTS.md) and [`plans/core-idea.md`](plans/core-ide
 - Domain model: `BusinessLicence`.
 - Source adapter + mapper for the Vancouver Open Data Portal's
   business-licences datasets, end-to-end via `civix.core.pipeline.run`.
-- JSON snapshot exporter for normalized records, mapping reports,
-  schemas, and manifests.
+- JSON and Parquet snapshot exporters for normalized records, mapping
+  reports, schemas, and manifests.
 - Live opt-in test against the real Vancouver portal.
 
 ```python
@@ -50,14 +50,14 @@ asyncio.run(main())
 
 ## Not yet implemented
 
-Drift detection, validation, Parquet export, and additional sources
-(Toronto, NYC, etc.) are next on the roadmap. See
+Drift detection, validation, and additional sources (Toronto, NYC, etc.)
+are next on the roadmap. See
 [`plans/core-idea.md`](plans/core-idea.md) for the full build order.
 
 ## Tooling
 
 - Python 3.12, [uv](https://github.com/astral-sh/uv) for env + deps
-- Pydantic v2, httpx (async)
+- Pydantic v2, httpx (async), pyarrow via the `parquet` optional extra
 - Ruff (lint + format), Pyright (strict type-check), pytest (+ pytest-asyncio, respx)
 
 ## Commands

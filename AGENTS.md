@@ -36,6 +36,7 @@ When tradeoffs exist, prioritize in this order:
 - Make side effects explicit. Network calls, filesystem writes, clocks, randomness, and environment access should be isolated at boundaries.
 - Fix root causes, not symptoms. Avoid broad fallback behavior that hides broken mapping, bad data, or schema drift.
 - Use intention-revealing names. Prefer clear structure over explanatory comments.
+- Group related logic inside functions with blank lines when it improves scanability, especially before returning a computed result after setup or transformation work. Do not force extra spacing into tiny one-step functions where it adds noise.
 - Do not introduce unrelated refactors or churn. Keep changes scoped to the behavior being added or fixed.
 - Verify current external facts before treating them as current, stable, or recommended, especially open-data portals, API schemas, package tooling, and standards.
 
