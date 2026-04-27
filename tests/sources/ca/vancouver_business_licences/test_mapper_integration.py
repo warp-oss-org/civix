@@ -1,4 +1,8 @@
-"""Adapter + mapper end-to-end against fixture-backed responses."""
+"""Pipeline end-to-end against fixture-backed responses.
+
+Exercises `civix.core.pipeline.run` with the real Vancouver adapter
+and mapper. Replaces the previous hand-rolled fetch/map loop.
+"""
 
 from __future__ import annotations
 
@@ -10,6 +14,7 @@ import httpx
 import respx
 
 from civix.core.identity import DatasetId, Jurisdiction
+from civix.core.pipeline import run
 from civix.core.quality import FieldQuality
 from civix.core.spatial import Address, Coordinate
 from civix.domains.business_licences import BusinessLicence, LicenceStatus
@@ -44,11 +49,8 @@ async def _run_pipeline() -> list[BusinessLicence]:
                 clock=lambda: PINNED_NOW,
             )
             mapper = VancouverBusinessLicencesMapper()
-            fetch_result = await adapter.fetch()
-            licences: list[BusinessLicence] = []
-            async for raw in fetch_result.records:
-                map_result = mapper(raw, fetch_result.snapshot)
-                licences.append(map_result.record)
+            result = await run(adapter, mapper)
+            licences: list[BusinessLicence] = [mr.record async for mr in result.records]
 
     return licences
 

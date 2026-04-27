@@ -47,8 +47,8 @@ from civix.domains.business_licences import (
     CategoryRef,
     LicenceStatus,
 )
-from civix.sources.ca.vancouver_business_licences.adapter import (
-    VancouverBusinessLicencesAdapter,
+from civix.sources.ca.vancouver_business_licences.schema import (
+    ADAPTER_CONSUMED_FIELDS,
 )
 
 MAPPER_ID: Final[MapperId] = MapperId("vancouver-business-licences")
@@ -367,7 +367,7 @@ def _unmapped_source_fields(raw: Mapping[str, Any], licence: BusinessLicence) ->
         attr = getattr(licence, field_name)
         if isinstance(attr, MappedField):
             consumed.update(attr.source_fields)
-    consumed |= VancouverBusinessLicencesAdapter.CONSUMED_FIELDS
+    consumed |= ADAPTER_CONSUMED_FIELDS
     return tuple(sorted(name for name in raw if name not in consumed))
 
 

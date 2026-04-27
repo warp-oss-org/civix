@@ -13,8 +13,8 @@ from __future__ import annotations
 
 import pytest
 
+from civix.core.adapters import default_http_client
 from civix.core.identity import DatasetId, Jurisdiction
-from civix.core.sources import default_http_client
 from civix.sources.ca.vancouver_business_licences import (
     VancouverBusinessLicencesAdapter,
 )

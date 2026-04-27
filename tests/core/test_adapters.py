@@ -7,14 +7,7 @@ import pytest
 import respx
 
 from civix import __version__
-from civix.core.identity import (
-    DatasetId,
-    Jurisdiction,
-    SnapshotId,
-    SourceId,
-)
-from civix.core.observations import RawRecord, SourceSnapshot
-from civix.core.sources import (
+from civix.core.adapters import (
     DEFAULT_RETRIES,
     DEFAULT_TIMEOUT_SECONDS,
     FetchResult,
@@ -22,6 +15,13 @@ from civix.core.sources import (
     default_http_client,
     default_user_agent,
 )
+from civix.core.identity import (
+    DatasetId,
+    Jurisdiction,
+    SnapshotId,
+    SourceId,
+)
+from civix.core.observations import RawRecord, SourceSnapshot
 
 
 def _snapshot() -> SourceSnapshot:

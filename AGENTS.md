@@ -43,15 +43,17 @@ When tradeoffs exist, prioritize in this order:
 
 The intended boundaries are:
 
-- `core`: shared mapping, drift, provenance, observation, validation, and export primitives.
-- `domains`: domain models and domain-specific normalization rules such as business licences or procurement.
-- `sources`: source adapters and source-specific mappers for particular jurisdictions and datasets.
+- `core`: shared identity, observation, quality, provenance, mapping, spatial, temporal, drift, validation, pipeline, and export primitives. Pure typed contracts and pure-function logic.
+- `core/adapters`: the source-fetching infrastructure layer — `SourceAdapter` Protocol, `FetchResult`, HTTP client factory, `FetchError`. Anything that talks to external civic data portals lives behind this contract.
+- `core/pipeline`: orchestration that composes an adapter and a mapper into a single runnable transform. The only place where fetching and mapping meet.
 - `core/export`: source-independent artifact and serialization contracts.
+- `domains`: domain models and domain-specific normalization rules such as business licences or procurement.
+- `sources`: per-jurisdiction implementations of `SourceAdapter` and per-source mappers (e.g. `sources/ca/vancouver_business_licences/`).
 - external consumers: command-line tools, notebooks, dashboards, and applications that decide where artifacts are written or stored.
 
 Respect those boundaries:
 
-- Source adapters should not silently normalize records beyond source acquisition and snapshot metadata.
+- Source adapter implementations should not silently normalize records beyond source acquisition and snapshot metadata.
 - Mappers should not fetch from the network.
 - Exporters and serializers should not reinterpret civic semantics.
 - Shared domain models should not depend on a single city portal's naming conventions.

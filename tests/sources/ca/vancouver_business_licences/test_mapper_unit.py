@@ -26,8 +26,10 @@ from civix.domains.business_licences import BusinessLicence, LicenceStatus
 from civix.sources.ca.vancouver_business_licences import (
     MAPPER_ID,
     MAPPER_VERSION,
-    VancouverBusinessLicencesAdapter,
     VancouverBusinessLicencesMapper,
+)
+from civix.sources.ca.vancouver_business_licences.schema import (
+    ADAPTER_CONSUMED_FIELDS,
 )
 
 PINNED_NOW = datetime(2026, 4, 25, 12, 0, tzinfo=UTC)
@@ -457,9 +459,9 @@ class TestUnmappedSourceFields:
         }
 
 
-class TestAdapterConsumedClassConstant:
-    def test_adapter_exposes_consumed_fields(self) -> None:
+class TestAdapterConsumedFieldsSchema:
+    def test_schema_pins_adapter_consumed_fields(self) -> None:
         # Pinned because the mapper's unmapped_source_fields builder
         # depends on this set; removal here would silently miscount.
-        assert "licencersn" in VancouverBusinessLicencesAdapter.CONSUMED_FIELDS
-        assert "extractdate" in VancouverBusinessLicencesAdapter.CONSUMED_FIELDS
+        assert "licencersn" in ADAPTER_CONSUMED_FIELDS
+        assert "extractdate" in ADAPTER_CONSUMED_FIELDS
