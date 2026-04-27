@@ -1,7 +1,7 @@
 """Identity primitives shared across the core.
 
 These are pure naming and value types with no dependencies. Every other
-core module (observations, provenance, mapping, drift) and every domain
+core module (snapshots, provenance, mapping, drift) and every domain
 references them, so they live together in one place to keep dependency
 direction clean.
 """

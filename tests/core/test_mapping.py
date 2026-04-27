@@ -11,9 +11,9 @@ from civix.core.identity import (
     SourceId,
 )
 from civix.core.mapping import FieldConflict, Mapper, MappingReport, MapResult
-from civix.core.observations import RawRecord, SourceSnapshot
 from civix.core.provenance import MapperVersion, ProvenanceRef
 from civix.core.quality import FieldQuality, MappedField
+from civix.core.snapshots import RawRecord, SourceSnapshot
 
 
 class TestFieldConflict:

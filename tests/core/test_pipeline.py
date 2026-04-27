@@ -18,10 +18,10 @@ from civix.core.identity import (
     SourceId,
 )
 from civix.core.mapping import MappingReport, MapResult
-from civix.core.observations import RawRecord, SourceSnapshot
 from civix.core.pipeline import PipelineRecord, PipelineResult, run
 from civix.core.provenance import MapperVersion, ProvenanceRef
 from civix.core.quality import FieldQuality, MappedField
+from civix.core.snapshots import RawRecord, SourceSnapshot
 
 PINNED_NOW = datetime(2026, 4, 25, 12, 0, tzinfo=UTC)
 

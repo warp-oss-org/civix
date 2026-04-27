@@ -1,28 +1,14 @@
 """Vancouver business-licences mapper.
 
-Transforms a `RawRecord` (Vancouver Open Data Portal row) into a
-normalized `BusinessLicence`. Pure transform — no I/O, deterministic
-given a stable mapper version.
+Transforms a Vancouver Open Data Portal row into a normalized
+`BusinessLicence`. Pure: no I/O, deterministic given a stable mapper
+version.
 
-Quality assignments per field:
-
-- `business_name`     DIRECT (verbatim) | REDACTED (sentinel) | NOT_PROVIDED
-- `licence_number`    DIRECT | NOT_PROVIDED
-- `status`            STANDARDIZED (mapped) | INFERRED→UNKNOWN (unrecognized)
-                       | NOT_PROVIDED
-- `category`          DERIVED (from businesstype + businesssubtype)
-                       | NOT_PROVIDED
-- `issued_at`         STANDARDIZED (datetime → date in America/Vancouver)
-                       | NOT_PROVIDED
-- `expires_at`        STANDARDIZED (date string → date) | NOT_PROVIDED
-- `address`           DERIVED (8 source fields composed) | NOT_PROVIDED
-- `coordinate`        STANDARDIZED (geo_point_2d dict → Coordinate)
-                       | NOT_PROVIDED (incl. out-of-range)
-- `neighbourhood`     DIRECT (localarea) | NOT_PROVIDED
-
-Out-of-range coordinates and unparseable dates degrade gracefully to
-NOT_PROVIDED rather than failing the whole record. The raw values are
-still preserved in `RawRecord.raw_data` for downstream inspection.
+Per-field `MappedField.quality` is set so consumers can distinguish
+direct, standardized, derived, redacted, and missing values. Malformed
+inputs (out-of-range coordinates, unparseable dates) degrade to
+`NOT_PROVIDED` rather than failing the whole record; the original
+values are still preserved in `RawRecord.raw_data`.
 """
 
 from __future__ import annotations
@@ -38,16 +24,16 @@ from pydantic import ValidationError
 
 from civix.core.identity import MapperId
 from civix.core.mapping import MappingReport, MapResult
-from civix.core.observations import RawRecord, SourceSnapshot
 from civix.core.provenance import MapperVersion, ProvenanceRef
 from civix.core.quality import FieldQuality, MappedField
+from civix.core.snapshots import RawRecord, SourceSnapshot
 from civix.core.spatial import Address, Coordinate
 from civix.domains.business_licences import (
     BusinessLicence,
     CategoryRef,
     LicenceStatus,
 )
-from civix.sources.ca.vancouver_business_licences.schema import (
+from civix.infra.sources.ca.vancouver_business_licences.schema import (
     ADAPTER_CONSUMED_FIELDS,
 )
 

@@ -1,15 +1,13 @@
 """Source-fetch errors.
 
-A single base exception (`FetchError`) wraps any underlying transport,
-parse, or protocol failure that occurs while an adapter is fetching.
-The original exception is preserved via `__cause__` (raise...from),
-so callers needing granular handling can inspect it; callers needing
-stable types catch `FetchError` and rely on its civix-specific context
-(source_id, dataset_id, operation).
+`FetchError` is the single exception raised by adapter implementations
+for transport, parse, or protocol failures during a fetch. The original
+exception is preserved via `__cause__` (raise...from) for callers who
+want granular handling; callers who only need stable types can catch
+`FetchError` and read its `source_id`, `dataset_id`, and `operation`
+context fields.
 
-Subtypes are intentionally not provided. Add them only when a real
-consumer demonstrates a need to distinguish failure modes — premature
-hierarchy is a maintenance burden without payoff.
+Subtypes are not provided until a concrete consumer needs them.
 """
 
 from __future__ import annotations

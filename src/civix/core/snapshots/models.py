@@ -1,8 +1,12 @@
-"""Raw observation and source snapshot primitives.
+"""Raw source-capture primitives: snapshots and the records inside them.
 
-These are pure data contracts. They describe what a fetched civic dataset
-looks like before any normalization. No fetching, hashing, or persistence
-happens here.
+A `SourceSnapshot` carries the metadata for one fetch operation against
+one dataset. A `RawRecord` is one preserved row from that fetch, paired
+with a reference back to its snapshot.
+
+These are pure data contracts. They describe what a fetched civic
+dataset looks like before any normalization. No fetching, hashing, or
+persistence happens here.
 """
 
 from __future__ import annotations

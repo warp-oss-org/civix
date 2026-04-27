@@ -16,16 +16,16 @@ from dataclasses import dataclass
 from typing import Protocol, runtime_checkable
 
 from civix.core.identity import DatasetId, Jurisdiction, SourceId
-from civix.core.observations import RawRecord, SourceSnapshot
+from civix.core.snapshots import RawRecord, SourceSnapshot
 
 
 @dataclass(frozen=True, slots=True)
 class FetchResult:
     """An adapter's output: snapshot metadata plus a record stream.
 
-    `records` is intentionally an async iterator, not a materialized
-    sequence. Historical business licences are roughly a
-    million rows; eager materialization is not viable.
+    `records` is an async iterator rather than a materialized sequence
+    so adapters can stream arbitrarily large datasets without holding
+    every row in memory.
     """
 
     snapshot: SourceSnapshot

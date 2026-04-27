@@ -18,7 +18,7 @@ from dataclasses import dataclass
 
 from civix.core.adapters import SourceAdapter
 from civix.core.mapping import Mapper, MapResult
-from civix.core.observations import RawRecord, SourceSnapshot
+from civix.core.snapshots import RawRecord, SourceSnapshot
 
 
 @dataclass(frozen=True, slots=True)

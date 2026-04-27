@@ -19,16 +19,16 @@ from civix.core.identity import (
     SnapshotId,
     SourceId,
 )
-from civix.core.observations import RawRecord, SourceSnapshot
 from civix.core.quality import FieldQuality
+from civix.core.snapshots import RawRecord, SourceSnapshot
 from civix.core.spatial import Address, Coordinate
 from civix.domains.business_licences import BusinessLicence, LicenceStatus
-from civix.sources.ca.vancouver_business_licences import (
+from civix.infra.sources.ca.vancouver_business_licences import (
     MAPPER_ID,
     MAPPER_VERSION,
     VancouverBusinessLicencesMapper,
 )
-from civix.sources.ca.vancouver_business_licences.schema import (
+from civix.infra.sources.ca.vancouver_business_licences.schema import (
     ADAPTER_CONSUMED_FIELDS,
 )
 

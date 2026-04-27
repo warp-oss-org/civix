@@ -10,7 +10,7 @@ import respx
 
 from civix.core.adapters import FetchError
 from civix.core.identity import DatasetId, Jurisdiction
-from civix.sources.ca.vancouver_business_licences import (
+from civix.infra.sources.ca.vancouver_business_licences import (
     DEFAULT_BASE_URL,
     SOURCE_ID,
     VancouverBusinessLicencesAdapter,

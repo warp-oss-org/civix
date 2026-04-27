@@ -18,7 +18,7 @@ from civix.core.pipeline import run
 from civix.core.quality import FieldQuality
 from civix.core.spatial import Address, Coordinate
 from civix.domains.business_licences import BusinessLicence, LicenceStatus
-from civix.sources.ca.vancouver_business_licences import (
+from civix.infra.sources.ca.vancouver_business_licences import (
     DEFAULT_BASE_URL,
     VancouverBusinessLicencesAdapter,
     VancouverBusinessLicencesMapper,
@@ -50,7 +50,7 @@ async def _run_pipeline() -> list[BusinessLicence]:
             )
             mapper = VancouverBusinessLicencesMapper()
             result = await run(adapter, mapper)
-            licences: list[BusinessLicence] = [mr.record async for mr in result.records]
+            licences: list[BusinessLicence] = [pr.mapped.record async for pr in result.records]
 
     return licences
 

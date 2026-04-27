@@ -1,13 +1,11 @@
 """HTTP client factory for source adapters.
 
 Adapters take an `httpx.AsyncClient` via dependency injection. This
-module provides the canonical pre-configured client civix-the-library
-recommends; CLI/notebook callers and tests can use it directly, or
-construct their own.
+module provides the pre-configured client recommended for civic data
+fetches; callers can use it directly or construct their own.
 
-The factory deliberately exposes httpx's own type. We don't wrap it in
-a custom Protocol — httpx is a stable, well-shaped dependency and a
-wrapper would only add indirection.
+The factory returns `httpx.AsyncClient` rather than a wrapper Protocol;
+httpx is stable enough to depend on directly.
 """
 
 from __future__ import annotations

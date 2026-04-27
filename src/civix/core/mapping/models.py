@@ -1,8 +1,8 @@
 """Mapping primitives.
 
-This module is the typed contract that turns observations into
+This module is the typed contract that turns raw snapshot records into
 normalized domain records. It does not contain any mapper
-implementations; those belong in `sources/`. What lives here is:
+implementations; those belong in `infra/sources/`. What lives here is:
 
 - the per-record diagnostic shape (`MappingReport`, `FieldConflict`),
 - the mapper return container (`MapResult`),
@@ -20,8 +20,8 @@ from typing import Any, Protocol, runtime_checkable
 
 from pydantic import BaseModel, ConfigDict, model_validator
 
-from civix.core.observations import RawRecord, SourceSnapshot
 from civix.core.provenance import MapperVersion
+from civix.core.snapshots import RawRecord, SourceSnapshot
 
 _FROZEN_MODEL = ConfigDict(frozen=True, extra="forbid", strict=True)
 

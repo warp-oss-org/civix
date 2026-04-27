@@ -13,19 +13,21 @@ documented in [`AGENTS.md`](AGENTS.md) and [`plans/core-idea.md`](plans/core-ide
 
 ## What works today
 
-- Typed primitives: identity, observations, quality, provenance,
+- Typed primitives: identity, snapshots, quality, provenance,
   mapping, spatial, temporal, adapters, pipeline.
 - Domain model: `BusinessLicence`.
 - Source adapter + mapper for the Vancouver Open Data Portal's
   business-licences datasets, end-to-end via `civix.core.pipeline.run`.
+- JSON snapshot exporter for normalized records, mapping reports,
+  schemas, and manifests.
 - Live opt-in test against the real Vancouver portal.
 
 ```python
 import asyncio
-from civix.core.adapters import default_http_client
 from civix.core.identity import DatasetId, Jurisdiction
 from civix.core.pipeline import run
-from civix.sources.ca.vancouver_business_licences import (
+from civix.infra.http import default_http_client
+from civix.infra.sources.ca.vancouver_business_licences import (
     VancouverBusinessLicencesAdapter,
     VancouverBusinessLicencesMapper,
 )
@@ -39,8 +41,8 @@ async def main() -> None:
             client=client,
         )
         result = await run(adapter, VancouverBusinessLicencesMapper())
-        async for mapped in result.records:
-            print(mapped.record.business_name.value)
+        async for pair in result.records:
+            print(pair.mapped.record.business_name.value)
 
 
 asyncio.run(main())
@@ -48,8 +50,8 @@ asyncio.run(main())
 
 ## Not yet implemented
 
-Drift detection, validation, JSON / Parquet export, and additional
-sources (Toronto, NYC, etc.) are next on the roadmap. See
+Drift detection, validation, Parquet export, and additional sources
+(Toronto, NYC, etc.) are next on the roadmap. See
 [`plans/core-idea.md`](plans/core-idea.md) for the full build order.
 
 ## Tooling

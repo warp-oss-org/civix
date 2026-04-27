@@ -4,23 +4,19 @@ Fetches Vancouver Open Data Portal datasets backed by OpenDataSoft v2.1.
 Three datasets are reachable through this adapter, distinguished only
 by `dataset_id`:
 
-- `business-licences` — current licences (~200k records as of 2026-04).
+- `business-licences` — current licences.
 - `business-licences-2013-to-2024` — historical, includes the
   May 6 2024 taxonomy consolidation boundary.
 - `business-licences-1997-to-2012` — older historical.
 
-Two requests per fetch:
+Each fetch makes two requests: a count probe so the snapshot can be
+built eagerly, then a streaming JSONL export so large datasets can be
+consumed without offset-based pagination.
 
-1. `/records?limit=0` — cheap, returns `total_count` so the snapshot
-   can be built eagerly before record streaming starts.
-2. `/exports/jsonl` — single streaming response, one record per line.
-   Avoids the offset-based pagination cost that would make >500k-row
-   datasets impractical.
-
-The adapter does not normalize. It populates `RawRecord.source_record_id`
-from the source's own `licencersn` field (record sequence number) and
-`source_updated_at` from the portal's `extractdate`, both of which are
-acquisition metadata, not civic semantics.
+The adapter does not normalize. It surfaces the source's own record
+identifier and extract timestamp as `RawRecord.source_record_id` and
+`source_updated_at`; everything else is left in `raw_data` for the
+mapper to interpret.
 """
 
 from __future__ import annotations
@@ -36,7 +32,7 @@ from pydantic import ValidationError
 
 from civix.core.adapters import FetchError, FetchResult
 from civix.core.identity import DatasetId, Jurisdiction, SnapshotId, SourceId
-from civix.core.observations import RawRecord, SourceSnapshot
+from civix.core.snapshots import RawRecord, SourceSnapshot
 from civix.core.temporal import Clock, utc_now
 
 DEFAULT_BASE_URL: Final[str] = "https://opendata.vancouver.ca/api/explore/v2.1/"

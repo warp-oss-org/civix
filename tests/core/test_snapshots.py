@@ -5,7 +5,7 @@ import pytest
 from pydantic import ValidationError
 
 from civix.core.identity import DatasetId, Jurisdiction, SnapshotId, SourceId
-from civix.core.observations import RawRecord, SourceSnapshot
+from civix.core.snapshots import RawRecord, SourceSnapshot
 
 
 def _snapshot(**overrides: Any) -> SourceSnapshot:
