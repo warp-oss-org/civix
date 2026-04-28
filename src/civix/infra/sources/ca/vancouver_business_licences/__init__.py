@@ -10,12 +10,20 @@ from civix.infra.sources.ca.vancouver_business_licences.mapper import (
     MAPPER_VERSION,
     VancouverBusinessLicencesMapper,
 )
+from civix.infra.sources.ca.vancouver_business_licences.schema import (
+    VANCOUVER_BUSINESS_LICENCES_SCHEMA,
+    VANCOUVER_STATUS_TAXONOMY,
+    VANCOUVER_TAXONOMIES,
+)
 
 __all__ = [
     "DEFAULT_BASE_URL",
     "MAPPER_ID",
     "MAPPER_VERSION",
     "SOURCE_ID",
+    "VANCOUVER_BUSINESS_LICENCES_SCHEMA",
+    "VANCOUVER_STATUS_TAXONOMY",
+    "VANCOUVER_TAXONOMIES",
     "VancouverBusinessLicencesAdapter",
     "VancouverBusinessLicencesMapper",
 ]

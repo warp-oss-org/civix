@@ -13,6 +13,7 @@ from typing import Any
 import pytest
 from pydantic import BaseModel, ConfigDict
 
+import civix.infra.exporters.parquet.writer as writer
 from civix.core.export import ExportManifest
 from civix.core.identity import (
     DatasetId,
@@ -164,6 +165,40 @@ class TestRecordsFile:
 
         rows = _read_parquet(tmp_path / SNAP / "records.parquet")
         assert [row["name"]["value"] for row in rows] == ["A", "B", "C"]  # type: ignore[index]
+
+    async def test_records_are_written_in_row_groups(self, tmp_path: Path) -> None:
+        result = _result(
+            [
+                _record(source_record_id="r1", name="A", score=1),
+                _record(source_record_id="r2", name="B", score=2),
+                _record(source_record_id="r3", name="C", score=3),
+                _record(source_record_id="r4", name="D", score=4),
+                _record(source_record_id="r5", name="E", score=5),
+            ]
+        )
+
+        await write_snapshot(
+            result,
+            output_dir=tmp_path,
+            record_type=_FakeRecord,
+            _row_group_size=2,
+        )
+
+        parquet_file = PQ.ParquetFile(tmp_path / SNAP / "records.parquet")
+        rows = parquet_file.read().to_pylist()
+        assert parquet_file.metadata.num_row_groups == 3
+        assert [row["name"]["value"] for row in rows] == ["A", "B", "C", "D", "E"]  # type: ignore[index]
+
+    async def test_row_group_size_must_be_positive(self, tmp_path: Path) -> None:
+        result = _result([])
+
+        with pytest.raises(ValueError, match="greater than zero"):
+            await write_snapshot(
+                result,
+                output_dir=tmp_path,
+                record_type=_FakeRecord,
+                _row_group_size=0,
+            )
 
 
 class TestReportsFile:
@@ -325,7 +360,6 @@ class TestMissingDependency:
     async def test_missing_pyarrow_has_actionable_message(
         self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
     ) -> None:
-        writer = importlib.import_module("civix.infra.exporters.parquet.writer")
         real_import_module = importlib.import_module
 
         def fake_import_module(name: str) -> Any:

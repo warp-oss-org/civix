@@ -31,6 +31,7 @@ _RECORDS_FILE = "records.parquet"
 _REPORTS_FILE = "reports.jsonl"
 _SCHEMA_FILE = "schema.json"
 _MANIFEST_FILE = "manifest.json"
+_DEFAULT_ROW_GROUP_SIZE = 10_000
 
 
 async def write_snapshot[TNorm: BaseModel](
@@ -38,9 +39,17 @@ async def write_snapshot[TNorm: BaseModel](
     *,
     output_dir: Path,
     record_type: type[TNorm],
+    _row_group_size: int = _DEFAULT_ROW_GROUP_SIZE,
 ) -> ExportManifest:
-    """Write `result` to a Parquet snapshot directory and return the manifest."""
+    """Write `result` to a Parquet snapshot directory and return the manifest.
+
+    Parquet V1 infers the Arrow schema from the first non-empty row group.
+    Deriving Arrow schemas directly from Pydantic model contracts is future
+    work; batching keeps memory bounded without taking on that compiler yet.
+    """
     pa, pq = _load_pyarrow()
+    if _row_group_size <= 0:
+        raise ValueError("_row_group_size must be greater than zero")
 
     snapshot = result.snapshot
     snapshot_dir = output_dir / snapshot.snapshot_id
@@ -52,12 +61,32 @@ async def write_snapshot[TNorm: BaseModel](
     unmapped_total = 0
     conflicts_total = 0
     mapper: MapperVersion | None = None
-    rows: list[dict[str, Any]] = []
+    record_count = 0
+    batch: list[dict[str, Any]] = []
 
     reports_path = snapshot_dir / _REPORTS_FILE
     reports_tmp = _tmp_path(reports_path)
     reports_hasher = hashlib.sha256()
     reports_bytes = 0
+
+    records_path = snapshot_dir / _RECORDS_FILE
+    records_tmp = _tmp_path(records_path)
+    parquet_writer: Any | None = None
+
+    def write_batch() -> None:
+        nonlocal parquet_writer
+
+        if not batch:
+            return
+        table = pa.Table.from_pylist(batch)
+        if parquet_writer is None:
+            writer = pq.ParquetWriter(records_tmp, table.schema)
+            parquet_writer = writer
+        else:
+            writer = parquet_writer
+            table = pa.Table.from_pylist(batch, schema=writer.schema)
+        writer.write_table(table)
+        batch.clear()
 
     with reports_tmp.open("wb") as reports_fh:
         async for paired in result.records:
@@ -72,7 +101,8 @@ async def write_snapshot[TNorm: BaseModel](
             unmapped_total += len(report.unmapped_source_fields)
             conflicts_total += len(report.conflicts)
 
-            rows.append(normalized.model_dump(mode="json"))
+            batch.append(normalized.model_dump(mode="json"))
+            record_count += 1
 
             report_line = (
                 json.dumps(
@@ -89,12 +119,16 @@ async def write_snapshot[TNorm: BaseModel](
             reports_hasher.update(report_line)
             reports_bytes += len(report_line)
 
-    reports_tmp.rename(reports_path)
+            if len(batch) >= _row_group_size:
+                write_batch()
 
-    records_path = snapshot_dir / _RECORDS_FILE
-    records_tmp = _tmp_path(records_path)
-    table = pa.Table.from_pylist(rows) if rows else pa.table({})
-    pq.write_table(table, records_tmp)
+    write_batch()
+    if parquet_writer is None:
+        pq.write_table(pa.table({}), records_tmp)
+    else:
+        parquet_writer.close()
+
+    reports_tmp.rename(reports_path)
     records_tmp.rename(records_path)
 
     manifest = ExportManifest(
@@ -103,7 +137,7 @@ async def write_snapshot[TNorm: BaseModel](
         dataset_id=snapshot.dataset_id,
         jurisdiction=snapshot.jurisdiction,
         fetched_at=snapshot.fetched_at,
-        record_count=len(rows),
+        record_count=record_count,
         mapper=mapper,
         files=(
             schema_file,
