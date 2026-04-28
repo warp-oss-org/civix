@@ -24,6 +24,9 @@ extension points.
   business-licences datasets.
 - JSON and Parquet snapshot exporters for normalized records, mapping
   reports, schemas, and manifests.
+- Schema and taxonomy drift detection with sibling `drift.json` artifact.
+- Snapshot validation with pass/fail outcome and sibling `validation.json`
+  artifact.
 - Live opt-in test against the real Vancouver portal.
 
 ## Tooling
