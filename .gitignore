@@ -7,3 +7,5 @@ build
 *.pyc
 .DS_Store
 plans/
+notebooks/out/
+notebooks/.ipynb_checkpoints/

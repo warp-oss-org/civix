@@ -10,6 +10,10 @@ traces every value back to its source.
 The current release is pre-1.0. Public contracts are usable but may
 shift; the project's purpose, layering, and engineering rules are
 documented in [`AGENTS.md`](AGENTS.md) and [`plans/core-idea.md`](plans/core-idea.md).
+The consumer API should stay narrow: application code should use stable
+facades for supported datasets and artifact outputs, while lower-level
+adapter, mapper, and pipeline primitives remain implementation and
+extension points.
 
 ## What works today
 
@@ -17,42 +21,10 @@ documented in [`AGENTS.md`](AGENTS.md) and [`plans/core-idea.md`](plans/core-ide
   mapping, spatial, temporal, adapters, pipeline.
 - Domain model: `BusinessLicence`.
 - Source adapter + mapper for the Vancouver Open Data Portal's
-  business-licences datasets, end-to-end via `civix.core.pipeline.run`.
+  business-licences datasets.
 - JSON and Parquet snapshot exporters for normalized records, mapping
   reports, schemas, and manifests.
 - Live opt-in test against the real Vancouver portal.
-
-```python
-import asyncio
-from civix.core.identity import DatasetId, Jurisdiction
-from civix.core.pipeline import run
-from civix.infra.http import default_http_client
-from civix.infra.sources.ca.vancouver_business_licences import (
-    VancouverBusinessLicencesAdapter,
-    VancouverBusinessLicencesMapper,
-)
-
-
-async def main() -> None:
-    async with default_http_client() as client:
-        adapter = VancouverBusinessLicencesAdapter(
-            dataset_id=DatasetId("business-licences"),
-            jurisdiction=Jurisdiction(country="CA", region="BC", locality="Vancouver"),
-            client=client,
-        )
-        result = await run(adapter, VancouverBusinessLicencesMapper())
-        async for pair in result.records:
-            print(pair.mapped.record.business_name.value)
-
-
-asyncio.run(main())
-```
-
-## Not yet implemented
-
-Drift detection, validation, and additional sources (Toronto, NYC, etc.)
-are next on the roadmap. See
-[`plans/core-idea.md`](plans/core-idea.md) for the full build order.
 
 ## Tooling
 
