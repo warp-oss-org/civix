@@ -24,14 +24,17 @@ class TestIdentifiers:
 class TestJurisdiction:
     def test_city_level(self) -> None:
         j = Jurisdiction(country="CA", region="BC", locality="Vancouver")
+
         assert (j.country, j.region, j.locality) == ("CA", "BC", "Vancouver")
 
     def test_region_only(self) -> None:
         j = Jurisdiction(country="CA", region="BC")
+
         assert j.locality is None
 
     def test_country_only(self) -> None:
         j = Jurisdiction(country="CA")
+
         assert j.region is None and j.locality is None
 
     def test_country_required(self) -> None:
@@ -48,5 +51,6 @@ class TestJurisdiction:
 
     def test_frozen(self) -> None:
         j = Jurisdiction(country="CA")
+
         with pytest.raises(ValidationError):
             j.country = "US"  # type: ignore[misc]

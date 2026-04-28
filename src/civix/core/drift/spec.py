@@ -38,8 +38,10 @@ class SchemaFieldSpec(BaseModel):
     def _validate(self) -> SchemaFieldSpec:
         if self.name != self.name.strip():
             raise ValueError("field spec name must not have surrounding whitespace")
+
         if not self.kinds:
             raise ValueError("field spec kinds must not be empty")
+
         if len(set(self.kinds)) != len(self.kinds):
             raise ValueError("field spec kinds must be unique")
 
@@ -59,9 +61,12 @@ class SourceSchemaSpec(BaseModel):
     def _validate(self) -> SourceSchemaSpec:
         if self.spec_id != self.spec_id.strip():
             raise ValueError("spec_id must not have surrounding whitespace")
+
         if self.version != self.version.strip():
             raise ValueError("version must not have surrounding whitespace")
+
         field_names = [field.name for field in self.fields]
+
         if len(set(field_names)) != len(field_names):
             raise ValueError("source schema field names must be unique")
 
@@ -102,6 +107,7 @@ class TaxonomySpec(BaseModel):
                 raise ValueError(f"{label} must not have surrounding whitespace")
 
         overlap = self.known_values & self.retired_values
+
         if overlap:
             raise ValueError(
                 f"known_values and retired_values must not overlap; both contain: {sorted(overlap)}"

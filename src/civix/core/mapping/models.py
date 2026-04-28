@@ -51,12 +51,14 @@ class FieldConflict(BaseModel):
     def _check_field_name(self) -> None:
         if not self.field_name:
             raise ValueError("field_name must be non-empty")
+
         if self.field_name != self.field_name.strip():
             raise ValueError(f"field_name {self.field_name!r} has surrounding whitespace")
 
     def _check_cardinality(self) -> None:
         if len(self.candidates) < 2:
             raise ValueError("FieldConflict requires at least two candidates")
+
         if len(self.source_fields) < 2:
             raise ValueError("FieldConflict requires at least two source fields")
 
@@ -64,6 +66,7 @@ class FieldConflict(BaseModel):
         for name in self.source_fields:
             if not name:
                 raise ValueError("source_fields entries must be non-empty")
+
             if name != name.strip():
                 raise ValueError(f"source_fields entry {name!r} has surrounding whitespace")
 
@@ -88,6 +91,7 @@ class MappingReport(BaseModel):
         for name in self.unmapped_source_fields:
             if not name:
                 raise ValueError("unmapped_source_fields entries must be non-empty")
+
             if name != name.strip():
                 raise ValueError(
                     f"unmapped_source_fields entry {name!r} has surrounding whitespace"

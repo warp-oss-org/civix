@@ -25,6 +25,7 @@ def _snapshot(**overrides: Any) -> SourceSnapshot:
 class TestSourceSnapshot:
     def test_minimum_fields(self) -> None:
         s = _snapshot()
+
         assert s.source_url is None
         assert s.fetch_params is None
         assert s.content_hash is None
@@ -35,6 +36,7 @@ class TestSourceSnapshot:
             fetch_params={"dataset": "business-licences", "rows": "100"},
             content_hash="sha256:deadbeef",
         )
+
         assert s.source_url is not None
         assert s.fetch_params == {"dataset": "business-licences", "rows": "100"}
         assert s.content_hash == "sha256:deadbeef"
@@ -45,6 +47,7 @@ class TestSourceSnapshot:
 
     def test_non_utc_datetime_rejected(self) -> None:
         eastern = timezone(timedelta(hours=-5))
+
         with pytest.raises(ValidationError, match="UTC"):
             _snapshot(fetched_at=datetime(2026, 4, 24, 12, 0, tzinfo=eastern))
 
@@ -58,6 +61,7 @@ class TestSourceSnapshot:
 
     def test_frozen(self) -> None:
         s = _snapshot()
+
         with pytest.raises(ValidationError):
             s.record_count = 10  # type: ignore[misc]
 
@@ -68,6 +72,7 @@ class TestRawRecord:
             snapshot_id=SnapshotId("snap-1"),
             raw_data={"businessname": "Joe's Cafe", "status": "Issued"},
         )
+
         assert r.source_record_id is None
         assert r.source_updated_at is None
         assert r.record_hash is None
@@ -76,6 +81,7 @@ class TestRawRecord:
     def test_back_reference_to_snapshot(self) -> None:
         snap = _snapshot()
         r = RawRecord(snapshot_id=snap.snapshot_id, raw_data={})
+
         assert r.snapshot_id == snap.snapshot_id
 
     def test_naive_source_updated_at_rejected(self) -> None:
@@ -96,6 +102,7 @@ class TestRawRecord:
 
     def test_frozen(self) -> None:
         r = RawRecord(snapshot_id=SnapshotId("snap-1"), raw_data={"a": 1})
+
         with pytest.raises(ValidationError):
             r.source_record_id = "x"  # type: ignore[misc]
 
@@ -106,4 +113,5 @@ class TestRawRecord:
             "issued": "2024-05-06",
         }
         r = RawRecord(snapshot_id=SnapshotId("snap-1"), raw_data=payload)
+
         assert r.raw_data == payload

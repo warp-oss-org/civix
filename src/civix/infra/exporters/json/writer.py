@@ -168,6 +168,7 @@ def _extract_mapper(record: BaseModel) -> MapperVersion | None:
 
     if provenance is None:
         return None
+
     mapper = getattr(provenance, "mapper", None)
 
     return mapper if isinstance(mapper, MapperVersion) else None

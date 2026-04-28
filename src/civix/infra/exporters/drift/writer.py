@@ -49,8 +49,10 @@ def write_drift(
 
     snapshot_dir.mkdir(parents=True, exist_ok=True)
     payload: dict[str, Any] = {}
+
     if schema is not None:
         payload["schema"] = schema.model_dump(mode="json")
+
     if taxonomy is not None:
         payload["taxonomy"] = taxonomy.model_dump(mode="json")
 

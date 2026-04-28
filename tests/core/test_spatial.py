@@ -7,6 +7,7 @@ from civix.core.spatial import Address, Coordinate
 class TestCoordinate:
     def test_typical_vancouver_point(self) -> None:
         c = Coordinate(latitude=49.2827, longitude=-123.1207)
+
         assert c.latitude == 49.2827
         assert c.longitude == -123.1207
 
@@ -33,6 +34,7 @@ class TestCoordinate:
 
     def test_frozen(self) -> None:
         c = Coordinate(latitude=49.0, longitude=-123.0)
+
         with pytest.raises(ValidationError):
             c.latitude = 50.0  # type: ignore[misc]
 
@@ -50,11 +52,13 @@ class TestAddress:
             street="123 W Pender St",
             postal_code="V6B 1A1",
         )
+
         assert a.country == "CA"
         assert a.street == "123 W Pender St"
 
     def test_country_only(self) -> None:
         a = Address(country="CA")
+
         assert a.region is None
         assert a.locality is None
         assert a.street is None
@@ -74,6 +78,7 @@ class TestAddress:
 
     def test_frozen(self) -> None:
         a = Address(country="CA")
+
         with pytest.raises(ValidationError):
             a.country = "US"  # type: ignore[misc]
 

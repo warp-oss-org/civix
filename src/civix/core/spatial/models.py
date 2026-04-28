@@ -54,6 +54,7 @@ class Address(BaseModel):
     def _no_surrounding_whitespace(cls, value: str | None) -> str | None:
         if value is None:
             return None
+
         if value != value.strip():
             raise ValueError("address parts must not have surrounding whitespace")
 

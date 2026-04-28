@@ -128,6 +128,7 @@ class TestTaxonomyObserver:
 
         assert len(unrecognized) == 1
         finding = unrecognized[0]
+
         assert finding.observed_value == "surrendered"
         assert finding.count == 2
         assert finding.severity is DriftSeverity.ERROR

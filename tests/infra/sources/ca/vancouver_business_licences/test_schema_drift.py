@@ -69,6 +69,7 @@ class TestVancouverSchemaDrift:
 
         assert len(report.findings) == 1
         finding = report.findings[0]
+
         assert finding.kind is SchemaDriftKind.UNEXPECTED_FIELD
         assert finding.severity is DriftSeverity.WARNING
         assert finding.field_name == "new_portal_field"
@@ -82,6 +83,7 @@ class TestVancouverSchemaDrift:
 
         assert len(report.findings) == 1
         finding = report.findings[0]
+
         assert finding.kind is SchemaDriftKind.MISSING_FIELD
         assert finding.severity is DriftSeverity.ERROR
         assert finding.field_name == "businessname"

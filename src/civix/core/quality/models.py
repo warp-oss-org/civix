@@ -81,20 +81,26 @@ class MappedField[T](BaseModel):
 
     def _check_value_presence(self) -> None:
         q = self.quality
+
         if q in _VALUE_REQUIRED and self.value is None:
             raise ValueError(f"quality={q.value!r} requires a value")
+
         if q in _VALUE_FORBIDDEN and self.value is not None:
             raise ValueError(f"quality={q.value!r} forbids a value")
 
     def _check_source_fields_count(self) -> None:
         q = self.quality
         n = len(self.source_fields)
+
         if q is FieldQuality.UNMAPPED:
             if n != 0:
                 raise ValueError("quality='unmapped' requires source_fields to be empty")
+
             return
+
         if n == 0:
             raise ValueError(f"quality={q.value!r} requires at least one source field")
+
         if q is FieldQuality.CONFLICTED and n < 2:
             raise ValueError("quality='conflicted' requires at least two source fields")
 
@@ -102,5 +108,6 @@ class MappedField[T](BaseModel):
         for name in self.source_fields:
             if not name:
                 raise ValueError("source_fields entries must be non-empty")
+
             if name != name.strip():
                 raise ValueError(f"source_fields entry {name!r} has surrounding whitespace")

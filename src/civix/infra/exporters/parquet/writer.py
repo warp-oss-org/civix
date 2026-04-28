@@ -48,6 +48,7 @@ async def write_snapshot[TNorm: BaseModel](
     work; batching keeps memory bounded without taking on that compiler yet.
     """
     pa, pq = _load_pyarrow()
+
     if _row_group_size <= 0:
         raise ValueError("_row_group_size must be greater than zero")
 
@@ -78,13 +79,16 @@ async def write_snapshot[TNorm: BaseModel](
 
         if not batch:
             return
+
         table = pa.Table.from_pylist(batch)
+
         if parquet_writer is None:
             writer = pq.ParquetWriter(records_tmp, table.schema)
             parquet_writer = writer
         else:
             writer = parquet_writer
             table = pa.Table.from_pylist(batch, schema=writer.schema)
+
         writer.write_table(table)
         batch.clear()
 
@@ -123,6 +127,7 @@ async def write_snapshot[TNorm: BaseModel](
                 write_batch()
 
     write_batch()
+
     if parquet_writer is None:
         pq.write_table(pa.table({}), records_tmp)
     else:
@@ -202,6 +207,7 @@ def _extract_mapper(record: BaseModel) -> MapperVersion | None:
 
     if provenance is None:
         return None
+
     mapper = getattr(provenance, "mapper", None)
 
     return mapper if isinstance(mapper, MapperVersion) else None

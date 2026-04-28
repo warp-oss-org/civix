@@ -168,6 +168,7 @@ class SchemaObservationAccumulator:
 
     def _field_builder_for(self, field_name: str) -> _ObservedFieldBuilder:
         field_builder = self._field_builders.get(field_name)
+
         if field_builder is not None:
             return field_builder
 
@@ -191,6 +192,7 @@ class SchemaObservationAccumulator:
             return
 
         kind = _json_kind(value)
+
         if kind is None:
             field_builder.mark_unsupported(type(value).__name__, source_record_id)
             return
@@ -286,10 +288,12 @@ class TaxonomyObservationAccumulator:
 
     def _observe_spec(self, record: RawRecord, spec: TaxonomySpec) -> None:
         raw_value = record.raw_data.get(spec.source_field)
+
         if not isinstance(raw_value, str):
             return
 
         normalized_value = _normalize_taxonomy_value(raw_value, spec.normalization)
+
         if not normalized_value:
             return
 
@@ -303,6 +307,7 @@ class TaxonomyObservationAccumulator:
     ) -> _ObservedTaxonomyValueBuilder:
         taxonomy_builders = self._value_builders[taxonomy_id]
         value_builder = taxonomy_builders.get(normalized_value)
+
         if value_builder is not None:
             return value_builder
 

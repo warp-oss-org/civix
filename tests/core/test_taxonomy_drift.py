@@ -96,6 +96,7 @@ class TestAnalyzeTaxonomy:
 
         assert len(report.findings) == 1
         finding = report.findings[0]
+
         assert finding.kind is TaxonomyDriftKind.UNRECOGNIZED_VALUE
         assert finding.severity is DriftSeverity.ERROR
         assert finding.observed_value == "surrendered"

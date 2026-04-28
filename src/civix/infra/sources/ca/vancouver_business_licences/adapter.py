@@ -49,10 +49,12 @@ def _parse_extract_date(value: object) -> datetime | None:
     """
     if not isinstance(value, str) or not value:
         return None
+
     try:
         parsed = datetime.fromisoformat(value)
     except ValueError:
         return None
+
     if parsed.tzinfo is None:
         return None
 
@@ -90,6 +92,7 @@ class VancouverBusinessLicencesAdapter:
 
     async def _fetch_total_count(self) -> int:
         url = self._records_url()
+
         try:
             response = await self.client.get(url, params={"limit": 0})
             response.raise_for_status()
@@ -116,7 +119,9 @@ class VancouverBusinessLicencesAdapter:
                 dataset_id=self.dataset_id,
                 operation="count",
             )
+
         total_count = cast(dict[str, Any], payload).get("total_count")
+
         if not isinstance(total_count, int) or total_count < 0:
             raise FetchError(
                 f"missing or invalid total_count in response from {url}",
@@ -129,12 +134,14 @@ class VancouverBusinessLicencesAdapter:
 
     async def _stream_records(self, *, snapshot_id: SnapshotId) -> AsyncIterable[RawRecord]:
         url = self._exports_url()
+
         try:
             async with self.client.stream("GET", url) as response:
                 response.raise_for_status()
                 async for line in response.aiter_lines():
                     if not line:
                         continue
+
                     yield self._build_record(snapshot_id=snapshot_id, line=line)
         except httpx.HTTPError as e:
             raise FetchError(

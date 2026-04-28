@@ -78,6 +78,7 @@ class TestAnalyzeSchema:
 
         assert len(report.findings) == 1
         finding = report.findings[0]
+
         assert finding.kind is SchemaDriftKind.UNEXPECTED_FIELD
         assert finding.severity is DriftSeverity.WARNING
         assert finding.field_name == "new_field"
@@ -97,6 +98,7 @@ class TestAnalyzeSchema:
 
         assert len(report.findings) == 1
         finding = report.findings[0]
+
         assert finding.kind is SchemaDriftKind.MISSING_FIELD
         assert finding.severity is DriftSeverity.ERROR
         assert finding.field_name == "status"
@@ -116,6 +118,7 @@ class TestAnalyzeSchema:
 
         assert len(report.findings) == 1
         finding = report.findings[0]
+
         assert finding.kind is SchemaDriftKind.TYPE_MISMATCH
         assert finding.severity is DriftSeverity.ERROR
         assert finding.field_name == "status"
@@ -136,6 +139,7 @@ class TestAnalyzeSchema:
 
         assert len(report.findings) == 1
         finding = report.findings[0]
+
         assert finding.kind is SchemaDriftKind.NULLABILITY_MISMATCH
         assert finding.severity is DriftSeverity.ERROR
         assert finding.field_name == "name"
@@ -151,6 +155,7 @@ class TestAnalyzeSchema:
 
         assert len(report.findings) == 1
         finding = report.findings[0]
+
         assert finding.field_name == "extra"
         assert finding.count == 6
         assert finding.sample_source_record_ids == ("r1", "r2", "r3", "r4", "r5")

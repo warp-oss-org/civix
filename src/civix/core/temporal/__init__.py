@@ -35,4 +35,5 @@ def require_utc(value: datetime) -> datetime:
     """
     if value.tzinfo is None or value.utcoffset() != UTC.utcoffset(value):
         raise ValueError("datetime must be timezone-aware and in UTC")
+
     return value

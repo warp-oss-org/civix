@@ -114,6 +114,7 @@ def _check_identity(
         jurisdiction=report.jurisdiction,
         fetched_at=report.fetched_at,
     )
+
     if expected == actual:
         return True
 

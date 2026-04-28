@@ -36,7 +36,7 @@ When tradeoffs exist, prioritize in this order:
 - Make side effects explicit. Network calls, filesystem writes, clocks, randomness, and environment access should be isolated at boundaries.
 - Fix root causes, not symptoms. Avoid broad fallback behavior that hides broken mapping, bad data, or schema drift.
 - Use intention-revealing names. Prefer clear structure over explanatory comments.
-- Group related logic inside functions with blank lines when it improves scanability, especially in core logic and tests. Separate setup, transformation, validation, and return/assert blocks when doing so lowers cognitive overhead. Do not force extra spacing into tiny one-step functions where it adds noise.
+- Group related logic inside functions with blank lines when it improves scanability, especially in core logic and tests. Separate setup, transformation, validation branches, side-effect groups, and return/assert blocks when doing so lowers cognitive overhead. Adjacent `if`/`try`/loop blocks that enforce different rules should usually have a blank line between them; compact one-step guards can stay tight when a blank line would add noise.
 - Do not introduce unrelated refactors or churn. Keep changes scoped to the behavior being added or fixed.
 - Verify current external facts before treating them as current, stable, or recommended, especially open-data portals, API schemas, package tooling, and standards.
 

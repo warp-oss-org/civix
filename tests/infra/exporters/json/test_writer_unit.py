@@ -118,6 +118,7 @@ class TestDirectoryLayout:
         await write_snapshot(result, output_dir=tmp_path, record_type=_FakeRecord)
 
         snap_dir = tmp_path / SNAP
+
         assert {p.name for p in snap_dir.iterdir()} == {
             "records.jsonl",
             "reports.jsonl",
@@ -131,6 +132,7 @@ class TestDirectoryLayout:
         await write_snapshot(result, output_dir=tmp_path, record_type=_FakeRecord)
 
         snap_dir = tmp_path / SNAP
+
         assert not list(snap_dir.glob("*.tmp"))
 
     async def test_creates_parent_directories(self, tmp_path: Path) -> None:
@@ -156,6 +158,7 @@ class TestRecordsFile:
 
         lines = _read_jsonl(tmp_path / SNAP / "records.jsonl")
         names = [line["name"]["value"] for line in lines]  # type: ignore[index]
+
         assert names == ["A", "B", "C"]
 
     async def test_records_round_trip_through_record_type(self, tmp_path: Path) -> None:
@@ -169,6 +172,7 @@ class TestRecordsFile:
 
         lines = (tmp_path / SNAP / "records.jsonl").read_text().splitlines()
         loaded = [_FakeRecord.model_validate_json(line) for line in lines]
+
         assert loaded == [pair.mapped.record for pair in original]
 
 
@@ -183,6 +187,7 @@ class TestReportsFile:
         await write_snapshot(result, output_dir=tmp_path, record_type=_FakeRecord)
 
         lines = _read_jsonl(tmp_path / SNAP / "reports.jsonl")
+
         assert [line["source_record_id"] for line in lines] == ["r1", "r2"]
         assert all(set(line) == {"source_record_id", "report"} for line in lines)
 
@@ -220,6 +225,7 @@ class TestReportsFile:
 
         line = _read_jsonl(tmp_path / SNAP / "reports.jsonl")[0]
         round_tripped = MappingReport.model_validate_json(json.dumps(line["report"]))
+
         assert round_tripped == report
 
 
@@ -230,6 +236,7 @@ class TestSchemaFile:
         await write_snapshot(result, output_dir=tmp_path, record_type=_FakeRecord)
 
         on_disk = json.loads((tmp_path / SNAP / "schema.json").read_text())
+
         assert on_disk == _FakeRecord.model_json_schema()
 
 
@@ -247,6 +254,7 @@ class TestManifest:
         on_disk = ExportManifest.model_validate_json(
             (tmp_path / SNAP / "manifest.json").read_text()
         )
+
         assert returned == on_disk
 
     async def test_manifest_carries_snapshot_metadata_and_mapper(self, tmp_path: Path) -> None:
@@ -271,6 +279,7 @@ class TestManifest:
 
         snap_dir = tmp_path / SNAP
         index = {f.filename: f for f in manifest.files}
+
         assert set(index) == {"records.jsonl", "reports.jsonl", "schema.json"}
         for filename, entry in index.items():
             on_disk = (snap_dir / filename).read_bytes()
@@ -339,6 +348,7 @@ class TestEmptyDataset:
         manifest = await write_snapshot(result, output_dir=tmp_path, record_type=_FakeRecord)
 
         snap_dir = tmp_path / SNAP
+
         assert (snap_dir / "records.jsonl").read_text() == ""
         assert (snap_dir / "reports.jsonl").read_text() == ""
         assert manifest.record_count == 0
@@ -356,4 +366,5 @@ class TestEmptyDataset:
         await write_snapshot(result, output_dir=tmp_path, record_type=_FakeRecord)
 
         on_disk = json.loads((tmp_path / SNAP / "schema.json").read_text())
+
         assert on_disk == _FakeRecord.model_json_schema()

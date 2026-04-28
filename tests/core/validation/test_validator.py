@@ -159,6 +159,7 @@ class TestSchemaDrift:
 
         assert report.outcome is ValidationOutcome.FAIL
         sources = {f.source for f in report.findings}
+
         assert "schema_drift" in sources
 
     def test_warning_finding_does_not_fail_validation(self) -> None:
@@ -177,6 +178,7 @@ class TestSchemaDrift:
         )
 
         schema_findings = [f for f in report.findings if f.source == "schema_drift"]
+
         assert schema_findings[0].detail_ref == "businessname"
 
 
@@ -206,6 +208,7 @@ class TestTaxonomyDrift:
         )
 
         tax_findings = [f for f in report.findings if f.source == "taxonomy_drift"]
+
         assert tax_findings[0].detail_ref == "vancouver-business-licence-status"
 
 
@@ -215,6 +218,7 @@ class TestMappingCoverage:
 
         assert report.outcome is ValidationOutcome.FAIL
         finding = next(f for f in report.findings if f.detail_ref == "unmapped")
+
         assert finding.severity is DriftSeverity.ERROR
 
     def test_conflicted_quality_count_fails(self) -> None:
@@ -228,6 +232,7 @@ class TestMappingCoverage:
 
         assert report.outcome is ValidationOutcome.PASS
         finding = next(f for f in report.findings if f.detail_ref == "inferred")
+
         assert finding.severity is DriftSeverity.WARNING
 
     def test_unmapped_source_fields_total_fails(self) -> None:
@@ -260,6 +265,7 @@ class TestRecordCount:
 
         assert report.outcome is ValidationOutcome.FAIL
         finding = next(f for f in report.findings if f.source == "record_count")
+
         assert finding.detail_ref == "schema_drift"
 
     def test_taxonomy_count_mismatch_fails(self) -> None:
@@ -270,6 +276,7 @@ class TestRecordCount:
 
         assert report.outcome is ValidationOutcome.FAIL
         finding = next(f for f in report.findings if f.source == "record_count")
+
         assert finding.detail_ref == "taxonomy_drift"
 
     def test_matching_counts_emit_no_record_count_findings(self) -> None:
@@ -291,6 +298,7 @@ class TestInputIdentityMismatch:
 
         assert report.outcome is ValidationOutcome.FAIL
         finding = next(f for f in report.findings if f.source == "input_identity")
+
         assert finding.detail_ref == "schema_drift"
 
     def test_mismatched_schema_findings_are_skipped(self) -> None:

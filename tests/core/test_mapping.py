@@ -23,6 +23,7 @@ class TestFieldConflict:
             candidates=("Issued", "Active"),
             source_fields=("status", "status_legacy"),
         )
+
         assert c.field_name == "status"
         assert c.candidates == ("Issued", "Active")
 
@@ -72,6 +73,7 @@ class TestFieldConflict:
             candidates=("yes", 1, None),
             source_fields=("a", "b", "c"),
         )
+
         assert c.candidates == ("yes", 1, None)
 
     def test_frozen(self) -> None:
@@ -80,6 +82,7 @@ class TestFieldConflict:
             candidates=("a", "b"),
             source_fields=("x", "y"),
         )
+
         with pytest.raises(ValidationError):
             c.field_name = "other"  # type: ignore[misc]
 
@@ -87,11 +90,13 @@ class TestFieldConflict:
 class TestMappingReport:
     def test_defaults_are_empty(self) -> None:
         r = MappingReport()
+
         assert r.unmapped_source_fields == ()
         assert r.conflicts == ()
 
     def test_with_unmapped_source_fields(self) -> None:
         r = MappingReport(unmapped_source_fields=("internal_id", "raw_blob"))
+
         assert r.unmapped_source_fields == ("internal_id", "raw_blob")
 
     def test_with_conflicts(self) -> None:
@@ -101,6 +106,7 @@ class TestMappingReport:
             source_fields=("status", "status_legacy"),
         )
         r = MappingReport(conflicts=(conflict,))
+
         assert r.conflicts == (conflict,)
 
     def test_unmapped_source_fields_whitespace_rejected(self) -> None:
@@ -117,6 +123,7 @@ class TestMappingReport:
 
     def test_frozen(self) -> None:
         r = MappingReport()
+
         with pytest.raises(ValidationError):
             r.unmapped_source_fields = ("x",)  # type: ignore[misc]
 
@@ -184,6 +191,7 @@ class TestMapResult:
             )
         )
         result = mapper(raw, snap)
+
         assert result.record.name.value == "Joe's Cafe"
         assert result.record.provenance.source_record_id == "abc-1"
         assert result.report.unmapped_source_fields == ()
@@ -193,6 +201,7 @@ class TestMapResult:
         raw = RawRecord(snapshot_id=snap.snapshot_id, raw_data={"name": "X"})
         mapper = _FakeMapper(MapperVersion(mapper_id=MapperId("m"), version="0.1.0"))
         result = mapper(raw, snap)
+
         with pytest.raises(ValidationError):
             result.report = MappingReport()  # type: ignore[misc]
 
@@ -200,6 +209,7 @@ class TestMapResult:
 class TestMapperProtocol:
     def test_fake_mapper_satisfies_protocol_at_runtime(self) -> None:
         mapper = _FakeMapper(MapperVersion(mapper_id=MapperId("m"), version="0.1.0"))
+
         assert isinstance(mapper, Mapper)
 
     def test_object_missing_methods_does_not_satisfy_protocol(self) -> None:

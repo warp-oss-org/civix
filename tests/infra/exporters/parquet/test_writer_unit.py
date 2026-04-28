@@ -124,6 +124,7 @@ class TestDirectoryLayout:
         await write_snapshot(result, output_dir=tmp_path, record_type=_FakeRecord)
 
         snap_dir = tmp_path / SNAP
+
         assert {p.name for p in snap_dir.iterdir()} == {
             "records.parquet",
             "reports.jsonl",
@@ -150,6 +151,7 @@ class TestRecordsFile:
         await write_snapshot(result, output_dir=tmp_path, record_type=_FakeRecord)
 
         rows = _read_parquet(tmp_path / SNAP / "records.parquet")
+
         assert rows == [pair.mapped.record.model_dump(mode="json") for pair in original]
 
     async def test_one_row_per_record_in_pipeline_order(self, tmp_path: Path) -> None:
@@ -164,6 +166,7 @@ class TestRecordsFile:
         await write_snapshot(result, output_dir=tmp_path, record_type=_FakeRecord)
 
         rows = _read_parquet(tmp_path / SNAP / "records.parquet")
+
         assert [row["name"]["value"] for row in rows] == ["A", "B", "C"]  # type: ignore[index]
 
     async def test_records_are_written_in_row_groups(self, tmp_path: Path) -> None:
@@ -186,6 +189,7 @@ class TestRecordsFile:
 
         parquet_file = PQ.ParquetFile(tmp_path / SNAP / "records.parquet")
         rows = parquet_file.read().to_pylist()
+
         assert parquet_file.metadata.num_row_groups == 3
         assert [row["name"]["value"] for row in rows] == ["A", "B", "C", "D", "E"]  # type: ignore[index]
 
@@ -212,6 +216,7 @@ class TestReportsFile:
         await write_snapshot(result, output_dir=tmp_path, record_type=_FakeRecord)
 
         lines = _read_jsonl(tmp_path / SNAP / "reports.jsonl")
+
         assert [line["source_record_id"] for line in lines] == ["r1", "r2"]
         assert all(set(line) == {"source_record_id", "report"} for line in lines)
 
@@ -248,6 +253,7 @@ class TestReportsFile:
 
         line = _read_jsonl(tmp_path / SNAP / "reports.jsonl")[0]
         round_tripped = MappingReport.model_validate_json(json.dumps(line["report"]))
+
         assert round_tripped == report
 
 
@@ -265,6 +271,7 @@ class TestManifest:
         on_disk = ExportManifest.model_validate_json(
             (tmp_path / SNAP / "manifest.json").read_text()
         )
+
         assert returned == on_disk
 
     async def test_file_index_includes_three_data_files_with_correct_hashes(
@@ -276,6 +283,7 @@ class TestManifest:
 
         snap_dir = tmp_path / SNAP
         index = {f.filename: f for f in manifest.files}
+
         assert set(index) == {"records.parquet", "reports.jsonl", "schema.json"}
         for filename, entry in index.items():
             on_disk = (snap_dir / filename).read_bytes()

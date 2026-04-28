@@ -127,6 +127,7 @@ class TestAttachObservers:
         obs = _RecordingObserver()
 
         wrapped = attach_observers(result, [obs])
+
         async for pair in wrapped.records:
             if pair.raw.source_record_id == "r2":
                 break

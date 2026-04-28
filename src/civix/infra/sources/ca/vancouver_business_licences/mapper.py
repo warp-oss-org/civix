@@ -115,6 +115,7 @@ class VancouverBusinessLicencesMapper:
 
 def _map_business_name(raw: Mapping[str, Any]) -> MappedField[str]:
     value = raw.get("businessname")
+
     if value is None or value == "":
         return MappedField[str](
             value=None,
@@ -138,6 +139,7 @@ def _map_business_name(raw: Mapping[str, Any]) -> MappedField[str]:
 
 def _map_licence_number(raw: Mapping[str, Any]) -> MappedField[str]:
     value = raw.get("licencenumber")
+
     if not value:
         return MappedField[str](
             value=None,
@@ -218,6 +220,7 @@ def _map_category(raw: Mapping[str, Any]) -> MappedField[CategoryRef]:
 def _map_issued_at(raw: Mapping[str, Any]) -> MappedField[date]:
     value = raw.get("issueddate")
     parsed = _parse_local_date_from_iso_datetime(value)
+
     if parsed is None:
         return MappedField[date](
             value=None,
@@ -234,12 +237,14 @@ def _map_issued_at(raw: Mapping[str, Any]) -> MappedField[date]:
 
 def _map_expires_at(raw: Mapping[str, Any]) -> MappedField[date]:
     value = raw.get("expireddate")
+
     if not isinstance(value, str) or not value:
         return MappedField[date](
             value=None,
             quality=FieldQuality.NOT_PROVIDED,
             source_fields=("expireddate",),
         )
+
     try:
         parsed = date.fromisoformat(value)
     except ValueError:
@@ -299,6 +304,7 @@ def _map_address(raw: Mapping[str, Any]) -> MappedField[Address]:
 
 def _map_coordinate(raw: Mapping[str, Any]) -> MappedField[Coordinate]:
     value = raw.get("geo_point_2d")
+
     if not isinstance(value, dict):
         return MappedField[Coordinate](
             value=None,
@@ -337,6 +343,7 @@ def _map_coordinate(raw: Mapping[str, Any]) -> MappedField[Coordinate]:
 
 def _map_neighbourhood(raw: Mapping[str, Any]) -> MappedField[str]:
     value = _str_or_none(raw.get("localarea"))
+
     if value is None:
         return MappedField[str](
             value=None,
@@ -360,10 +367,13 @@ def _unmapped_source_fields(raw: Mapping[str, Any], licence: BusinessLicence) ->
     source field, no separate constant needs updating.
     """
     consumed: set[str] = set()
+
     for field_name in licence.__class__.model_fields:
         attr = getattr(licence, field_name)
+
         if isinstance(attr, MappedField):
             consumed.update(attr.source_fields)
+
     consumed |= ADAPTER_CONSUMED_FIELDS
 
     return tuple(sorted(name for name in raw if name not in consumed))
@@ -373,6 +383,7 @@ def _str_or_none(value: object) -> str | None:
     """Coerce a possibly-None value to a non-empty trimmed string, or None."""
     if value is None:
         return None
+
     s = str(value).strip()
 
     return s if s else None
@@ -388,7 +399,9 @@ def _assemble_street(
     """Combine house, street, and unit into one address line, or None."""
     if not house and not street:
         return None
+
     base = " ".join(p for p in (house, street) if p)
+
     if unit:
         unit_label = unittype if unittype else "Unit"
         return f"{base} {unit_label} {unit}"
@@ -405,10 +418,12 @@ def _parse_local_date_from_iso_datetime(value: object) -> date | None:
     """
     if not isinstance(value, str) or not value:
         return None
+
     try:
         parsed = datetime.fromisoformat(value)
     except ValueError:
         return None
+
     if parsed.tzinfo is None:
         parsed = parsed.replace(tzinfo=UTC)
 

@@ -64,6 +64,7 @@ class TestMappedFieldValueRules:
             quality=FieldQuality.CONFLICTED,
             source_fields=("a", "b"),
         )
+
         assert f.value == "picked"
 
     def test_conflicted_without_value_allowed(self) -> None:
@@ -72,6 +73,7 @@ class TestMappedFieldValueRules:
             quality=FieldQuality.CONFLICTED,
             source_fields=("a", "b"),
         )
+
         assert f.value is None
 
 
@@ -82,6 +84,7 @@ class TestMappedFieldSourceFieldRules:
 
     def test_unmapped_with_empty_source_fields_ok(self) -> None:
         f = MappedField[str](value=None, quality=FieldQuality.UNMAPPED, source_fields=())
+
         assert f.source_fields == ()
 
     def test_non_unmapped_requires_at_least_one_source_field(self) -> None:
@@ -110,10 +113,12 @@ class TestMappedFieldGenerics:
         f = MappedField[str](
             value="Joe's Cafe", quality=FieldQuality.DIRECT, source_fields=("name",)
         )
+
         assert f.value == "Joe's Cafe"
 
     def test_int_value(self) -> None:
         f = MappedField[int](value=42, quality=FieldQuality.DIRECT, source_fields=("count",))
+
         assert f.value == 42
 
     def test_date_value(self) -> None:
@@ -122,6 +127,7 @@ class TestMappedFieldGenerics:
             quality=FieldQuality.STANDARDIZED,
             source_fields=("issued",),
         )
+
         assert f.value == date(2024, 5, 6)
 
     def test_enum_value(self) -> None:
@@ -130,6 +136,7 @@ class TestMappedFieldGenerics:
             quality=FieldQuality.STANDARDIZED,
             source_fields=("status",),
         )
+
         assert f.value is _Status.ISSUED
 
     def test_use_site_in_a_record_validates_inner_type(self) -> None:
@@ -152,6 +159,7 @@ class TestMappedFieldGenerics:
 class TestMappedFieldFrozen:
     def test_frozen(self) -> None:
         f = MappedField[str](value="x", quality=FieldQuality.DIRECT, source_fields=("a",))
+
         with pytest.raises(ValidationError):
             f.value = "y"  # type: ignore[misc]
 

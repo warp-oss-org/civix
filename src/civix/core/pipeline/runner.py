@@ -57,6 +57,7 @@ async def run[TNorm](
 
     async def _paired() -> AsyncIterable[PipelineRecord[TNorm]]:
         snapshot = fetch_result.snapshot
+
         async for raw in fetch_result.records:
             yield PipelineRecord(raw=raw, mapped=mapper(raw, snapshot))
 

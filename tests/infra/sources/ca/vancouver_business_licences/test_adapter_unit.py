@@ -85,6 +85,7 @@ class TestFetchHappyPath:
                 '{"licencersn":"3","businessname":"C"}',
             ]
         )
+
         async with respx.mock(assert_all_called=True) as respx_mock:
             respx_mock.get(RECORDS_URL).mock(
                 return_value=httpx.Response(200, json={"total_count": 3, "results": []})
@@ -99,6 +100,7 @@ class TestFetchHappyPath:
 
     async def test_source_record_id_extracted_from_licencersn(self) -> None:
         body = '{"licencersn":"abc-123","businessname":"X"}'
+
         async with respx.mock(assert_all_called=True) as respx_mock:
             respx_mock.get(RECORDS_URL).mock(
                 return_value=httpx.Response(200, json={"total_count": 1, "results": []})
@@ -113,6 +115,7 @@ class TestFetchHappyPath:
 
     async def test_source_record_id_is_none_when_licencersn_missing(self) -> None:
         body = '{"businessname":"X"}'
+
         async with respx.mock(assert_all_called=True) as respx_mock:
             respx_mock.get(RECORDS_URL).mock(
                 return_value=httpx.Response(200, json={"total_count": 1, "results": []})
@@ -127,6 +130,7 @@ class TestFetchHappyPath:
 
     async def test_extract_date_parsed_to_utc_source_updated_at(self) -> None:
         body = '{"licencersn":"1","extractdate":"2026-04-25T00:00:00+00:00"}'
+
         async with respx.mock(assert_all_called=True) as respx_mock:
             respx_mock.get(RECORDS_URL).mock(
                 return_value=httpx.Response(200, json={"total_count": 1, "results": []})
@@ -141,6 +145,7 @@ class TestFetchHappyPath:
 
     async def test_unparseable_extract_date_becomes_none(self) -> None:
         body = '{"licencersn":"1","extractdate":"not-a-date"}'
+
         async with respx.mock(assert_all_called=True) as respx_mock:
             respx_mock.get(RECORDS_URL).mock(
                 return_value=httpx.Response(200, json={"total_count": 1, "results": []})
@@ -155,6 +160,7 @@ class TestFetchHappyPath:
 
     async def test_blank_lines_in_export_stream_are_skipped(self) -> None:
         body = '\n{"licencersn":"1","businessname":"A"}\n\n{"licencersn":"2","businessname":"B"}\n'
+
         async with respx.mock(assert_all_called=True) as respx_mock:
             respx_mock.get(RECORDS_URL).mock(
                 return_value=httpx.Response(200, json={"total_count": 2, "results": []})
@@ -229,6 +235,7 @@ class TestFetchErrors:
 
     async def test_malformed_jsonl_line_raises_fetch_error(self) -> None:
         body = '{"licencersn":"1"}\nthis-is-not-json\n'
+
         async with respx.mock() as respx_mock:
             respx_mock.get(RECORDS_URL).mock(
                 return_value=httpx.Response(200, json={"total_count": 2, "results": []})
@@ -242,6 +249,7 @@ class TestFetchErrors:
 
     async def test_jsonl_line_that_is_not_an_object_raises(self) -> None:
         body = '{"licencersn":"1"}\n[1,2,3]\n'
+
         async with respx.mock() as respx_mock:
             respx_mock.get(RECORDS_URL).mock(
                 return_value=httpx.Response(200, json={"total_count": 2, "results": []})
