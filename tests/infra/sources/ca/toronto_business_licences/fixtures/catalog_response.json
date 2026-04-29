@@ -1,0 +1,32 @@
+{
+  "success": true,
+  "result": {
+    "id": "57b2285f-4f80-45fb-ae3e-41a02c3a137f",
+    "name": "municipal-licensing-and-standards-business-licences-and-permits",
+    "title": "Municipal Licensing and Standards - Business Licences and Permits",
+    "metadata_modified": "2026-04-28T06:10:31.668620",
+    "resources": [
+      {
+        "id": "169e90ba-3ae0-43dd-8b2f-919e87002f50",
+        "name": "Business licences data",
+        "format": "CSV",
+        "datastore_active": true,
+        "last_modified": "2022-12-01T05:49:06"
+      },
+      {
+        "id": "6f2e2588-059e-48fe-aaec-9582e161eee9",
+        "name": "Business licences data.json",
+        "format": "JSON",
+        "datastore_active": false,
+        "last_modified": "2026-04-28T06:10:29.455786"
+      },
+      {
+        "id": "e8f9b428-11c5-42a6-8f17-47824b5d035f",
+        "name": "business-licence-readme",
+        "format": "XLS",
+        "datastore_active": false,
+        "last_modified": "2019-07-23T19:53:53.689206"
+      }
+    ]
+  }
+}
