@@ -48,6 +48,8 @@ uv run pytest -m live        # opt-in: hits real civic APIs
 
 ## Contributing
 
-Read [`AGENTS.md`](AGENTS.md) and [`docs/testing-guidelines.md`](docs/testing-guidelines.md)
-before making non-trivial changes. Architecture boundaries, data and
-provenance rules, and testing conventions are enforced.
+Read [`AGENTS.md`](AGENTS.md),
+[`docs/testing-guidelines.md`](docs/testing-guidelines.md), and
+[`docs/source-package-conventions.md`](docs/source-package-conventions.md)
+before making non-trivial source changes. Architecture boundaries, data
+and provenance rules, and testing conventions are enforced.
