@@ -95,7 +95,9 @@ class VancouverBusinessLicencesAdapter:
 
         try:
             response = await self.client.get(url, params={"limit": 0})
+
             response.raise_for_status()
+
             payload = response.json()
         except httpx.HTTPError as e:
             raise FetchError(
@@ -138,6 +140,7 @@ class VancouverBusinessLicencesAdapter:
         try:
             async with self.client.stream("GET", url) as response:
                 response.raise_for_status()
+
                 async for line in response.aiter_lines():
                     if not line:
                         continue

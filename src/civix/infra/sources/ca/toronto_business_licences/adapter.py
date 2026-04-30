@@ -93,7 +93,9 @@ class TorontoBusinessLicencesAdapter:
 
         try:
             response = await self.client.get(url, params={"id": self.dataset_id})
+
             response.raise_for_status()
+
             payload = response.json()
         except httpx.HTTPError as e:
             raise FetchError(
@@ -150,7 +152,9 @@ class TorontoBusinessLicencesAdapter:
 
         try:
             response = await self.client.get(url, params=params)
+
             response.raise_for_status()
+
             payload = response.json()
         except httpx.HTTPError as e:
             raise FetchError(

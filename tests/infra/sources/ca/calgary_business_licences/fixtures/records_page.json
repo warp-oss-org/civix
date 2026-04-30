@@ -1,0 +1,79 @@
+[
+  {
+    "getbusid": "100001",
+    "tradename": "PRAIRIE CAFE",
+    "homeoccind": "N",
+    "address": "100 MAIN ST SE",
+    "comdistcd": "DWT",
+    "comdistnm": "DOWNTOWN COMMERCIAL CORE",
+    "licencetypes": "FOOD SERVICE - PREMISES",
+    "first_iss_dt": "2020-01-15T00:00:00.000",
+    "exp_dt": "2026-01-14T00:00:00.000",
+    "jobstatusdesc": "Licensed",
+    "point": {
+      "type": "Point",
+      "coordinates": [
+        -114.0719,
+        51.0447
+      ]
+    },
+    "globalid": "11111111-1111-1111-1111-111111111111",
+    ":@computed_region_4a3i_ccfj": "10",
+    ":@computed_region_p8tp_5dkv": "20"
+  },
+  {
+    "getbusid": "100002",
+    "tradename": "RIVER RETAIL",
+    "homeoccind": "N",
+    "address": "200 RIVER AV SW",
+    "comdistcd": "MIS",
+    "comdistnm": "MISSION",
+    "licencetypes": "RETAIL DEALER - PREMISES,\nFOOD SERVICE - PREMISES",
+    "first_iss_dt": "2019-06-01T00:00:00.000",
+    "exp_dt": "2026-05-31T00:00:00.000",
+    "jobstatusdesc": "Renewal Invoiced",
+    "point": {
+      "type": "Point",
+      "coordinates": [
+        -114.0725,
+        51.032
+      ]
+    },
+    "globalid": "22222222-2222-2222-2222-222222222222",
+    ":@computed_region_4b54_tmc4": "30"
+  },
+  {
+    "getbusid": "100003",
+    "tradename": "HOME STUDIO",
+    "homeoccind": "Y",
+    "address": "300 HILL RD NW",
+    "comdistcd": "HIL",
+    "comdistnm": "HILLHURST",
+    "licencetypes": "PERSONAL SERVICE",
+    "first_iss_dt": null,
+    "exp_dt": null,
+    "jobstatusdesc": "Move in Progress",
+    "point": null,
+    "globalid": "33333333-3333-3333-3333-333333333333"
+  },
+  {
+    "getbusid": "100004",
+    "tradename": null,
+    "homeoccind": "N",
+    "address": null,
+    "comdistcd": null,
+    "comdistnm": null,
+    "licencetypes": "GENERAL CONTRACTOR",
+    "first_iss_dt": "2021-11-20T00:00:00.000Z",
+    "exp_dt": "2026-11-19T00:00:00.000Z",
+    "jobstatusdesc": "Renewal Notification Sent",
+    "point": {
+      "type": "Point",
+      "coordinates": [
+        -114.1,
+        51.05
+      ]
+    },
+    "globalid": "44444444-4444-4444-4444-444444444444"
+  }
+]
