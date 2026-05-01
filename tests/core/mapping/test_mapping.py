@@ -10,7 +10,15 @@ from civix.core.identity.models.identifiers import (
     SnapshotId,
     SourceId,
 )
+from civix.core.mapping.errors import MappingError
 from civix.core.mapping.models.mapper import FieldConflict, Mapper, MappingReport, MapResult
+from civix.core.mapping.parsers import (
+    float_or_none,
+    int_or_none,
+    require_text,
+    slugify,
+    str_or_none,
+)
 from civix.core.provenance.models.provenance import MapperVersion, ProvenanceRef
 from civix.core.quality.models.fields import FieldQuality, MappedField
 from civix.core.snapshots.models.snapshot import RawRecord, SourceSnapshot
@@ -226,3 +234,53 @@ class TestMapperProtocol:
                 raise NotImplementedError
 
         assert not isinstance(_NoVersion(), Mapper)
+
+
+class TestParsers:
+    def test_str_or_none_strips_and_collapses_blank(self) -> None:
+        assert str_or_none("  abc  ") == "abc"
+        assert str_or_none("   ") is None
+        assert str_or_none(None) is None
+
+    def test_int_or_none(self) -> None:
+        assert int_or_none("42") == 42
+        assert int_or_none("4.2") is None
+        assert int_or_none(None) is None
+
+    def test_float_or_none(self) -> None:
+        assert float_or_none("4.2") == 4.2
+        assert float_or_none("north") is None
+        assert float_or_none(None) is None
+
+    def test_slugify_matches_expected_category_code_rule(self) -> None:
+        assert slugify("Secondhand Dealer - General") == "secondhand-dealer-general"
+        assert slugify("  TRAFFIC SIGNAL  ") == "traffic-signal"
+
+    def test_require_text_returns_nonblank_value(self) -> None:
+        version = MapperVersion(mapper_id=MapperId("mapper"), version="0.1.0")
+
+        assert (
+            require_text(
+                " abc ",
+                field_name="id",
+                mapper=version,
+                source_record_id="row-1",
+            )
+            == "abc"
+        )
+
+    def test_require_text_raises_mapping_error_with_metadata(self) -> None:
+        version = MapperVersion(mapper_id=MapperId("mapper"), version="0.1.0")
+
+        with pytest.raises(MappingError) as excinfo:
+            require_text(
+                None,
+                field_name="id",
+                mapper=version,
+                source_record_id="row-1",
+            )
+
+        assert excinfo.value.mapper == version
+        assert excinfo.value.reason == "missing required source field 'id'"
+        assert excinfo.value.source_record_id == "row-1"
+        assert excinfo.value.source_fields == ("id",)

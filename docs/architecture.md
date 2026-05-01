@@ -16,7 +16,8 @@ is enforced by `import-linter` in CI; conventions in
 civix.domains.<x>   civix.infra
  (bounded contexts:   (cross-cutting I/O:
   models + their       http transport,
-  source slices)       format exporters)
+  source slices)       source helpers,
+                       format exporters)
 ```
 
 - `civix.core` — pure capability code: drift, identity, mapping, quality,
@@ -28,8 +29,8 @@ civix.domains.<x>   civix.infra
   slices and any other domain-specific boundary implementations; may
   import `civix.core` and `civix.infra`). The same `models <- adapters`
   rule repeats inside every domain.
-- `civix.infra` — cross-cutting I/O only: `http.py` and `exporters/`.
-  May import `civix.core`. Must not import any domain.
+- `civix.infra` — cross-cutting I/O only: `http.py`, `sources/`, and
+  `exporters/`. May import `civix.core`. Must not import any domain.
 
 A domain package exists only when at least one source slice consumes it,
 or an active plan in `plans/` is building toward that consumer (current
@@ -38,7 +39,7 @@ yet).
 
 ## Vertical slices
 
-Two slice families:
+Three slice families:
 
 - **Source slices** at
   `civix.domains.<domain>.adapters.sources.<country>.<city>/` — one
@@ -46,13 +47,17 @@ Two slice families:
   Owns its `adapter.py`, `mapper.py`, `schema.py`, and `__init__.py`.
   Shape and rules:
   [`source-package-conventions.md`](source-package-conventions.md).
+- **Infra source helper slices** at `civix.infra.sources.<format>/` —
+  cross-domain acquisition helpers for source technologies such as
+  Socrata. Domain-specific source slices wrap these helpers.
 - **Exporter slices** at `civix.infra.exporters.<format>/` — one package
   per output format (`drift`, `json`, `parquet`, `validation`). Each
   owns a `writer.py`.
 
 Slices in the same family **must not import each other**. Cities stay
-isolated from cities; exporters from exporters. Shared logic lives one
-level up in the domain or in `core/`, not in a sibling slice.
+isolated from cities; infra source helpers from infra source helpers;
+exporters from exporters. Shared logic lives one level up in the domain
+or in `core/`, not in a sibling slice.
 
 ## `core/` shape
 
@@ -131,7 +136,7 @@ Test conventions: [`testing-guidelines.md`](testing-guidelines.md).
 
 ## Enforcement
 
-Five `import-linter` contracts in `pyproject.toml` lock the rules above:
+Six `import-linter` contracts in `pyproject.toml` lock the rules above:
 
 1. **core stays pure** — `civix.core` may not import `civix.domains` or
    `civix.infra`.
@@ -142,7 +147,9 @@ Five `import-linter` contracts in `pyproject.toml` lock the rules above:
    its own `adapters/` or `civix.infra`.
 4. **source slices stay independent** — no source package may import
    another source package.
-5. **exporter slices stay independent** — no exporter package may
+5. **infra source helpers stay independent** — no infra source helper
+   may import another infra source helper.
+6. **exporter slices stay independent** — no exporter package may
    import another exporter package.
 
 Run locally:
@@ -178,6 +185,16 @@ CI runs the same command alongside `pytest`, `ruff`, and `pyright`.
 3. Add the slice's dotted path to the **exporter slices stay
    independent** contract in `pyproject.toml`.
 4. Reference: `infra/exporters/json/` or `infra/exporters/parquet/`.
+
+### A new infra source helper slice
+
+1. Create `src/civix/infra/sources/<format>/` with narrowly scoped
+   acquisition helpers.
+2. Mirror tests at `tests/infra/sources/<format>/`.
+3. Add the slice's dotted path to the **infra source helpers stay
+   independent** contract in `pyproject.toml`.
+4. Keep source semantics out of the helper; domain source slices own
+   source-specific mapping, schemas, and taxonomies.
 
 ### A new domain
 

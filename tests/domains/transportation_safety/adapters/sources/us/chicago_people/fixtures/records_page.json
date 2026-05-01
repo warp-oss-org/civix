@@ -1,0 +1,36 @@
+[
+  {
+    "person_id": "person-001",
+    "crash_record_id": "crash-001",
+    "vehicle_id": "veh-001",
+    "crash_date": "2026-04-01T08:30:00.000",
+    "person_type": "DRIVER",
+    "seat_no": "1",
+    "age": "34",
+    "safety_equipment": "SAFETY BELT USED",
+    "airbag_deployed": "DID NOT DEPLOY",
+    "ejection": "NOT EJECTED",
+    "injury_classification": "NO INDICATION OF INJURY",
+    "driver_action": "NONE",
+    "driver_vision": "NOT OBSCURED",
+    "physical_condition": "NORMAL",
+    "sex": "M"
+  },
+  {
+    "person_id": "person-002",
+    "crash_record_id": "crash-001",
+    "vehicle_id": null,
+    "crash_date": "2026-04-01T08:30:00.000",
+    "person_type": "PEDESTRIAN",
+    "seat_no": "unknown",
+    "age": "42",
+    "safety_equipment": "USAGE UNKNOWN",
+    "airbag_deployed": null,
+    "ejection": "UNKNOWN",
+    "injury_classification": "INCAPACITATING INJURY",
+    "driver_action": null,
+    "driver_vision": null,
+    "physical_condition": null,
+    "sex": "F"
+  }
+]

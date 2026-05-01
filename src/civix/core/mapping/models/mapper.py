@@ -2,7 +2,7 @@
 
 This module is the typed contract that turns raw snapshot records into
 normalized domain records. It does not contain any mapper
-implementations; those belong in `infra/sources/`. What lives here is:
+implementations; those belong in domain source slices. What lives here is:
 
 - the per-record diagnostic shape (`MappingReport`, `FieldConflict`),
 - the mapper return container (`MapResult`),

@@ -96,6 +96,7 @@ source_modules = [
 ]
 forbidden_modules = [
     "civix.domains.business_licences.adapters",
+    "civix.domains.transportation_safety.adapters",
     "civix.infra",
 ]
 
@@ -109,6 +110,9 @@ modules = [
     "civix.domains.business_licences.adapters.sources.ca.toronto",
     "civix.domains.business_licences.adapters.sources.ca.vancouver",
     "civix.domains.business_licences.adapters.sources.us.nyc",
+    "civix.domains.transportation_safety.adapters.sources.us.chicago_crashes",
+    "civix.domains.transportation_safety.adapters.sources.us.chicago_people",
+    "civix.domains.transportation_safety.adapters.sources.us.chicago_vehicles",
 ]
 
 [[tool.importlinter.contracts]]
@@ -119,4 +123,11 @@ modules = [
     "civix.infra.exporters.json",
     "civix.infra.exporters.parquet",
     "civix.infra.exporters.validation",
+]
+
+[[tool.importlinter.contracts]]
+name = "infra source helpers stay independent"
+type = "independence"
+modules = [
+    "civix.infra.sources.socrata",
 ]

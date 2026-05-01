@@ -31,7 +31,11 @@ class OccurrenceTimezoneStatus(StrEnum):
 
 
 class OccurrenceTime(BaseModel):
-    """Source-published occurrence time with precision and timezone context."""
+    """Source-published occurrence time with precision and timezone context.
+
+    For `NAMED_LOCAL`, a naive `datetime_value` represents the source
+    wall-clock time in `timezone`; consumers must not treat it as UTC.
+    """
 
     model_config = FROZEN_MODEL
 

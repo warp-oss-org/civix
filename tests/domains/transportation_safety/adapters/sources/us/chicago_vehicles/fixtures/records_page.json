@@ -1,0 +1,30 @@
+[
+  {
+    "crash_unit_id": "unit-001",
+    "crash_record_id": "crash-001",
+    "crash_date": "2026-04-01T08:30:00.000",
+    "unit_no": "1",
+    "unit_type": "DRIVER",
+    "num_passengers": "0",
+    "vehicle_id": "veh-001",
+    "vehicle_type": "PASSENGER",
+    "occupant_cnt": "1",
+    "travel_direction": "N",
+    "maneuver": "TURNING LEFT",
+    "first_contact_point": "FRONT"
+  },
+  {
+    "crash_unit_id": "unit-002",
+    "crash_record_id": "crash-001",
+    "crash_date": "2026-04-01T08:30:00.000",
+    "unit_no": "2",
+    "unit_type": "PEDESTRIAN",
+    "num_passengers": null,
+    "vehicle_id": null,
+    "vehicle_type": "UNKNOWN/NA",
+    "occupant_cnt": "1",
+    "travel_direction": "S",
+    "maneuver": "UNKNOWN/NA",
+    "first_contact_point": "NONE"
+  }
+]
