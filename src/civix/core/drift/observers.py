@@ -21,12 +21,12 @@ from typing import Protocol, runtime_checkable
 from pydantic import BaseModel
 
 from civix.core.drift.analysis import compare_schema, compare_taxonomy
+from civix.core.drift.models.report import SchemaDriftReport, TaxonomyDriftReport
+from civix.core.drift.models.spec import SourceSchemaSpec, TaxonomySpec
 from civix.core.drift.observation import (
     SchemaObservationAccumulator,
     TaxonomyObservationAccumulator,
 )
-from civix.core.drift.report import SchemaDriftReport, TaxonomyDriftReport
-from civix.core.drift.spec import SourceSchemaSpec, TaxonomySpec
 from civix.core.snapshots.models.snapshot import RawRecord, SourceSnapshot
 
 

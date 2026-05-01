@@ -14,7 +14,7 @@ from typing import Annotated, Any
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from civix.core.drift.spec import JsonFieldKind, TaxonomyNormalization, TaxonomySpec
+from civix.core.drift.models.spec import JsonFieldKind, TaxonomyNormalization, TaxonomySpec
 from civix.core.snapshots.models.snapshot import RawRecord
 
 _FROZEN_MODEL = ConfigDict(frozen=True, extra="forbid", strict=True)

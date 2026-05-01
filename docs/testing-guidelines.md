@@ -1,6 +1,6 @@
 # Testing Guidelines
 
-This document supplements `AGENTS.md`. Use it to choose the right test layer, write high-signal assertions, and avoid tests that look busy without increasing confidence.
+This document supplements `AGENTS.md`. Use it to choose the right test layer, write high-signal assertions, and avoid tests that look busy without increasing confidence. For where tests live, see [`architecture.md`](architecture.md) — `tests/` mirrors `src/civix/` exactly.
 
 ## Goals
 

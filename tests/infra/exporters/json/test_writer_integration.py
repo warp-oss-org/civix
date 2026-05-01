@@ -13,13 +13,13 @@ from civix.core.export.models.manifest import ExportManifest
 from civix.core.identity.models.identifiers import DatasetId, Jurisdiction
 from civix.core.pipeline import run
 from civix.core.quality.models.fields import FieldQuality
-from civix.domains.business_licences.models.licence import BusinessLicence, LicenceStatus
-from civix.infra.exporters.json import write_snapshot
-from civix.infra.sources.ca.vancouver_business_licences import (
+from civix.domains.business_licences.adapters.sources.ca.vancouver import (
     DEFAULT_BASE_URL,
     VancouverBusinessLicencesAdapter,
     VancouverBusinessLicencesMapper,
 )
+from civix.domains.business_licences.models.licence import BusinessLicence, LicenceStatus
+from civix.infra.exporters.json import write_snapshot
 
 PINNED_NOW = datetime(2026, 4, 25, 12, 0, tzinfo=UTC)
 DATASET = DatasetId("business-licences")
@@ -28,10 +28,13 @@ RECORDS_URL = f"{DEFAULT_BASE_URL}catalog/datasets/{DATASET}/records"
 EXPORTS_URL = f"{DEFAULT_BASE_URL}catalog/datasets/{DATASET}/exports/jsonl"
 
 FIXTURES = (
-    Path(__file__).parent.parent.parent
+    Path(__file__).parent.parent.parent.parent
+    / "domains"
+    / "business_licences"
+    / "adapters"
     / "sources"
     / "ca"
-    / "vancouver_business_licences"
+    / "vancouver"
     / "fixtures"
 )
 

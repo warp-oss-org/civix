@@ -28,6 +28,7 @@ notebook = [
 
 [dependency-groups]
 dev = [
+    "import-linter>=2.0",
     "pyarrow>=24.0.0",
     "pyright>=1.1.380",
     "pytest>=8.4.2",
@@ -65,3 +66,57 @@ indent-style = "space"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/civix"]
+
+[tool.importlinter]
+root_packages = ["civix"]
+
+# core is pure: no dependency on domains or infra.
+[[tool.importlinter.contracts]]
+name = "core stays pure"
+type = "forbidden"
+source_modules = ["civix.core"]
+forbidden_modules = ["civix.domains", "civix.infra"]
+
+# Top-level infra is cross-cutting only (http, exporters): it must not
+# depend on any domain. Domain-owned adapters may still import civix.infra.
+[[tool.importlinter.contracts]]
+name = "top-level infra stays cross-cutting"
+type = "forbidden"
+source_modules = ["civix.infra"]
+forbidden_modules = ["civix.domains"]
+
+# Per-domain layering: a domain's models stay pure (no adapter or infra
+# dependency). One entry per domain — extend when a new domain lands.
+[[tool.importlinter.contracts]]
+name = "domain models stay pure"
+type = "forbidden"
+source_modules = [
+    "civix.domains.business_licences.models",
+    "civix.domains.transportation_safety.models",
+]
+forbidden_modules = [
+    "civix.domains.business_licences.adapters",
+    "civix.infra",
+]
+
+# Source slices stay independent of each other across the whole project.
+[[tool.importlinter.contracts]]
+name = "source slices stay independent"
+type = "independence"
+modules = [
+    "civix.domains.business_licences.adapters.sources.ca.calgary",
+    "civix.domains.business_licences.adapters.sources.ca.edmonton",
+    "civix.domains.business_licences.adapters.sources.ca.toronto",
+    "civix.domains.business_licences.adapters.sources.ca.vancouver",
+    "civix.domains.business_licences.adapters.sources.us.nyc",
+]
+
+[[tool.importlinter.contracts]]
+name = "exporter slices stay independent"
+type = "independence"
+modules = [
+    "civix.infra.exporters.drift",
+    "civix.infra.exporters.json",
+    "civix.infra.exporters.parquet",
+    "civix.infra.exporters.validation",
+]

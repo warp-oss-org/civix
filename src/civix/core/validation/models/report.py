@@ -18,7 +18,7 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator
 
-from civix.core.drift.report import DriftSeverity
+from civix.core.drift.models.report import DriftSeverity
 from civix.core.identity.models.identifiers import DatasetId, Jurisdiction, SnapshotId, SourceId
 from civix.core.temporal import require_utc
 

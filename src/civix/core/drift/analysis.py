@@ -4,15 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 
-from civix.core.drift.observation import (
-    ObservedField,
-    ObservedSchema,
-    ObservedTaxonomy,
-    ObservedTaxonomyValue,
-    observe_schema,
-    observe_taxonomy,
-)
-from civix.core.drift.report import (
+from civix.core.drift.models.report import (
     DriftSeverity,
     SchemaDriftFinding,
     SchemaDriftKind,
@@ -21,11 +13,19 @@ from civix.core.drift.report import (
     TaxonomyDriftKind,
     TaxonomyDriftReport,
 )
-from civix.core.drift.spec import (
+from civix.core.drift.models.spec import (
     JsonFieldKind,
     SchemaFieldSpec,
     SourceSchemaSpec,
     TaxonomySpec,
+)
+from civix.core.drift.observation import (
+    ObservedField,
+    ObservedSchema,
+    ObservedTaxonomy,
+    ObservedTaxonomyValue,
+    observe_schema,
+    observe_taxonomy,
 )
 from civix.core.snapshots.models.snapshot import RawRecord, SourceSnapshot
 

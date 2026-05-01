@@ -16,8 +16,8 @@ from __future__ import annotations
 from collections.abc import AsyncIterable
 from dataclasses import dataclass
 
-from civix.core.adapters.models.adapter import SourceAdapter
 from civix.core.mapping.models.mapper import Mapper, MapResult
+from civix.core.ports.models.adapter import SourceAdapter
 from civix.core.snapshots.models.snapshot import RawRecord, SourceSnapshot
 
 

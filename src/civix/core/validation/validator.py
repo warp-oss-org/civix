@@ -15,7 +15,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from civix.core.drift.report import (
+from civix.core.drift.models.report import (
     DriftSeverity,
     SchemaDriftReport,
     TaxonomyDriftReport,

@@ -42,17 +42,20 @@ When tradeoffs exist, prioritize in this order:
 
 ## Architecture Boundaries
 
+Full layout, slice rules, and enforcement: [`docs/architecture.md`](docs/architecture.md). Layering is machine-checked by `import-linter` (`uv run lint-imports`).
+
 The codebase has three top-level layers under `src/civix/`:
 
 - `core`: pure contracts and primitives. Identity, snapshots, quality, provenance, mapping, spatial, temporal, drift, pipeline orchestration, adapter Protocol, and export manifest contracts. No I/O, no third-party portal knowledge, no domain-specific vocabulary.
-- `domains`: civic domain models and domain-specific normalization rules (e.g. `business_licences`, `permits`, `procurement`). Source-agnostic: a domain model never references a particular portal's field names.
-- `infra`: source/system boundary implementations. Anything that talks to the outside world (HTTP, filesystem) or that translates an external schema into a domain contract lives here. Mappers count as `infra` even though they are pure: they exist because some external system uses different names for the same idea.
+- `domains/<x>`: a bounded context. Contains `models/` (canonical types; source-agnostic — a domain model never references a particular portal's field names) and optionally `adapters/` (the domain's source slices and other boundary implementations). The same `models <- adapters` rule repeats inside every domain. A `domains/<domain>/` package exists only when at least one source slice consumes it.
+- `infra`: cross-cutting I/O. Only `http.py` (shared HTTP transport) and `exporters/<format>/` (format-specific writers) live here. Domain-specific source adapters and mappers live under `domains/<x>/adapters/sources/`, not at the top level.
 
-Within `infra`:
+Within `domains/<x>/adapters/sources/<country>/<city>/`: per-source `SourceAdapter` and `Mapper` implementations, colocated. Adapters fetch and snapshot raw records; mappers translate raw records into the domain's canonical model.
 
-- `infra/sources/<country>/<dataset>/`: per-source `SourceAdapter` and `Mapper` implementations, colocated. Adapters fetch and snapshot raw records; mappers translate raw records into domain models.
+Within top-level `infra/`:
+
 - `infra/exporters/<format>/`: writers that emit a `PipelineResult` to a target medium (filesystem layout, downstream system, etc.).
-- `infra/http.py`: shared transport helpers used by adapter implementations.
+- `infra/http.py`: shared transport helpers used by adapter implementations across domains.
 
 External consumers — command-line tools, notebooks, dashboards, applications — sit outside the package and decide where artifacts are written or stored.
 
@@ -62,7 +65,7 @@ Respect those boundaries:
 - Mappers should not fetch from the network.
 - Exporters and serializers should not reinterpret civic semantics.
 - Shared domain models should not depend on a single portal's naming conventions.
-- `core` should not import from `infra` or `domains`. `domains` should not import from `infra`. Imports flow inward only.
+- `core` must not import from `domains` or `infra`. A domain's `models/` must not import its own `adapters/` or top-level `infra`. Top-level `infra` must not import any domain. Imports flow toward `core`.
 - Persistence policy belongs to consumers. Civix may provide artifact encoders and layouts, but it should not own a storage layer unless a concrete library use case requires it.
 
 If a capability does not fit an existing boundary, extend the boundary deliberately instead of leaking behavior across layers.

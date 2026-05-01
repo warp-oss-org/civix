@@ -1,0 +1,1 @@
+"""Business licences domain adapters."""

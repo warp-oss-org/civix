@@ -1,18 +1,21 @@
 # Source Package Conventions
 
+See [`architecture.md`](architecture.md) for the overall layering and the
+slice independence rules these packages live inside.
+
 Source packages are source-system boundary code. They fetch public
 records, preserve raw source shape, map records into domain models, and
-pin drift expectations for that source. They live under:
+pin drift expectations for that source. They live inside their domain:
 
 ```text
-src/civix/infra/sources/<country>/<dataset_name>/
+src/civix/domains/<domain>/adapters/sources/<country>/<city>/
 ```
 
 Examples:
 
 ```text
-src/civix/infra/sources/ca/calgary_business_licences/
-src/civix/infra/sources/us/nyc_business_licences/
+src/civix/domains/business_licences/adapters/sources/ca/calgary/
+src/civix/domains/business_licences/adapters/sources/us/nyc/
 ```
 
 ## Package Shape
@@ -27,21 +30,22 @@ Each source package should usually contain:
 - `__init__.py`: exports the public adapter, mapper, schema, and
   taxonomy constants.
 
-Tests mirror the package path under `tests/infra/sources/...`.
+Tests mirror the package path under
+`tests/domains/<domain>/adapters/sources/...`.
 
 ## Naming
 
-Use source-specific package names that make the jurisdiction and domain
-clear, such as:
+The domain is in the path, so city directories drop the redundant
+domain suffix. The current five business-licence slices are:
 
-- `calgary_business_licences`
-- `edmonton_business_licences`
-- `nyc_business_licences`
-- `toronto_business_licences`
-- `vancouver_business_licences`
+- `domains/business_licences/adapters/sources/ca/calgary`
+- `domains/business_licences/adapters/sources/ca/edmonton`
+- `domains/business_licences/adapters/sources/ca/toronto`
+- `domains/business_licences/adapters/sources/ca/vancouver`
+- `domains/business_licences/adapters/sources/us/nyc`
 
-Prefer the repository's domain spelling in package names. For example,
-use `business_licences` even when a source labels its dataset
+Prefer the repository's domain spelling in package and class names. For
+example, use `business_licences` even when a source labels its dataset
 "licenses."
 
 ## Boundaries

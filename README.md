@@ -49,7 +49,9 @@ uv run pytest -m live        # opt-in: hits real civic APIs
 ## Contributing
 
 Read [`AGENTS.md`](AGENTS.md),
+[`docs/architecture.md`](docs/architecture.md),
 [`docs/testing-guidelines.md`](docs/testing-guidelines.md), and
 [`docs/source-package-conventions.md`](docs/source-package-conventions.md)
 before making non-trivial source changes. Architecture boundaries, data
-and provenance rules, and testing conventions are enforced.
+and provenance rules, and testing conventions are enforced — layering is
+checked by `import-linter` (`uv run lint-imports`).
