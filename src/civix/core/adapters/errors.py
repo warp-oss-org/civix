@@ -12,7 +12,7 @@ Subtypes are not provided until a concrete consumer needs them.
 
 from __future__ import annotations
 
-from civix.core.identity import DatasetId, SourceId
+from civix.core.identity.models.identifiers import DatasetId, SourceId
 
 
 class FetchError(Exception):

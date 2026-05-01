@@ -20,10 +20,10 @@ from civix.core.drift.report import (
     SchemaDriftReport,
     TaxonomyDriftReport,
 )
-from civix.core.export import ExportManifest
-from civix.core.identity import DatasetId, Jurisdiction, SnapshotId, SourceId
-from civix.core.quality import FieldQuality
-from civix.core.validation.models import (
+from civix.core.export.models.manifest import ExportManifest
+from civix.core.identity.models.identifiers import DatasetId, Jurisdiction, SnapshotId, SourceId
+from civix.core.quality.models.fields import FieldQuality
+from civix.core.validation.models.report import (
     ValidationFinding,
     ValidationOutcome,
     ValidationReport,

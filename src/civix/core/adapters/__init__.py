@@ -5,10 +5,5 @@ only the contract types every adapter implementation satisfies.
 """
 
 from civix.core.adapters.errors import FetchError
-from civix.core.adapters.models import FetchResult, SourceAdapter
 
-__all__ = [
-    "FetchError",
-    "FetchResult",
-    "SourceAdapter",
-]
+__all__ = ["FetchError"]

@@ -9,8 +9,8 @@ import httpx
 import pytest
 import respx
 
-from civix.core.adapters import FetchError
-from civix.core.identity import DatasetId, Jurisdiction
+from civix.core.adapters.errors import FetchError
+from civix.core.identity.models.identifiers import DatasetId, Jurisdiction
 from civix.infra.sources.ca.toronto_business_licences import (
     DEFAULT_BASE_URL,
     SOURCE_ID,

@@ -15,8 +15,8 @@ from civix.core.drift import (
     TaxonomyObserver,
     TaxonomySpec,
 )
-from civix.core.identity import DatasetId, Jurisdiction, SnapshotId, SourceId
-from civix.core.snapshots import RawRecord, SourceSnapshot
+from civix.core.identity.models.identifiers import DatasetId, Jurisdiction, SnapshotId, SourceId
+from civix.core.snapshots.models.snapshot import RawRecord, SourceSnapshot
 
 PINNED_NOW = datetime(2026, 4, 25, 12, 0, tzinfo=UTC)
 

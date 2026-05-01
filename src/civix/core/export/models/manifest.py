@@ -14,9 +14,9 @@ from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from civix.core.identity import DatasetId, Jurisdiction, SnapshotId, SourceId
-from civix.core.provenance import MapperVersion
-from civix.core.quality import FieldQuality
+from civix.core.identity.models.identifiers import DatasetId, Jurisdiction, SnapshotId, SourceId
+from civix.core.provenance.models.provenance import MapperVersion
+from civix.core.quality.models.fields import FieldQuality
 from civix.core.temporal import require_utc
 
 _FROZEN_MODEL = ConfigDict(frozen=True, extra="forbid", strict=True)

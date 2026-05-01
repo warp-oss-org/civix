@@ -27,7 +27,7 @@ from pathlib import Path
 from typing import Any
 
 from civix.core.drift import SchemaDriftReport, TaxonomyDriftReport
-from civix.core.export import ExportedFile
+from civix.core.export.models.manifest import ExportedFile
 
 _DRIFT_FILE = "drift.json"
 

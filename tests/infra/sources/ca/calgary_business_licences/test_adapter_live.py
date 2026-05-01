@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import pytest
 
-from civix.core.identity import DatasetId, Jurisdiction
+from civix.core.identity.models.identifiers import DatasetId, Jurisdiction
 from civix.infra.http import default_http_client
 from civix.infra.sources.ca.calgary_business_licences import (
     CalgaryBusinessLicencesAdapter,

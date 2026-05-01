@@ -14,10 +14,11 @@ from civix.core.drift import (
     TaxonomyDriftKind,
     TaxonomyDriftReport,
 )
-from civix.core.export import ExportedFile, ExportManifest, MappingSummary
-from civix.core.identity import DatasetId, Jurisdiction, SnapshotId, SourceId
-from civix.core.quality import FieldQuality
-from civix.core.validation import ValidationOutcome, validate_snapshot
+from civix.core.export.models.manifest import ExportedFile, ExportManifest, MappingSummary
+from civix.core.identity.models.identifiers import DatasetId, Jurisdiction, SnapshotId, SourceId
+from civix.core.quality.models.fields import FieldQuality
+from civix.core.validation.models.report import ValidationOutcome
+from civix.core.validation.validator import validate_snapshot
 
 PINNED_NOW = datetime(2026, 4, 28, 12, 0, tzinfo=UTC)
 SNAP = SnapshotId("snap-1")

@@ -15,8 +15,8 @@ from __future__ import annotations
 import hashlib
 from pathlib import Path
 
-from civix.core.export import ExportedFile
-from civix.core.validation import ValidationReport
+from civix.core.export.models.manifest import ExportedFile
+from civix.core.validation.models.report import ValidationReport
 
 _VALIDATION_FILE = "validation.json"
 

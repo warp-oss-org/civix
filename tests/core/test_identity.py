@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from civix.core.identity import (
+from civix.core.identity.models.identifiers import (
     DatasetId,
     Jurisdiction,
     MapperId,

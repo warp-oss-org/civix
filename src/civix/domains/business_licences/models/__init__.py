@@ -1,0 +1,1 @@
+"""Business licence model package."""

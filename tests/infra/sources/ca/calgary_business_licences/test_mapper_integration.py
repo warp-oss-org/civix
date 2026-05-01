@@ -9,11 +9,11 @@ from pathlib import Path
 import httpx
 import respx
 
-from civix.core.identity import DatasetId, Jurisdiction
+from civix.core.identity.models.identifiers import DatasetId, Jurisdiction
 from civix.core.pipeline import run
-from civix.core.quality import FieldQuality
-from civix.core.spatial import Address, Coordinate
-from civix.domains.business_licences import BusinessLicence, LicenceStatus
+from civix.core.quality.models.fields import FieldQuality
+from civix.core.spatial.models.location import Address, Coordinate
+from civix.domains.business_licences.models.licence import BusinessLicence, LicenceStatus
 from civix.infra.sources.ca.calgary_business_licences import (
     DEFAULT_BASE_URL,
     CalgaryBusinessLicencesAdapter,

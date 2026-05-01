@@ -4,7 +4,7 @@ from enum import StrEnum
 import pytest
 from pydantic import BaseModel, ValidationError
 
-from civix.core.quality import FieldQuality, MappedField
+from civix.core.quality.models.fields import FieldQuality, MappedField
 
 
 class _Status(StrEnum):

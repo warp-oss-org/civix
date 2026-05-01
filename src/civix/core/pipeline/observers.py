@@ -17,7 +17,7 @@ from collections.abc import AsyncIterable, Sequence
 from typing import Protocol, runtime_checkable
 
 from civix.core.pipeline.runner import PipelineRecord, PipelineResult
-from civix.core.snapshots import RawRecord, SourceSnapshot
+from civix.core.snapshots.models.snapshot import RawRecord, SourceSnapshot
 
 
 @runtime_checkable

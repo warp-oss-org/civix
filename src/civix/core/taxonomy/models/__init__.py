@@ -1,0 +1,1 @@
+"""Taxonomy model package."""

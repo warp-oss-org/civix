@@ -18,7 +18,7 @@ from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from civix.core.identity import (
+from civix.core.identity.models.identifiers import (
     DatasetId,
     Jurisdiction,
     MapperId,

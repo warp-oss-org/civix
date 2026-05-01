@@ -8,8 +8,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from civix.core.drift import DriftSeverity
-from civix.core.identity import DatasetId, Jurisdiction, SnapshotId, SourceId
-from civix.core.validation import (
+from civix.core.identity.models.identifiers import DatasetId, Jurisdiction, SnapshotId, SourceId
+from civix.core.validation.models.report import (
     ValidationFinding,
     ValidationOutcome,
     ValidationReport,

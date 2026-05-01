@@ -26,9 +26,9 @@ from civix.core.drift import (
     SchemaObserver,
     TaxonomyObserver,
 )
-from civix.core.identity import DatasetId, Jurisdiction
+from civix.core.identity.models.identifiers import DatasetId, Jurisdiction
 from civix.core.pipeline import attach_observers, run
-from civix.domains.business_licences import BusinessLicence
+from civix.domains.business_licences.models.licence import BusinessLicence
 from civix.infra.exporters.drift import write_drift
 from civix.infra.exporters.json import write_snapshot
 from civix.infra.sources.ca.toronto_business_licences import (

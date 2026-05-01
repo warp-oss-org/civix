@@ -14,19 +14,19 @@ import pytest
 from pydantic import BaseModel, ConfigDict
 
 import civix.infra.exporters.parquet.writer as writer
-from civix.core.export import ExportManifest
-from civix.core.identity import (
+from civix.core.export.models.manifest import ExportManifest
+from civix.core.identity.models.identifiers import (
     DatasetId,
     Jurisdiction,
     MapperId,
     SnapshotId,
     SourceId,
 )
-from civix.core.mapping import FieldConflict, MappingReport, MapResult
+from civix.core.mapping.models.mapper import FieldConflict, MappingReport, MapResult
 from civix.core.pipeline import PipelineRecord, PipelineResult
-from civix.core.provenance import MapperVersion, ProvenanceRef
-from civix.core.quality import FieldQuality, MappedField
-from civix.core.snapshots import RawRecord, SourceSnapshot
+from civix.core.provenance.models.provenance import MapperVersion, ProvenanceRef
+from civix.core.quality.models.fields import FieldQuality, MappedField
+from civix.core.snapshots.models.snapshot import RawRecord, SourceSnapshot
 from civix.infra.exporters.parquet import write_snapshot
 
 PINNED_NOW = datetime(2026, 4, 25, 12, 0, tzinfo=UTC)

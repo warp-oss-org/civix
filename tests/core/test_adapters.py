@@ -8,14 +8,14 @@ from datetime import UTC, datetime
 
 import pytest
 
-from civix.core.adapters import FetchResult, SourceAdapter
-from civix.core.identity import (
+from civix.core.adapters.models.adapter import FetchResult, SourceAdapter
+from civix.core.identity.models.identifiers import (
     DatasetId,
     Jurisdiction,
     SnapshotId,
     SourceId,
 )
-from civix.core.snapshots import RawRecord, SourceSnapshot
+from civix.core.snapshots.models.snapshot import RawRecord, SourceSnapshot
 
 
 def _snapshot() -> SourceSnapshot:

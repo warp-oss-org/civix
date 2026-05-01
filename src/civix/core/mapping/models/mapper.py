@@ -20,8 +20,8 @@ from typing import Any, Protocol, runtime_checkable
 
 from pydantic import BaseModel, ConfigDict, model_validator
 
-from civix.core.provenance import MapperVersion
-from civix.core.snapshots import RawRecord, SourceSnapshot
+from civix.core.provenance.models.provenance import MapperVersion
+from civix.core.snapshots.models.snapshot import RawRecord, SourceSnapshot
 
 _FROZEN_MODEL = ConfigDict(frozen=True, extra="forbid", strict=True)
 

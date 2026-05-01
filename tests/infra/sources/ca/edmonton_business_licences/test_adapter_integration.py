@@ -9,7 +9,7 @@ from pathlib import Path
 import httpx
 import respx
 
-from civix.core.identity import DatasetId, Jurisdiction
+from civix.core.identity.models.identifiers import DatasetId, Jurisdiction
 from civix.infra.sources.ca.edmonton_business_licences import (
     DEFAULT_BASE_URL,
     EdmontonBusinessLicencesAdapter,

@@ -27,7 +27,7 @@ from civix.core.drift.observation import (
 )
 from civix.core.drift.report import SchemaDriftReport, TaxonomyDriftReport
 from civix.core.drift.spec import SourceSchemaSpec, TaxonomySpec
-from civix.core.snapshots import RawRecord, SourceSnapshot
+from civix.core.snapshots.models.snapshot import RawRecord, SourceSnapshot
 
 
 @runtime_checkable

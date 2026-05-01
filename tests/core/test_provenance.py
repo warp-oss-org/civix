@@ -4,14 +4,14 @@ from typing import Any
 import pytest
 from pydantic import ValidationError
 
-from civix.core.identity import (
+from civix.core.identity.models.identifiers import (
     DatasetId,
     Jurisdiction,
     MapperId,
     SnapshotId,
     SourceId,
 )
-from civix.core.provenance import MapperVersion, ProvenanceRef
+from civix.core.provenance.models.provenance import MapperVersion, ProvenanceRef
 
 
 def _mapper(**overrides: Any) -> MapperVersion:

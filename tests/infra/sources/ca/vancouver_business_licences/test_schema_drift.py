@@ -8,8 +8,8 @@ from pathlib import Path
 from typing import Any
 
 from civix.core.drift import DriftSeverity, SchemaDriftKind, SchemaDriftReport, analyze_schema
-from civix.core.identity import DatasetId, Jurisdiction, SnapshotId, SourceId
-from civix.core.snapshots import RawRecord, SourceSnapshot
+from civix.core.identity.models.identifiers import DatasetId, Jurisdiction, SnapshotId, SourceId
+from civix.core.snapshots.models.snapshot import RawRecord, SourceSnapshot
 from civix.infra.sources.ca.vancouver_business_licences import (
     VANCOUVER_BUSINESS_LICENCES_SCHEMA,
 )

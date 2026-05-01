@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from civix.core.spatial import Address, Coordinate
+from civix.core.spatial.models.location import Address, Coordinate
 
 
 class TestCoordinate:

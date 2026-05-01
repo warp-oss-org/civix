@@ -4,19 +4,19 @@ from typing import Any
 import pytest
 from pydantic import ValidationError
 
-from civix.core.identity import (
+from civix.core.identity.models.identifiers import (
     DatasetId,
     Jurisdiction,
     MapperId,
     SnapshotId,
     SourceId,
 )
-from civix.core.provenance import MapperVersion, ProvenanceRef
-from civix.core.quality import FieldQuality, MappedField
-from civix.core.spatial import Address, Coordinate
-from civix.domains.business_licences import (
+from civix.core.provenance.models.provenance import MapperVersion, ProvenanceRef
+from civix.core.quality.models.fields import FieldQuality, MappedField
+from civix.core.spatial.models.location import Address, Coordinate
+from civix.core.taxonomy.models.category import CategoryRef
+from civix.domains.business_licences.models.licence import (
     BusinessLicence,
-    CategoryRef,
     LicenceStatus,
 )
 

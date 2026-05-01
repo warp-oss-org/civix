@@ -4,8 +4,8 @@ from typing import Any
 import pytest
 from pydantic import ValidationError
 
-from civix.core.identity import DatasetId, Jurisdiction, SnapshotId, SourceId
-from civix.core.snapshots import RawRecord, SourceSnapshot
+from civix.core.identity.models.identifiers import DatasetId, Jurisdiction, SnapshotId, SourceId
+from civix.core.snapshots.models.snapshot import RawRecord, SourceSnapshot
 
 
 def _snapshot(**overrides: Any) -> SourceSnapshot:

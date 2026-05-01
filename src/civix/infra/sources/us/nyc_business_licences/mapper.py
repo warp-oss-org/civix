@@ -10,15 +10,15 @@ from typing import Any, Final
 
 from pydantic import ValidationError
 
-from civix.core.identity import MapperId
-from civix.core.mapping import MappingReport, MapResult
-from civix.core.provenance import MapperVersion, ProvenanceRef
-from civix.core.quality import FieldQuality, MappedField
-from civix.core.snapshots import RawRecord, SourceSnapshot
-from civix.core.spatial import Address, Coordinate
-from civix.domains.business_licences import (
+from civix.core.identity.models.identifiers import MapperId
+from civix.core.mapping.models.mapper import MappingReport, MapResult
+from civix.core.provenance.models.provenance import MapperVersion, ProvenanceRef
+from civix.core.quality.models.fields import FieldQuality, MappedField
+from civix.core.snapshots.models.snapshot import RawRecord, SourceSnapshot
+from civix.core.spatial.models.location import Address, Coordinate
+from civix.core.taxonomy.models.category import CategoryRef
+from civix.domains.business_licences.models.licence import (
     BusinessLicence,
-    CategoryRef,
     LicenceStatus,
 )
 from civix.infra.sources.us.nyc_business_licences.schema import ADAPTER_CONSUMED_FIELDS

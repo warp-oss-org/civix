@@ -7,22 +7,22 @@ from datetime import UTC, datetime
 
 from pydantic import BaseModel, ConfigDict
 
-from civix.core.identity import (
+from civix.core.identity.models.identifiers import (
     DatasetId,
     Jurisdiction,
     MapperId,
     SnapshotId,
     SourceId,
 )
-from civix.core.mapping import MappingReport, MapResult
+from civix.core.mapping.models.mapper import MappingReport, MapResult
 from civix.core.pipeline import (
     PipelineRecord,
     PipelineResult,
     attach_observers,
 )
-from civix.core.provenance import MapperVersion, ProvenanceRef
-from civix.core.quality import FieldQuality, MappedField
-from civix.core.snapshots import RawRecord, SourceSnapshot
+from civix.core.provenance.models.provenance import MapperVersion, ProvenanceRef
+from civix.core.quality.models.fields import FieldQuality, MappedField
+from civix.core.snapshots.models.snapshot import RawRecord, SourceSnapshot
 
 PINNED_NOW = datetime(2026, 4, 25, 12, 0, tzinfo=UTC)
 SNAP = SnapshotId("snap-1")

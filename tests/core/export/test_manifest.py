@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from civix.core.export import ExportedFile, MappingSummary
+from civix.core.export.models.manifest import ExportedFile, MappingSummary
 
 
 class TestExportedFile:

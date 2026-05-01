@@ -5,11 +5,11 @@ from __future__ import annotations
 from datetime import UTC, date, datetime
 from typing import Any
 
-from civix.core.identity import DatasetId, Jurisdiction, SnapshotId, SourceId
-from civix.core.quality import FieldQuality
-from civix.core.snapshots import RawRecord, SourceSnapshot
-from civix.core.spatial import Address, Coordinate
-from civix.domains.business_licences import BusinessLicence
+from civix.core.identity.models.identifiers import DatasetId, Jurisdiction, SnapshotId, SourceId
+from civix.core.quality.models.fields import FieldQuality
+from civix.core.snapshots.models.snapshot import RawRecord, SourceSnapshot
+from civix.core.spatial.models.location import Address, Coordinate
+from civix.domains.business_licences.models.licence import BusinessLicence
 from civix.infra.sources.ca.edmonton_business_licences import (
     MAPPER_ID,
     MAPPER_VERSION,

@@ -27,7 +27,7 @@ from civix.core.drift.spec import (
     SourceSchemaSpec,
     TaxonomySpec,
 )
-from civix.core.snapshots import RawRecord, SourceSnapshot
+from civix.core.snapshots.models.snapshot import RawRecord, SourceSnapshot
 
 
 def compare_schema(

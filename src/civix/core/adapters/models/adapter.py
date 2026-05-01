@@ -15,8 +15,8 @@ from collections.abc import AsyncIterable
 from dataclasses import dataclass
 from typing import Protocol, runtime_checkable
 
-from civix.core.identity import DatasetId, Jurisdiction, SourceId
-from civix.core.snapshots import RawRecord, SourceSnapshot
+from civix.core.identity.models.identifiers import DatasetId, Jurisdiction, SourceId
+from civix.core.snapshots.models.snapshot import RawRecord, SourceSnapshot
 
 
 @dataclass(frozen=True, slots=True)

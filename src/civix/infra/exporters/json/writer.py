@@ -23,10 +23,10 @@ from pathlib import Path
 
 from pydantic import BaseModel
 
-from civix.core.export import ExportedFile, ExportManifest, MappingSummary
+from civix.core.export.models.manifest import ExportedFile, ExportManifest, MappingSummary
 from civix.core.pipeline import PipelineResult
-from civix.core.provenance import MapperVersion
-from civix.core.quality import FieldQuality, MappedField
+from civix.core.provenance.models.provenance import MapperVersion
+from civix.core.quality.models.fields import FieldQuality, MappedField
 
 _RECORDS_FILE = "records.jsonl"
 _REPORTS_FILE = "reports.jsonl"

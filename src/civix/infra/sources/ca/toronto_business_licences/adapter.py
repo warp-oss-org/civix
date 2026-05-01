@@ -30,9 +30,10 @@ from typing import Any, Final, cast
 import httpx
 from pydantic import ValidationError
 
-from civix.core.adapters import FetchError, FetchResult
-from civix.core.identity import DatasetId, Jurisdiction, SnapshotId, SourceId
-from civix.core.snapshots import RawRecord, SourceSnapshot
+from civix.core.adapters.errors import FetchError
+from civix.core.adapters.models.adapter import FetchResult
+from civix.core.identity.models.identifiers import DatasetId, Jurisdiction, SnapshotId, SourceId
+from civix.core.snapshots.models.snapshot import RawRecord, SourceSnapshot
 from civix.core.temporal import Clock, utc_now
 
 DEFAULT_BASE_URL: Final[str] = "https://ckan0.cf.opendata.inter.prod-toronto.ca/api/3/action/"
