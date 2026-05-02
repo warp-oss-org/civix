@@ -1,0 +1,14 @@
+[
+  {
+    "_id": 1,
+    "location_dir_id": "3",
+    "datetime_bin": "2025-01-01T00:00:00",
+    "bin_volume": 0
+  },
+  {
+    "_id": 2,
+    "location_dir_id": "3",
+    "datetime_bin": "2025-01-01T00:15:00",
+    "bin_volume": 17
+  }
+]

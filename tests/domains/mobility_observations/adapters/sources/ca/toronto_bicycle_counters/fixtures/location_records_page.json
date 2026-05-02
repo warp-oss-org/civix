@@ -1,0 +1,19 @@
+[
+  {
+    "_id": 1,
+    "location_dir_id": "1",
+    "location_name": "Bloor St E, west of Castle Frank Rd (retired)",
+    "direction": "Eastbound",
+    "linear_name_full": "Bloor St E",
+    "side_street": "Castle Frank Rd",
+    "longitude": -79.3681194,
+    "latitude": 43.6738047,
+    "centreline_id": 8540609,
+    "bin_size": "00:15:00",
+    "latest_calibration_study": null,
+    "first_active": "1994-06-26",
+    "last_active": "2019-06-13",
+    "date_decommissioned": "2019-06-13",
+    "technology": "Induction - Other"
+  }
+]

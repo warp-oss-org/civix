@@ -124,6 +124,8 @@ modules = [
     "civix.domains.mobility_observations.adapters.sources.us.nyc_bicycle_pedestrian_counts",
     "civix.domains.mobility_observations.adapters.sources.us.nyc_traffic_speeds",
     "civix.domains.mobility_observations.adapters.sources.us.nyc_traffic_volume_counts",
+    "civix.domains.mobility_observations.adapters.sources.ca.toronto_bicycle_counters",
+    "civix.domains.mobility_observations.adapters.sources.ca.toronto_turning_movement_counts",
 ]
 
 [[tool.importlinter.contracts]]

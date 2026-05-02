@@ -32,12 +32,14 @@ DATASTORE_SEARCH_URL = f"{DEFAULT_BASE_URL}datastore_search"
 
 def _dataset(
     source_record_id_fields: tuple[str, ...] = ("collision_id", "per_no"),
+    resource_name: str | None = None,
 ) -> CkanDatasetConfig:
     return CkanDatasetConfig(
         source_id=SOURCE_ID,
         dataset_id=DATASET_ID,
         jurisdiction=JURISDICTION,
         source_record_id_fields=source_record_id_fields,
+        resource_name=resource_name,
     )
 
 
@@ -50,8 +52,12 @@ def _package_payload(*, datastore_active: bool = True) -> dict[str, Any]:
         "success": True,
         "result": {
             "resources": [
-                {"id": "inactive", "datastore_active": False},
-                {"id": RESOURCE_ID, "datastore_active": datastore_active},
+                {"id": "inactive", "name": "inactive-resource", "datastore_active": False},
+                {
+                    "id": RESOURCE_ID,
+                    "name": "target-resource",
+                    "datastore_active": datastore_active,
+                },
             ]
         },
     }
@@ -144,6 +150,39 @@ class TestCkanFetch:
         assert requests[1].url.params["offset"] == "2"
         assert [r.source_record_id for r in records] == ["100:1", "100:2", "101:1"]
 
+    async def test_resolves_named_resource(self) -> None:
+        requests: list[httpx.Request] = []
+
+        async with respx.mock(assert_all_called=True) as respx_mock:
+            respx_mock.get(PACKAGE_SHOW_URL).mock(
+                return_value=httpx.Response(200, json=_package_payload())
+            )
+            respx_mock.get(DATASTORE_SEARCH_URL).mock(
+                side_effect=_capture_sequence(
+                    requests,
+                    [
+                        httpx.Response(
+                            200,
+                            json=_datastore_payload(
+                                total=1,
+                                records=[{"collision_id": "100", "per_no": "1"}],
+                            ),
+                        ),
+                    ],
+                )
+            )
+
+            async with httpx.AsyncClient() as client:
+                result = await fetch_ckan_dataset(
+                    dataset=_dataset(resource_name="target-resource"),
+                    fetch=_fetch(client),
+                )
+                records = [r async for r in result.records]
+
+        assert requests[0].url.params["resource_id"] == RESOURCE_ID
+        assert result.snapshot.fetch_params == {"resource_id": RESOURCE_ID}
+        assert [r.source_record_id for r in records] == ["100:1"]
+
     async def test_page_size_must_be_positive(self) -> None:
         async with httpx.AsyncClient() as client:
             with pytest.raises(ValueError, match="page_size"):
@@ -158,6 +197,32 @@ class TestCkanFetch:
             async with httpx.AsyncClient() as client:
                 with pytest.raises(FetchError, match="no datastore-active resource"):
                     await fetch_ckan_dataset(dataset=_dataset(), fetch=_fetch(client))
+
+    async def test_missing_named_resource_raises_clear_fetch_error(self) -> None:
+        async with respx.mock(assert_all_called=True) as respx_mock:
+            respx_mock.get(PACKAGE_SHOW_URL).mock(
+                return_value=httpx.Response(200, json=_package_payload())
+            )
+
+            async with httpx.AsyncClient() as client:
+                with pytest.raises(FetchError, match="missing-resource"):
+                    await fetch_ckan_dataset(
+                        dataset=_dataset(resource_name="missing-resource"),
+                        fetch=_fetch(client),
+                    )
+
+    async def test_inactive_named_resource_raises_clear_fetch_error(self) -> None:
+        async with respx.mock(assert_all_called=True) as respx_mock:
+            respx_mock.get(PACKAGE_SHOW_URL).mock(
+                return_value=httpx.Response(200, json=_package_payload())
+            )
+
+            async with httpx.AsyncClient() as client:
+                with pytest.raises(FetchError, match="not active"):
+                    await fetch_ckan_dataset(
+                        dataset=_dataset(resource_name="inactive-resource"),
+                        fetch=_fetch(client),
+                    )
 
     async def test_non_object_record_raises_when_streamed(self) -> None:
         async with respx.mock(assert_all_called=True) as respx_mock:

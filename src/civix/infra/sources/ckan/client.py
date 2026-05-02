@@ -28,6 +28,7 @@ class CkanDatasetConfig:
     dataset_id: DatasetId
     jurisdiction: Jurisdiction
     source_record_id_fields: tuple[str, ...] = ()
+    resource_name: str | None = None
     base_url: str = DEFAULT_BASE_URL
 
 
@@ -133,7 +134,15 @@ async def _resolve_resource_id(*, dataset: CkanDatasetConfig, fetch: CkanFetchCo
             operation="resolve-resource",
         )
 
-    for entry in cast(list[Any], resources):
+    resource_entries = cast(list[Any], resources)
+
+    if dataset.resource_name is not None:
+        return _resolve_named_resource_id(
+            resources=resource_entries,
+            dataset=dataset,
+        )
+
+    for entry in resource_entries:
         if not isinstance(entry, dict):
             continue
 
@@ -147,6 +156,50 @@ async def _resolve_resource_id(*, dataset: CkanDatasetConfig, fetch: CkanFetchCo
 
     raise FetchError(
         "no datastore-active resource found for dataset",
+        source_id=dataset.source_id,
+        dataset_id=dataset.dataset_id,
+        operation="resolve-resource",
+    )
+
+
+def _resolve_named_resource_id(
+    *,
+    resources: list[Any],
+    dataset: CkanDatasetConfig,
+) -> str:
+    requested_name = dataset.resource_name
+
+    for entry in resources:
+        if not isinstance(entry, dict):
+            continue
+
+        resource = cast(dict[str, Any], entry)
+
+        if resource.get("name") != requested_name:
+            continue
+
+        if resource.get("datastore_active") is not True:
+            raise FetchError(
+                f"datastore resource named {requested_name!r} is not active for dataset",
+                source_id=dataset.source_id,
+                dataset_id=dataset.dataset_id,
+                operation="resolve-resource",
+            )
+
+        resource_id = resource.get("id")
+
+        if isinstance(resource_id, str) and resource_id:
+            return resource_id
+
+        raise FetchError(
+            f"datastore resource named {requested_name!r} is missing an id for dataset",
+            source_id=dataset.source_id,
+            dataset_id=dataset.dataset_id,
+            operation="resolve-resource",
+        )
+
+    raise FetchError(
+        f"datastore resource named {requested_name!r} not found for dataset",
         source_id=dataset.source_id,
         dataset_id=dataset.dataset_id,
         operation="resolve-resource",
