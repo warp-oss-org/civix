@@ -8,6 +8,7 @@ from civix.domains.transportation_safety.adapters.sources.us.chicago_crashes.ada
     DEFAULT_PAGE_SIZE,
     SOCRATA_ORDER,
     SOURCE_ID,
+    ChicagoCrashesAdapter,
 )
 from civix.domains.transportation_safety.adapters.sources.us.chicago_crashes.mapper import (
     MAPPER_ID,
@@ -25,11 +26,12 @@ __all__ = [
     "CHICAGO_CRASHES_SCHEMA",
     "CHICAGO_CRASHES_TAXONOMIES",
     "CHICAGO_JURISDICTION",
+    "ChicagoCrashesAdapter",
+    "ChicagoCrashesMapper",
     "DEFAULT_BASE_URL",
     "DEFAULT_PAGE_SIZE",
     "MAPPER_ID",
     "MAPPER_VERSION",
     "SOCRATA_ORDER",
     "SOURCE_ID",
-    "ChicagoCrashesMapper",
 ]

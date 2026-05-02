@@ -17,16 +17,15 @@ from civix.core.drift import SchemaObserver, TaxonomyDriftKind, TaxonomyObserver
 from civix.core.identity.models.identifiers import DatasetId, SnapshotId
 from civix.core.mapping.errors import MappingError
 from civix.core.pipeline import attach_observers, run
+from civix.core.ports.models.adapter import SourceAdapter
 from civix.core.quality.models.fields import FieldQuality
 from civix.core.snapshots.models.snapshot import RawRecord, SourceSnapshot
 from civix.domains.mobility_observations.adapters.sources.us.nyc_bicycle_pedestrian_counts import (
     DEFAULT_BASE_URL,
-    NYC_BICYCLE_PEDESTRIAN_COUNTS_DATASET_CONFIG,
     NYC_BICYCLE_PEDESTRIAN_COUNTS_DATASET_ID,
     NYC_BICYCLE_PEDESTRIAN_COUNTS_SCHEMA,
     NYC_BICYCLE_PEDESTRIAN_COUNTS_TAXONOMIES,
     NYC_BICYCLE_PEDESTRIAN_RELEASE_CAVEATS,
-    NYC_BICYCLE_PEDESTRIAN_SENSORS_DATASET_CONFIG,
     NYC_BICYCLE_PEDESTRIAN_SENSORS_DATASET_ID,
     NYC_BICYCLE_PEDESTRIAN_SENSORS_SCHEMA,
     NYC_BICYCLE_PEDESTRIAN_SENSORS_TAXONOMIES,
@@ -35,7 +34,9 @@ from civix.domains.mobility_observations.adapters.sources.us.nyc_bicycle_pedestr
     SOCRATA_ORDER,
     SOURCE_ID,
     NycBicyclePedestrianCountMapper,
+    NycBicyclePedestrianCountsAdapter,
     NycBicyclePedestrianSensorMapper,
+    NycBicyclePedestrianSensorsAdapter,
 )
 from civix.domains.mobility_observations.models.common import (
     AggregationWindow,
@@ -43,7 +44,7 @@ from civix.domains.mobility_observations.models.common import (
     ObservationDirection,
     TravelMode,
 )
-from civix.infra.sources.socrata import SocrataFetchConfig, SocrataSourceAdapter
+from civix.infra.sources.socrata import SocrataFetchConfig
 
 PINNED_NOW = datetime(2026, 5, 2, 12, 0, tzinfo=UTC)
 COUNT_RESOURCE_URL = f"{DEFAULT_BASE_URL}{NYC_BICYCLE_PEDESTRIAN_COUNTS_DATASET_ID}.json"
@@ -51,9 +52,12 @@ SENSOR_RESOURCE_URL = f"{DEFAULT_BASE_URL}{NYC_BICYCLE_PEDESTRIAN_SENSORS_DATASE
 FIXTURES = Path(__file__).parent / "fixtures"
 
 
-def _count_adapter(client: httpx.AsyncClient, *, page_size: int = 1000) -> SocrataSourceAdapter:
-    return SocrataSourceAdapter(
-        dataset=NYC_BICYCLE_PEDESTRIAN_COUNTS_DATASET_CONFIG,
+def _count_adapter(
+    client: httpx.AsyncClient,
+    *,
+    page_size: int = 1000,
+) -> NycBicyclePedestrianCountsAdapter:
+    return NycBicyclePedestrianCountsAdapter(
         fetch_config=SocrataFetchConfig(
             client=client,
             clock=lambda: PINNED_NOW,
@@ -63,9 +67,12 @@ def _count_adapter(client: httpx.AsyncClient, *, page_size: int = 1000) -> Socra
     )
 
 
-def _sensor_adapter(client: httpx.AsyncClient, *, page_size: int = 1000) -> SocrataSourceAdapter:
-    return SocrataSourceAdapter(
-        dataset=NYC_BICYCLE_PEDESTRIAN_SENSORS_DATASET_CONFIG,
+def _sensor_adapter(
+    client: httpx.AsyncClient,
+    *,
+    page_size: int = 1000,
+) -> NycBicyclePedestrianSensorsAdapter:
+    return NycBicyclePedestrianSensorsAdapter(
         fetch_config=SocrataFetchConfig(
             client=client,
             clock=lambda: PINNED_NOW,
@@ -147,9 +154,11 @@ class TestAdapters:
             )
 
             async with httpx.AsyncClient() as client:
-                result = await _count_adapter(client).fetch()
+                adapter = _count_adapter(client)
+                result = await adapter.fetch()
                 records = [record async for record in result.records]
 
+        assert isinstance(adapter, SourceAdapter)
         assert result.snapshot.dataset_id == NYC_BICYCLE_PEDESTRIAN_COUNTS_DATASET_ID
         assert [record.source_record_id for record in records] == [None, None]
         assert requests[1].url.params["$order"] == SOCRATA_ORDER
@@ -164,9 +173,11 @@ class TestAdapters:
             )
 
             async with httpx.AsyncClient() as client:
-                result = await _sensor_adapter(client).fetch()
+                adapter = _sensor_adapter(client)
+                result = await adapter.fetch()
                 records = [record async for record in result.records]
 
+        assert isinstance(adapter, SourceAdapter)
         assert result.snapshot.dataset_id == NYC_BICYCLE_PEDESTRIAN_SENSORS_DATASET_ID
         assert [record.source_record_id for record in records] == ["eco-100", "eco-101"]
 

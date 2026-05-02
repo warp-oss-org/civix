@@ -17,12 +17,12 @@ from civix.core.drift import SchemaObserver, TaxonomyDriftKind, TaxonomyObserver
 from civix.core.identity.models.identifiers import SnapshotId
 from civix.core.mapping.errors import MappingError
 from civix.core.pipeline import attach_observers, run
+from civix.core.ports.models.adapter import SourceAdapter
 from civix.core.quality.models.fields import FieldQuality
 from civix.core.snapshots.models.snapshot import RawRecord, SourceSnapshot
 from civix.domains.mobility_observations.adapters.sources.us.nyc_traffic_volume_counts import (
     DEFAULT_BASE_URL,
     NYC_JURISDICTION,
-    NYC_TRAFFIC_VOLUME_COUNTS_DATASET_CONFIG,
     NYC_TRAFFIC_VOLUME_COUNTS_DATASET_ID,
     NYC_TRAFFIC_VOLUME_COUNTS_RELEASE_CAVEATS,
     NYC_TRAFFIC_VOLUME_COUNTS_SCHEMA,
@@ -31,6 +31,7 @@ from civix.domains.mobility_observations.adapters.sources.us.nyc_traffic_volume_
     SOCRATA_ORDER,
     SOURCE_ID,
     NycTrafficVolumeCountMapper,
+    NycTrafficVolumeCountsAdapter,
     NycTrafficVolumeSiteMapper,
 )
 from civix.domains.mobility_observations.models.common import (
@@ -39,16 +40,15 @@ from civix.domains.mobility_observations.models.common import (
     ObservationDirection,
     TravelMode,
 )
-from civix.infra.sources.socrata import SocrataFetchConfig, SocrataSourceAdapter
+from civix.infra.sources.socrata import SocrataFetchConfig
 
 PINNED_NOW = datetime(2026, 5, 2, 12, 0, tzinfo=UTC)
 RESOURCE_URL = f"{DEFAULT_BASE_URL}{NYC_TRAFFIC_VOLUME_COUNTS_DATASET_ID}.json"
 FIXTURES = Path(__file__).parent / "fixtures"
 
 
-def _adapter(client: httpx.AsyncClient, *, page_size: int = 1000) -> SocrataSourceAdapter:
-    return SocrataSourceAdapter(
-        dataset=NYC_TRAFFIC_VOLUME_COUNTS_DATASET_CONFIG,
+def _adapter(client: httpx.AsyncClient, *, page_size: int = 1000) -> NycTrafficVolumeCountsAdapter:
+    return NycTrafficVolumeCountsAdapter(
         fetch_config=SocrataFetchConfig(
             client=client,
             clock=lambda: PINNED_NOW,
@@ -114,9 +114,11 @@ class TestAdapter:
             )
 
             async with httpx.AsyncClient() as client:
-                result = await _adapter(client).fetch()
+                adapter = _adapter(client)
+                result = await adapter.fetch()
                 records = [record async for record in result.records]
 
+        assert isinstance(adapter, SourceAdapter)
         assert result.snapshot.dataset_id == NYC_TRAFFIC_VOLUME_COUNTS_DATASET_ID
         assert result.snapshot.fetch_params == {"$order": SOCRATA_ORDER}
         assert [record.source_record_id for record in records] == ["REQ-100", "REQ-101"]

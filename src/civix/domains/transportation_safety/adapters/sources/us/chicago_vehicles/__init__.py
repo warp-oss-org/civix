@@ -8,6 +8,7 @@ from civix.domains.transportation_safety.adapters.sources.us.chicago_vehicles.ad
     DEFAULT_PAGE_SIZE,
     SOCRATA_ORDER,
     SOURCE_ID,
+    ChicagoVehiclesAdapter,
 )
 from civix.domains.transportation_safety.adapters.sources.us.chicago_vehicles.mapper import (
     MAPPER_ID,
@@ -25,11 +26,12 @@ __all__ = [
     "CHICAGO_VEHICLES_DATASET_ID",
     "CHICAGO_VEHICLES_SCHEMA",
     "CHICAGO_VEHICLES_TAXONOMIES",
+    "ChicagoVehiclesAdapter",
+    "ChicagoVehiclesMapper",
     "DEFAULT_BASE_URL",
     "DEFAULT_PAGE_SIZE",
     "MAPPER_ID",
     "MAPPER_VERSION",
     "SOCRATA_ORDER",
     "SOURCE_ID",
-    "ChicagoVehiclesMapper",
 ]

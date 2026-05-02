@@ -17,10 +17,10 @@ from civix.core.identity.models.identifiers import SnapshotId
 from civix.core.mapping.errors import MappingError
 from civix.core.pipeline import attach_observers, run
 from civix.core.ports.errors import FetchError
+from civix.core.ports.models.adapter import SourceAdapter
 from civix.core.quality.models.fields import FieldQuality
 from civix.core.snapshots.models.snapshot import RawRecord, SourceSnapshot
 from civix.domains.transportation_safety.adapters.sources.us.chicago_crashes import (
-    CHICAGO_CRASHES_DATASET_CONFIG,
     CHICAGO_CRASHES_DATASET_ID,
     CHICAGO_CRASHES_SCHEMA,
     CHICAGO_CRASHES_TAXONOMIES,
@@ -28,6 +28,7 @@ from civix.domains.transportation_safety.adapters.sources.us.chicago_crashes imp
     DEFAULT_BASE_URL,
     SOCRATA_ORDER,
     SOURCE_ID,
+    ChicagoCrashesAdapter,
     ChicagoCrashesMapper,
 )
 from civix.domains.transportation_safety.models.collision import (
@@ -36,7 +37,7 @@ from civix.domains.transportation_safety.models.collision import (
 )
 from civix.domains.transportation_safety.models.time import OccurrenceTimezoneStatus
 from civix.infra.exporters.json import write_snapshot
-from civix.infra.sources.socrata import SocrataFetchConfig, SocrataSourceAdapter
+from civix.infra.sources.socrata import SocrataFetchConfig
 
 PINNED_NOW = datetime(2026, 5, 1, 12, 0, tzinfo=UTC)
 RESOURCE_URL = f"{DEFAULT_BASE_URL}{CHICAGO_CRASHES_DATASET_ID}.json"
@@ -48,9 +49,8 @@ def _adapter(
     *,
     page_size: int = 1000,
     app_token: str | None = None,
-) -> SocrataSourceAdapter:
-    return SocrataSourceAdapter(
-        dataset=CHICAGO_CRASHES_DATASET_CONFIG,
+) -> ChicagoCrashesAdapter:
+    return ChicagoCrashesAdapter(
         fetch_config=SocrataFetchConfig(
             client=client,
             clock=lambda: PINNED_NOW,
@@ -120,9 +120,11 @@ class TestAdapter:
             )
 
             async with httpx.AsyncClient() as client:
-                result = await _adapter(client, app_token="token").fetch()
+                adapter = _adapter(client, app_token="token")
+                result = await adapter.fetch()
                 records = [r async for r in result.records]
 
+        assert isinstance(adapter, SourceAdapter)
         assert result.snapshot.source_id == SOURCE_ID
         assert result.snapshot.fetch_params == {"$order": SOCRATA_ORDER}
         assert [r.source_record_id for r in records] == ["crash-001", "crash-002"]

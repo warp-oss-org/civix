@@ -17,12 +17,12 @@ from civix.core.identity.models.identifiers import SnapshotId
 from civix.core.mapping.errors import MappingError
 from civix.core.pipeline import attach_observers, run
 from civix.core.ports.errors import FetchError
+from civix.core.ports.models.adapter import SourceAdapter
 from civix.core.quality.models.fields import FieldQuality
 from civix.core.snapshots.models.snapshot import RawRecord, SourceSnapshot
 from civix.domains.transportation_safety.adapters.sources.us.nyc_persons import (
     DEFAULT_BASE_URL,
     NYC_JURISDICTION,
-    NYC_PERSONS_DATASET_CONFIG,
     NYC_PERSONS_DATASET_ID,
     NYC_PERSONS_RELEASE_CAVEATS,
     NYC_PERSONS_SCHEMA,
@@ -30,12 +30,13 @@ from civix.domains.transportation_safety.adapters.sources.us.nyc_persons import 
     NYC_PERSONS_TAXONOMIES,
     SOCRATA_ORDER,
     SOURCE_ID,
+    NycPersonsAdapter,
     NycPersonsMapper,
 )
 from civix.domains.transportation_safety.models.parties import RoadUserRole
 from civix.domains.transportation_safety.models.person import CollisionPerson, InjuryOutcome
 from civix.infra.exporters.json import write_snapshot
-from civix.infra.sources.socrata import SocrataFetchConfig, SocrataSourceAdapter
+from civix.infra.sources.socrata import SocrataFetchConfig
 
 PINNED_NOW = datetime(2026, 5, 2, 12, 0, tzinfo=UTC)
 RESOURCE_URL = f"{DEFAULT_BASE_URL}{NYC_PERSONS_DATASET_ID}.json"
@@ -47,9 +48,8 @@ def _adapter(
     *,
     page_size: int = 1000,
     app_token: str | None = None,
-) -> SocrataSourceAdapter:
-    return SocrataSourceAdapter(
-        dataset=NYC_PERSONS_DATASET_CONFIG,
+) -> NycPersonsAdapter:
+    return NycPersonsAdapter(
         fetch_config=SocrataFetchConfig(
             client=client,
             clock=lambda: PINNED_NOW,
@@ -119,9 +119,11 @@ class TestAdapter:
             )
 
             async with httpx.AsyncClient() as client:
-                result = await _adapter(client, app_token="token").fetch()
+                adapter = _adapter(client, app_token="token")
+                result = await adapter.fetch()
                 records = [r async for r in result.records]
 
+        assert isinstance(adapter, SourceAdapter)
         assert result.snapshot.fetch_params == {"$order": SOCRATA_ORDER}
         assert [r.source_record_id for r in records] == ["person-row-001", "person-row-002"]
         assert requests[1].headers["X-App-Token"] == "token"

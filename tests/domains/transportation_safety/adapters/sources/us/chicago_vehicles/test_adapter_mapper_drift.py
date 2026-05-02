@@ -17,32 +17,32 @@ from civix.core.identity.models.identifiers import SnapshotId
 from civix.core.mapping.errors import MappingError
 from civix.core.pipeline import attach_observers, run
 from civix.core.ports.errors import FetchError
+from civix.core.ports.models.adapter import SourceAdapter
 from civix.core.quality.models.fields import FieldQuality
 from civix.core.snapshots.models.snapshot import RawRecord, SourceSnapshot
 from civix.domains.transportation_safety.adapters.sources.us.chicago_vehicles import (
     CHICAGO_JURISDICTION,
-    CHICAGO_VEHICLES_DATASET_CONFIG,
     CHICAGO_VEHICLES_DATASET_ID,
     CHICAGO_VEHICLES_SCHEMA,
     CHICAGO_VEHICLES_TAXONOMIES,
     DEFAULT_BASE_URL,
     SOCRATA_ORDER,
     SOURCE_ID,
+    ChicagoVehiclesAdapter,
     ChicagoVehiclesMapper,
 )
 from civix.domains.transportation_safety.models.parties import RoadUserRole
 from civix.domains.transportation_safety.models.vehicle import CollisionVehicle, VehicleCategory
 from civix.infra.exporters.json import write_snapshot
-from civix.infra.sources.socrata import SocrataFetchConfig, SocrataSourceAdapter
+from civix.infra.sources.socrata import SocrataFetchConfig
 
 PINNED_NOW = datetime(2026, 5, 1, 12, 0, tzinfo=UTC)
 RESOURCE_URL = f"{DEFAULT_BASE_URL}{CHICAGO_VEHICLES_DATASET_ID}.json"
 FIXTURES = Path(__file__).parent / "fixtures"
 
 
-def _adapter(client: httpx.AsyncClient, *, page_size: int = 1000) -> SocrataSourceAdapter:
-    return SocrataSourceAdapter(
-        dataset=CHICAGO_VEHICLES_DATASET_CONFIG,
+def _adapter(client: httpx.AsyncClient, *, page_size: int = 1000) -> ChicagoVehiclesAdapter:
+    return ChicagoVehiclesAdapter(
         fetch_config=SocrataFetchConfig(
             client=client,
             clock=lambda: PINNED_NOW,
@@ -111,9 +111,11 @@ class TestAdapter:
             )
 
             async with httpx.AsyncClient() as client:
-                result = await _adapter(client).fetch()
+                adapter = _adapter(client)
+                result = await adapter.fetch()
                 records = [r async for r in result.records]
 
+        assert isinstance(adapter, SourceAdapter)
         assert result.snapshot.fetch_params == {"$order": SOCRATA_ORDER}
         assert [r.source_record_id for r in records] == ["unit-001", "unit-002"]
         assert requests[1].url.params["$order"] == SOCRATA_ORDER

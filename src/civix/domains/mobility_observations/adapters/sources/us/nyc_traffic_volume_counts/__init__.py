@@ -10,6 +10,7 @@ from .adapter import (
     NYC_TRAFFIC_VOLUME_COUNTS_SOURCE_SCOPE,
     SOCRATA_ORDER,
     SOURCE_ID,
+    NycTrafficVolumeCountsAdapter,
 )
 from .mapper import (
     COUNT_MAPPER_ID,
@@ -35,6 +36,7 @@ __all__ = [
     "NYC_TRAFFIC_VOLUME_COUNTS_SCHEMA",
     "NYC_TRAFFIC_VOLUME_COUNTS_SOURCE_SCOPE",
     "NYC_TRAFFIC_VOLUME_COUNTS_TAXONOMIES",
+    "NycTrafficVolumeCountsAdapter",
     "NycTrafficVolumeCountMapper",
     "NycTrafficVolumeSiteMapper",
     "SITE_MAPPER_ID",

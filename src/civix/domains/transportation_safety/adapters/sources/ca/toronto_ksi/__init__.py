@@ -8,6 +8,7 @@ from civix.domains.transportation_safety.adapters.sources.ca.toronto_ksi.adapter
     TORONTO_KSI_DATASET_ID,
     TORONTO_KSI_JURISDICTION,
     TORONTO_KSI_SOURCE_RECORD_ID_FIELDS,
+    TorontoKsiAdapter,
 )
 from civix.domains.transportation_safety.adapters.sources.ca.toronto_ksi.mapper import (
     TorontoKsiGroupedMapper,
@@ -28,6 +29,7 @@ __all__ = [
     "TORONTO_KSI_SCHEMA",
     "TORONTO_KSI_SOURCE_RECORD_ID_FIELDS",
     "TORONTO_KSI_TAXONOMIES",
+    "TorontoKsiAdapter",
     "TorontoKsiGroupedMapper",
     "TorontoKsiGroupResult",
 ]

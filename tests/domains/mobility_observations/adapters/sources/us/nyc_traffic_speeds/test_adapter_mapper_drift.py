@@ -17,12 +17,12 @@ from civix.core.drift import SchemaObserver, TaxonomyDriftKind, TaxonomyObserver
 from civix.core.identity.models.identifiers import SnapshotId
 from civix.core.mapping.errors import MappingError
 from civix.core.pipeline import attach_observers, run
+from civix.core.ports.models.adapter import SourceAdapter
 from civix.core.quality.models.fields import FieldQuality
 from civix.core.snapshots.models.snapshot import RawRecord, SourceSnapshot
 from civix.domains.mobility_observations.adapters.sources.us.nyc_traffic_speeds import (
     DEFAULT_BASE_URL,
     NYC_JURISDICTION,
-    NYC_TRAFFIC_SPEEDS_DATASET_CONFIG,
     NYC_TRAFFIC_SPEEDS_DATASET_ID,
     NYC_TRAFFIC_SPEEDS_RELEASE_CAVEATS,
     NYC_TRAFFIC_SPEEDS_SCHEMA,
@@ -30,6 +30,7 @@ from civix.domains.mobility_observations.adapters.sources.us.nyc_traffic_speeds 
     NYC_TRAFFIC_SPEEDS_TAXONOMIES,
     SOCRATA_ORDER,
     SOURCE_ID,
+    NycTrafficSpeedsAdapter,
     NycTrafficSpeedsMapper,
 )
 from civix.domains.mobility_observations.models.common import (
@@ -37,16 +38,15 @@ from civix.domains.mobility_observations.models.common import (
     SpeedUnit,
     TravelMode,
 )
-from civix.infra.sources.socrata import SocrataFetchConfig, SocrataSourceAdapter
+from civix.infra.sources.socrata import SocrataFetchConfig
 
 PINNED_NOW = datetime(2026, 5, 2, 12, 0, tzinfo=UTC)
 RESOURCE_URL = f"{DEFAULT_BASE_URL}{NYC_TRAFFIC_SPEEDS_DATASET_ID}.json"
 FIXTURES = Path(__file__).parent / "fixtures"
 
 
-def _adapter(client: httpx.AsyncClient, *, page_size: int = 1000) -> SocrataSourceAdapter:
-    return SocrataSourceAdapter(
-        dataset=NYC_TRAFFIC_SPEEDS_DATASET_CONFIG,
+def _adapter(client: httpx.AsyncClient, *, page_size: int = 1000) -> NycTrafficSpeedsAdapter:
+    return NycTrafficSpeedsAdapter(
         fetch_config=SocrataFetchConfig(
             client=client,
             clock=lambda: PINNED_NOW,
@@ -112,9 +112,11 @@ class TestAdapter:
             )
 
             async with httpx.AsyncClient() as client:
-                result = await _adapter(client).fetch()
+                adapter = _adapter(client)
+                result = await adapter.fetch()
                 records = [record async for record in result.records]
 
+        assert isinstance(adapter, SourceAdapter)
         assert result.snapshot.dataset_id == NYC_TRAFFIC_SPEEDS_DATASET_ID
         assert [record.source_record_id for record in records] == ["4616334", "4616335"]
         assert requests[1].url.params["$order"] == SOCRATA_ORDER

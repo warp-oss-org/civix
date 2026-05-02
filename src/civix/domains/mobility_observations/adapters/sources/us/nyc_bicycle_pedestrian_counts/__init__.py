@@ -12,6 +12,8 @@ from .adapter import (
     NYC_JURISDICTION,
     SOCRATA_ORDER,
     SOURCE_ID,
+    NycBicyclePedestrianCountsAdapter,
+    NycBicyclePedestrianSensorsAdapter,
 )
 from .mapper import (
     COUNT_MAPPER_ID,
@@ -43,7 +45,9 @@ __all__ = [
     "NYC_BICYCLE_PEDESTRIAN_SENSORS_TAXONOMIES",
     "NYC_BICYCLE_PEDESTRIAN_SOURCE_SCOPE",
     "NYC_JURISDICTION",
+    "NycBicyclePedestrianCountsAdapter",
     "NycBicyclePedestrianCountMapper",
+    "NycBicyclePedestrianSensorsAdapter",
     "NycBicyclePedestrianSensorMapper",
     "SENSOR_MAPPER_ID",
     "SOCRATA_ORDER",

@@ -10,6 +10,7 @@ from civix.domains.transportation_safety.adapters.sources.us.nyc_crashes.adapter
     NYC_JURISDICTION,
     SOCRATA_ORDER,
     SOURCE_ID,
+    NycCrashesAdapter,
 )
 from civix.domains.transportation_safety.adapters.sources.us.nyc_crashes.mapper import (
     MAPPER_ID,
@@ -33,6 +34,7 @@ __all__ = [
     "NYC_CRASHES_SCHEMA",
     "NYC_CRASHES_TAXONOMIES",
     "NYC_JURISDICTION",
+    "NycCrashesAdapter",
     "NycCrashesMapper",
     "SOCRATA_ORDER",
     "SOURCE_ID",

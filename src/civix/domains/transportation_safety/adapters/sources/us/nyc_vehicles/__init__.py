@@ -10,6 +10,7 @@ from civix.domains.transportation_safety.adapters.sources.us.nyc_vehicles.adapte
     NYC_VEHICLES_SOURCE_SCOPE,
     SOCRATA_ORDER,
     SOURCE_ID,
+    NycVehiclesAdapter,
 )
 from civix.domains.transportation_safety.adapters.sources.us.nyc_vehicles.mapper import (
     MAPPER_ID,
@@ -33,6 +34,7 @@ __all__ = [
     "NYC_VEHICLES_SCHEMA",
     "NYC_VEHICLES_SOURCE_SCOPE",
     "NYC_VEHICLES_TAXONOMIES",
+    "NycVehiclesAdapter",
     "NycVehiclesMapper",
     "SOCRATA_ORDER",
     "SOURCE_ID",

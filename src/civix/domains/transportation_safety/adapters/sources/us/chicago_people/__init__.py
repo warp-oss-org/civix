@@ -8,6 +8,7 @@ from civix.domains.transportation_safety.adapters.sources.us.chicago_people.adap
     DEFAULT_PAGE_SIZE,
     SOCRATA_ORDER,
     SOURCE_ID,
+    ChicagoPeopleAdapter,
 )
 from civix.domains.transportation_safety.adapters.sources.us.chicago_people.mapper import (
     MAPPER_ID,
@@ -25,11 +26,12 @@ __all__ = [
     "CHICAGO_PEOPLE_DATASET_ID",
     "CHICAGO_PEOPLE_SCHEMA",
     "CHICAGO_PEOPLE_TAXONOMIES",
+    "ChicagoPeopleAdapter",
+    "ChicagoPeopleMapper",
     "DEFAULT_BASE_URL",
     "DEFAULT_PAGE_SIZE",
     "MAPPER_ID",
     "MAPPER_VERSION",
     "SOCRATA_ORDER",
     "SOURCE_ID",
-    "ChicagoPeopleMapper",
 ]

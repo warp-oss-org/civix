@@ -10,6 +10,7 @@ from .adapter import (
     NYC_TRAFFIC_SPEEDS_SOURCE_SCOPE,
     SOCRATA_ORDER,
     SOURCE_ID,
+    NycTrafficSpeedsAdapter,
 )
 from .mapper import (
     MAPPER_ID,
@@ -33,6 +34,7 @@ __all__ = [
     "NYC_TRAFFIC_SPEEDS_SCHEMA",
     "NYC_TRAFFIC_SPEEDS_SOURCE_SCOPE",
     "NYC_TRAFFIC_SPEEDS_TAXONOMIES",
+    "NycTrafficSpeedsAdapter",
     "NycTrafficSpeedsMapper",
     "SOCRATA_ORDER",
     "SOURCE_ID",

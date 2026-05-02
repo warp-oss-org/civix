@@ -16,16 +16,17 @@ from civix.core.drift import SchemaObserver, TaxonomyDriftKind, TaxonomyObserver
 from civix.core.identity.models.identifiers import SnapshotId
 from civix.core.mapping.errors import MappingError
 from civix.core.pipeline import PipelineRecord, PipelineResult
+from civix.core.ports.models.adapter import SourceAdapter
 from civix.core.quality.models.fields import FieldQuality
 from civix.core.snapshots.models.snapshot import RawRecord, SourceSnapshot
 from civix.domains.transportation_safety.adapters.sources.ca.toronto_ksi import (
     DEFAULT_BASE_URL,
     SOURCE_ID,
-    TORONTO_KSI_DATASET_CONFIG,
     TORONTO_KSI_DATASET_ID,
     TORONTO_KSI_JURISDICTION,
     TORONTO_KSI_SCHEMA,
     TORONTO_KSI_TAXONOMIES,
+    TorontoKsiAdapter,
     TorontoKsiGroupedMapper,
 )
 from civix.domains.transportation_safety.models.collision import (
@@ -36,7 +37,7 @@ from civix.domains.transportation_safety.models.parties import RoadUserRole
 from civix.domains.transportation_safety.models.person import InjuryOutcome
 from civix.domains.transportation_safety.models.vehicle import VehicleCategory
 from civix.infra.exporters.json import write_snapshot
-from civix.infra.sources.ckan import CkanFetchConfig, CkanSourceAdapter
+from civix.infra.sources.ckan import CkanFetchConfig
 
 PINNED_NOW = datetime(2026, 5, 1, 12, 0, tzinfo=UTC)
 RESOURCE_ID = "c9b88f1f-863e-42f1-ada0-2c09b1e2eaa4"
@@ -45,9 +46,8 @@ DATASTORE_SEARCH_URL = f"{DEFAULT_BASE_URL}datastore_search"
 FIXTURES = Path(__file__).parent / "fixtures"
 
 
-def _adapter(client: httpx.AsyncClient, *, page_size: int = 1000) -> CkanSourceAdapter:
-    return CkanSourceAdapter(
-        dataset=TORONTO_KSI_DATASET_CONFIG,
+def _adapter(client: httpx.AsyncClient, *, page_size: int = 1000) -> TorontoKsiAdapter:
+    return TorontoKsiAdapter(
         fetch_config=CkanFetchConfig(
             client=client,
             clock=lambda: PINNED_NOW,
@@ -126,9 +126,11 @@ class TestAdapter:
             )
 
             async with httpx.AsyncClient() as client:
-                result = await _adapter(client).fetch()
+                adapter = _adapter(client)
+                result = await adapter.fetch()
                 records = [record async for record in result.records]
 
+        assert isinstance(adapter, SourceAdapter)
         assert result.snapshot.source_id == SOURCE_ID
         assert result.snapshot.dataset_id == TORONTO_KSI_DATASET_ID
         assert result.snapshot.fetch_params == {"resource_id": RESOURCE_ID}
