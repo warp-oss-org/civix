@@ -1,0 +1,38 @@
+[
+  {
+    "id": 51,
+    "count_point_id": 51,
+    "aadf_year": 2024,
+    "region_id": 1,
+    "local_authority_id": 1,
+    "road_name": "A3111",
+    "road_category": "PA",
+    "road_type": "Major",
+    "start_junction_road_name": "Pierhead, Hugh Town",
+    "end_junction_road_name": "A3112",
+    "easting": 90173,
+    "northing": 10641,
+    "latitude": "49.91550316",
+    "longitude": "-6.31755805",
+    "link_length_km": "0.30",
+    "link_length_miles": "0.19"
+  },
+  {
+    "id": 942,
+    "count_point_id": 942,
+    "aadf_year": 2024,
+    "region_id": 6,
+    "local_authority_id": 88,
+    "road_name": "M1",
+    "road_category": "TM",
+    "road_type": "Major",
+    "start_junction_road_name": "M1 J3",
+    "end_junction_road_name": "M1 J4",
+    "easting": 519110,
+    "northing": 192443,
+    "latitude": "51.61234567",
+    "longitude": "-0.34567890",
+    "link_length_km": "5.20",
+    "link_length_miles": "3.23"
+  }
+]
