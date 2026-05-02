@@ -15,6 +15,7 @@ from civix.core.provenance.models.provenance import MapperVersion, ProvenanceRef
 from civix.core.quality.models.fields import FieldQuality, MappedField
 from civix.core.spatial.models.location import Address, Coordinate
 from civix.core.taxonomy.models.category import CategoryRef
+from civix.core.temporal import TemporalPeriod, TemporalPeriodPrecision, TemporalTimezoneStatus
 from civix.domains.transportation_safety.models.collision import (
     CollisionSeverity,
     TrafficCollision,
@@ -208,6 +209,11 @@ def _person(**overrides: Any) -> CollisionPerson:
 
 
 class TestOccurrenceTime:
+    def test_occurrence_time_uses_core_temporal_contract(self) -> None:
+        assert OccurrenceTime is TemporalPeriod
+        assert OccurrenceTimePrecision is TemporalPeriodPrecision
+        assert OccurrenceTimezoneStatus is TemporalTimezoneStatus
+
     def test_date_hour_precision(self) -> None:
         occurred = OccurrenceTime(
             precision=OccurrenceTimePrecision.DATE_HOUR,

@@ -1,0 +1,1 @@
+"""Mobility observation domain tests."""
