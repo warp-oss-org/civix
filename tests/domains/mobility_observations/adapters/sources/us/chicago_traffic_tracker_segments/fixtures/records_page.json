@@ -1,0 +1,34 @@
+[
+  {
+    "segmentid": "1",
+    "street": "Pulaski",
+    "_direction": "NB",
+    "_fromst": "Devon",
+    "_tost": "Bryn Mawr",
+    "_length": "0.99",
+    "_strheading": "N",
+    "_comments": "",
+    "_lif_lon": "-87.7264",
+    "_lif_lat": "41.997",
+    "_lit_lon": "-87.7264",
+    "_lit_lat": "41.984",
+    "_traffic": "25",
+    "_last_updt": "2026-04-13 10:10:54.0"
+  },
+  {
+    "segmentid": "2",
+    "street": "Lake Shore Dr",
+    "_direction": "SB",
+    "_fromst": "Foster",
+    "_tost": "Wilson",
+    "_length": "1.10",
+    "_strheading": "S",
+    "_comments": "",
+    "_lif_lon": "-87.6402",
+    "_lif_lat": "41.975",
+    "_lit_lon": "-87.6450",
+    "_lit_lat": "41.965",
+    "_traffic": "-1",
+    "_last_updt": "2026-04-13 10:10:54.0"
+  }
+]
