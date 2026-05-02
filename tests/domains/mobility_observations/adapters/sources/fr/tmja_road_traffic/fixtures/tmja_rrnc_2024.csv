@@ -1,0 +1,5 @@
+dateReferentiel;route;longueur;prD;depPrD;concessionPrD;absD;cumulD;xD;yD;zD;prF;depPrF;concessionPrF;absF;cumulF;xF;yF;zF;cote;anneeMesureTrafic;typeComptageTrafic;typeComptageTrafic_lib;TMJA;ratio_PL
+01/01/2024;A0001;1499;19;95;C;0;18875;665481,08;6878892,47;0;20;95;C;499;20374;665966,61;6880317,6;0;I;2024;1;Permanent horaire;96596;17,192
+01/01/2024;A0001;2777;27;95;C;873;27748;667208,81;6887489,88;0;30;95;C;650;30525;667345,96;6890249,01;0;I;2024;1;Permanent horaire;85779;17,689
+01/01/2024;N0007;1000;1;13;N;0;100;700000,00;6300000,00;0;2;13;N;0;1100;701000,00;6301000,00;0;D;2024;1;Permanent horaire;12345;8,5
+
