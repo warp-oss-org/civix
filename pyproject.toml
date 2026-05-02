@@ -92,6 +92,7 @@ name = "domain models stay pure"
 type = "forbidden"
 source_modules = [
     "civix.domains.business_licences.models",
+    "civix.domains.hazard_mitigation.models",
     "civix.domains.mobility_observations.models",
     "civix.domains.transportation_safety.models",
 ]
