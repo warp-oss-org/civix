@@ -1,0 +1,59 @@
+"""Great Britain STATS19 source package."""
+
+from civix.domains.transportation_safety.adapters.sources.gb.stats19.adapter import (
+    SOURCE_ID,
+    STATS19_CASUALTIES_DATASET_ID,
+    STATS19_COLLISIONS_DATASET_ID,
+    STATS19_JURISDICTION,
+    STATS19_RELEASE,
+    STATS19_RELEASE_CAVEATS,
+    STATS19_SOURCE_SCOPE,
+    STATS19_VEHICLES_DATASET_ID,
+)
+from civix.domains.transportation_safety.adapters.sources.gb.stats19.mapper import (
+    CASUALTY_MAPPER_ID,
+    COLLISION_MAPPER_ID,
+    MAPPER_VERSION,
+    VEHICLE_MAPPER_ID,
+    Stats19CasualtyMapper,
+    Stats19CollisionMapper,
+    Stats19LinkedMapper,
+    Stats19LinkedResult,
+    Stats19VehicleMapper,
+)
+from civix.domains.transportation_safety.adapters.sources.gb.stats19.schema import (
+    STATS19_CASUALTIES_SCHEMA,
+    STATS19_CASUALTIES_TAXONOMIES,
+    STATS19_COLLISIONS_SCHEMA,
+    STATS19_COLLISIONS_TAXONOMIES,
+    STATS19_TAXONOMIES,
+    STATS19_VEHICLES_SCHEMA,
+    STATS19_VEHICLES_TAXONOMIES,
+)
+
+__all__ = [
+    "SOURCE_ID",
+    "CASUALTY_MAPPER_ID",
+    "COLLISION_MAPPER_ID",
+    "MAPPER_VERSION",
+    "STATS19_CASUALTIES_DATASET_ID",
+    "STATS19_CASUALTIES_SCHEMA",
+    "STATS19_CASUALTIES_TAXONOMIES",
+    "STATS19_COLLISIONS_DATASET_ID",
+    "STATS19_COLLISIONS_SCHEMA",
+    "STATS19_COLLISIONS_TAXONOMIES",
+    "STATS19_JURISDICTION",
+    "STATS19_RELEASE",
+    "STATS19_RELEASE_CAVEATS",
+    "STATS19_SOURCE_SCOPE",
+    "STATS19_TAXONOMIES",
+    "STATS19_VEHICLES_DATASET_ID",
+    "STATS19_VEHICLES_SCHEMA",
+    "STATS19_VEHICLES_TAXONOMIES",
+    "Stats19CasualtyMapper",
+    "Stats19CollisionMapper",
+    "Stats19LinkedMapper",
+    "Stats19LinkedResult",
+    "Stats19VehicleMapper",
+    "VEHICLE_MAPPER_ID",
+]

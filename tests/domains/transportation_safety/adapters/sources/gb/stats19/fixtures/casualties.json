@@ -1,0 +1,23 @@
+[
+  {
+    "accident_index": "2024010000001",
+    "vehicle_reference": "1",
+    "casualty_reference": "1",
+    "casualty_class": "2",
+    "casualty_severity": "2",
+    "casualty_type": "9",
+    "age_of_casualty": "34",
+    "age_band_of_casualty": "7"
+  },
+  {
+    "accident_index": "2024010000001",
+    "vehicle_reference": "-1",
+    "casualty_reference": "2",
+    "casualty_class": "3",
+    "casualty_severity": "3",
+    "casualty_type": "0",
+    "age_of_casualty": "",
+    "age_band_of_casualty": "5"
+  }
+]
+

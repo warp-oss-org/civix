@@ -1,0 +1,22 @@
+[
+  {
+    "accident_index": "2024010000001",
+    "date": "14/02/2024",
+    "time": "08:35",
+    "accident_severity": "2",
+    "longitude": "-0.1278",
+    "latitude": "51.5074",
+    "first_road_class": "3",
+    "second_road_class": "6",
+    "road_type": "6",
+    "speed_limit": "30",
+    "junction_detail": "3",
+    "junction_control": "4",
+    "light_conditions": "1",
+    "weather_conditions": "1",
+    "road_surface_conditions": "2",
+    "number_of_vehicles": "2",
+    "number_of_casualties": "2"
+  }
+]
+
