@@ -1,0 +1,50 @@
+[
+  {
+    "Num_Acc": "202400000001",
+    "id_usager": "usr-001",
+    "id_vehicule": "veh-001",
+    "num_veh": "A01",
+    "place": "1",
+    "catu": "1",
+    "grav": "3",
+    "an_nais": "1980",
+    "secu1": "1",
+    "secu2": "",
+    "secu3": "",
+    "locp": "0",
+    "actp": "0",
+    "etatp": "0"
+  },
+  {
+    "Num_Acc": "202400000001",
+    "id_usager": "usr-002",
+    "id_vehicule": "veh-002",
+    "num_veh": "A02",
+    "place": "1",
+    "catu": "1",
+    "grav": "4",
+    "an_nais": "1994",
+    "secu1": "2",
+    "secu2": "",
+    "secu3": "",
+    "locp": "0",
+    "actp": "0",
+    "etatp": "0"
+  },
+  {
+    "Num_Acc": "202400000002",
+    "id_usager": "usr-003",
+    "id_vehicule": "",
+    "num_veh": "",
+    "place": "",
+    "catu": "3",
+    "grav": "2",
+    "an_nais": "1970",
+    "secu1": "8",
+    "secu2": "",
+    "secu3": "",
+    "locp": "1",
+    "actp": "1",
+    "etatp": "1"
+  }
+]

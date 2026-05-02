@@ -113,6 +113,9 @@ modules = [
     "civix.domains.transportation_safety.adapters.sources.us.chicago_crashes",
     "civix.domains.transportation_safety.adapters.sources.us.chicago_people",
     "civix.domains.transportation_safety.adapters.sources.us.chicago_vehicles",
+    "civix.domains.transportation_safety.adapters.sources.ca.toronto_ksi",
+    "civix.domains.transportation_safety.adapters.sources.gb.stats19",
+    "civix.domains.transportation_safety.adapters.sources.fr.baac",
 ]
 
 [[tool.importlinter.contracts]]
