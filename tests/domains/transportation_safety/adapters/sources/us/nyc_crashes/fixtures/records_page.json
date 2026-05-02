@@ -1,0 +1,76 @@
+[
+  {
+    "crash_date": "2026-04-20T00:00:00.000",
+    "crash_time": "14:35",
+    "borough": "BROOKLYN",
+    "zip_code": "11201",
+    "latitude": "40.695",
+    "longitude": "-73.989",
+    "location": {
+      "type": "Point",
+      "coordinates": [
+        -73.989,
+        40.695
+      ]
+    },
+    "on_street_name": "ADAMS STREET",
+    "off_street_name": null,
+    "cross_street_name": "TILLARY STREET",
+    "number_of_persons_injured": "1",
+    "number_of_persons_killed": "0",
+    "number_of_pedestrians_injured": "0",
+    "number_of_pedestrians_killed": "0",
+    "number_of_cyclist_injured": "1",
+    "number_of_cyclist_killed": "0",
+    "number_of_motorist_injured": "0",
+    "number_of_motorist_killed": "0",
+    "contributing_factor_vehicle_1": "Driver Inattention/Distraction",
+    "contributing_factor_vehicle_2": "Failure to Yield Right-of-Way",
+    "contributing_factor_vehicle_3": "Unspecified",
+    "contributing_factor_vehicle_4": null,
+    "contributing_factor_vehicle_5": null,
+    "collision_id": "4890001",
+    "vehicle_type_code1": "Sedan",
+    "vehicle_type_code2": "Bike",
+    "vehicle_type_code_3": null,
+    "vehicle_type_code_4": null,
+    "vehicle_type_code_5": null
+  },
+  {
+    "crash_date": "2026-04-21T00:00:00.000",
+    "crash_time": "9:05",
+    "borough": "QUEENS",
+    "zip_code": "11101",
+    "latitude": "0",
+    "longitude": "0",
+    "location": {
+      "type": "Point",
+      "coordinates": [
+        0,
+        0
+      ]
+    },
+    "on_street_name": "ADAMS STREET",
+    "off_street_name": "123 ADAMS STREET",
+    "cross_street_name": null,
+    "number_of_persons_injured": "0",
+    "number_of_persons_killed": "0",
+    "number_of_pedestrians_injured": "0",
+    "number_of_pedestrians_killed": "0",
+    "number_of_cyclist_injured": "0",
+    "number_of_cyclist_killed": "0",
+    "number_of_motorist_injured": "0",
+    "number_of_motorist_killed": "0",
+    "contributing_factor_vehicle_1": "Unspecified",
+    "contributing_factor_vehicle_2": null,
+    "contributing_factor_vehicle_3": null,
+    "contributing_factor_vehicle_4": null,
+    "contributing_factor_vehicle_5": null,
+    "collision_id": "4890002",
+    "vehicle_type_code1": "Station Wagon/Sport Utility Vehicle",
+    "vehicle_type_code2": null,
+    "vehicle_type_code_3": null,
+    "vehicle_type_code_4": null,
+    "vehicle_type_code_5": null
+  }
+]
