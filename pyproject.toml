@@ -121,6 +121,9 @@ modules = [
     "civix.domains.transportation_safety.adapters.sources.ca.toronto_ksi",
     "civix.domains.transportation_safety.adapters.sources.gb.stats19",
     "civix.domains.transportation_safety.adapters.sources.fr.baac",
+    "civix.domains.mobility_observations.adapters.sources.us.nyc_bicycle_pedestrian_counts",
+    "civix.domains.mobility_observations.adapters.sources.us.nyc_traffic_speeds",
+    "civix.domains.mobility_observations.adapters.sources.us.nyc_traffic_volume_counts",
 ]
 
 [[tool.importlinter.contracts]]

@@ -28,7 +28,7 @@ SOURCE_ID = SourceId("example-socrata")
 JURISDICTION = Jurisdiction(country="US", region="IL", locality="Chicago")
 
 
-def _dataset(source_record_id_field: str = "record_id") -> SocrataDatasetConfig:
+def _dataset(source_record_id_field: str | None = "record_id") -> SocrataDatasetConfig:
     return SocrataDatasetConfig(
         source_id=SOURCE_ID,
         dataset_id=DATASET_ID,
@@ -150,6 +150,25 @@ class TestSocrataFetch:
                 records = [r async for r in result.records]
 
         assert records == []
+
+    async def test_optional_source_record_id_field_leaves_record_id_unset(self) -> None:
+        async with respx.mock(assert_all_called=True) as respx_mock:
+            respx_mock.get(RESOURCE_URL).mock(
+                side_effect=[
+                    httpx.Response(200, json=[{"count": "1"}]),
+                    httpx.Response(200, json=[{"record_id": "not-unique", "name": "Kept"}]),
+                ]
+            )
+
+            async with httpx.AsyncClient() as client:
+                result = await fetch_socrata_dataset(
+                    dataset=_dataset(source_record_id_field=None),
+                    fetch=_fetch(client),
+                )
+                records = [r async for r in result.records]
+
+        assert records[0].source_record_id is None
+        assert records[0].raw_data == {"record_id": "not-unique", "name": "Kept"}
 
     async def test_partial_last_page_terminates_without_extra_fetch(self) -> None:
         requests: list[httpx.Request] = []

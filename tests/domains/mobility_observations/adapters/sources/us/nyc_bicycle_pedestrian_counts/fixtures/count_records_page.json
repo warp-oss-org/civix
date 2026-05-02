@@ -1,0 +1,24 @@
+[
+  {
+    "sensor_id": "eco-100",
+    "travelMode": "Bicycle",
+    "direction": "Northbound",
+    "flowID": "flow-nb",
+    "flowName": "Northbound lane",
+    "timestamp": "2026-04-03T08:15:00",
+    "granularity": "15 minutes",
+    "counts": "16",
+    "status": "valid"
+  },
+  {
+    "sensor_id": "eco-101",
+    "travelMode": "Pedestrian",
+    "direction": "Southbound",
+    "flowID": "flow-sb",
+    "flowName": "Southbound sidewalk",
+    "timestamp": "2026-04-03T08:15:00",
+    "granularity": "15 minutes",
+    "counts": "27",
+    "status": "preliminary"
+  }
+]

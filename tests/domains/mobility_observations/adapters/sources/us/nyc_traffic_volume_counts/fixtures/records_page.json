@@ -1,0 +1,34 @@
+[
+  {
+    "RequestID": "REQ-100",
+    "Boro": "Manhattan",
+    "Yr": "2026",
+    "M": "4",
+    "D": "2",
+    "HH": "8",
+    "MM": "15",
+    "Vol": "42",
+    "SegmentID": "12345",
+    "WktGeom": "LINESTRING (-73.9855 40.7580, -73.9810 40.7610)",
+    "street": "Broadway",
+    "fromSt": "West 42 Street",
+    "toSt": "West 43 Street",
+    "Direction": "N/B"
+  },
+  {
+    "RequestID": "REQ-101",
+    "Boro": "Manhattan",
+    "Yr": "2026",
+    "M": "4",
+    "D": "2",
+    "HH": "8",
+    "MM": "30",
+    "Vol": "39",
+    "SegmentID": "12345",
+    "WktGeom": "LINESTRING (-73.9855 40.7580, -73.9810 40.7610)",
+    "street": "Broadway",
+    "fromSt": "West 42 Street",
+    "toSt": "West 43 Street",
+    "Direction": "S/B"
+  }
+]

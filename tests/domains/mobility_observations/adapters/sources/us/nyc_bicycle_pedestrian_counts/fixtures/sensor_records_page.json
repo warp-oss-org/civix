@@ -1,0 +1,18 @@
+[
+  {
+    "sensor_id": "eco-100",
+    "sensor_name": "Queensboro Bridge Path",
+    "longitude": "-73.9562",
+    "latitude": "40.7587",
+    "direction": "Northbound",
+    "status": "valid"
+  },
+  {
+    "sensor_id": "eco-101",
+    "sensor_name": "Brooklyn Bridge Path",
+    "longitude": "-73.9969",
+    "latitude": "40.7061",
+    "direction": "Southbound",
+    "status": "valid"
+  }
+]

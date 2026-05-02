@@ -1,0 +1,32 @@
+[
+  {
+    "ID": "4616334",
+    "SPEED": "22.4",
+    "TRAVEL_TIME": "140",
+    "STATUS": "0",
+    "DATA_AS_OF": "2026-04-03T09:45:00",
+    "LINK_ID": "4616334",
+    "LINK_POINTS": "40.758,-73.985 40.761,-73.981",
+    "ENCODED_POLY_LINE": "abc",
+    "ENCODED_POLY_LINE_LVLS": "BBB",
+    "OWNER": "NYCDOT",
+    "TRANSCOM_ID": "4616334",
+    "BOROUGH": "Manhattan",
+    "LINK_NAME": "11th Ave N 42nd St - 57th St"
+  },
+  {
+    "ID": "4616335",
+    "SPEED": "18",
+    "TRAVEL_TIME": "185",
+    "STATUS": "1",
+    "DATA_AS_OF": "2026-04-03T09:45:00",
+    "LINK_ID": "4616335",
+    "LINK_POINTS": "40.751,-73.990 40.754,-73.989",
+    "ENCODED_POLY_LINE": "def",
+    "ENCODED_POLY_LINE_LVLS": "BBB",
+    "OWNER": "NYCDOT",
+    "TRANSCOM_ID": "4616335",
+    "BOROUGH": "Brooklyn",
+    "LINK_NAME": "BQE S Atlantic Ave - Hamilton Ave"
+  }
+]

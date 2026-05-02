@@ -118,3 +118,19 @@ class CountUnit(StrEnum):
     VEHICLES_PER_DAY = "vehicles_per_day"
     PERSONS_PER_PERIOD = "persons_per_period"
     SOURCE_SPECIFIC = "source_specific"
+
+
+class SpeedMetricType(StrEnum):
+    """Normalized speed-observation metric type."""
+
+    OBSERVED_SPEED = "observed_speed"
+    TRAVEL_TIME = "travel_time"
+    SOURCE_SPECIFIC = "source_specific"
+
+
+class SpeedUnit(StrEnum):
+    """Normalized unit for speed-observation metric values."""
+
+    MILES_PER_HOUR = "miles_per_hour"
+    SECONDS = "seconds"
+    SOURCE_SPECIFIC = "source_specific"

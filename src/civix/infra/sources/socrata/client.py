@@ -30,7 +30,7 @@ class SocrataDatasetConfig:
     dataset_id: DatasetId
     jurisdiction: Jurisdiction
     base_url: str
-    source_record_id_field: str
+    source_record_id_field: str | None
 
 
 @dataclass(frozen=True, slots=True)
@@ -220,7 +220,11 @@ def _build_record(
         for name, value in row_dict.items()
         if not name.startswith(SOCRATA_COMPUTED_REGION_PREFIX)
     }
-    source_record_id = raw_data.get(dataset.source_record_id_field)
+    source_record_id = (
+        raw_data.get(dataset.source_record_id_field)
+        if dataset.source_record_id_field is not None
+        else None
+    )
 
     try:
         return RawRecord(

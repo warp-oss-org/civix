@@ -26,10 +26,16 @@ from civix.domains.mobility_observations.models.common import (
     MobilitySiteKind,
     MovementType,
     ObservationDirection,
+    SpeedMetricType,
+    SpeedUnit,
     TravelMode,
 )
 from civix.domains.mobility_observations.models.count import MobilityCountObservation
 from civix.domains.mobility_observations.models.site import MobilityObservationSite
+from civix.domains.mobility_observations.models.speed import (
+    MobilitySpeedMetric,
+    MobilitySpeedObservation,
+)
 
 
 def _mapped[T](
@@ -156,6 +162,64 @@ def _count(**overrides: Any) -> MobilityCountObservation:
     defaults.update(overrides)
 
     return MobilityCountObservation(**defaults)
+
+
+def _speed_metric(**overrides: Any) -> MobilitySpeedMetric:
+    defaults: dict[str, Any] = {
+        "metric_type": _mapped(
+            SpeedMetricType.OBSERVED_SPEED,
+            "speed",
+            quality=FieldQuality.STANDARDIZED,
+        ),
+        "unit": _mapped(
+            SpeedUnit.MILES_PER_HOUR,
+            "speed",
+            quality=FieldQuality.STANDARDIZED,
+        ),
+        "value": _mapped(Decimal("17.5"), "speed"),
+    }
+    defaults.update(overrides)
+
+    return MobilitySpeedMetric(**defaults)
+
+
+def _speed(**overrides: Any) -> MobilitySpeedObservation:
+    defaults: dict[str, Any] = {
+        "provenance": _provenance("speed-1"),
+        "observation_id": "speed-1",
+        "site_id": "link-1",
+        "period": _mapped(_period(), "data_as_of", quality=FieldQuality.STANDARDIZED),
+        "travel_mode": _mapped(
+            TravelMode.MIXED_TRAFFIC,
+            "mode",
+            quality=FieldQuality.STANDARDIZED,
+        ),
+        "direction": _mapped(
+            ObservationDirection.SOURCE_SPECIFIC,
+            "link_name",
+            quality=FieldQuality.INFERRED,
+        ),
+        "movement_type": _mapped(
+            MovementType.THROUGH,
+            "link_name",
+            quality=FieldQuality.INFERRED,
+        ),
+        "measurement_method": _mapped(
+            MeasurementMethod.SENSOR_FEED,
+            "data_as_of",
+            quality=FieldQuality.INFERRED,
+        ),
+        "aggregation_window": _mapped(
+            AggregationWindow.RAW_INTERVAL,
+            "data_as_of",
+            quality=FieldQuality.INFERRED,
+        ),
+        "metrics": (_speed_metric(),),
+        "source_caveats": _mapped(None, quality=FieldQuality.UNMAPPED),
+    }
+    defaults.update(overrides)
+
+    return MobilitySpeedObservation(**defaults)
 
 
 class TestMobilityObservationSite:
@@ -313,6 +377,73 @@ class TestMobilityCountObservation:
             )
 
 
+class TestMobilitySpeedObservation:
+    def test_minimum_valid_speed_observation(self) -> None:
+        observation = _speed(
+            direction=_mapped(None, quality=FieldQuality.UNMAPPED),
+            movement_type=_mapped(None, quality=FieldQuality.UNMAPPED),
+            source_caveats=_mapped(None, quality=FieldQuality.UNMAPPED),
+        )
+
+        assert observation.observation_id == "speed-1"
+        assert observation.metrics[0].value.value == Decimal("17.5")
+
+    def test_multiple_metrics_in_one_speed_observation(self) -> None:
+        observation = _speed(
+            metrics=(
+                _speed_metric(),
+                _speed_metric(
+                    metric_type=_mapped(
+                        SpeedMetricType.TRAVEL_TIME,
+                        "travel_time",
+                        quality=FieldQuality.STANDARDIZED,
+                    ),
+                    unit=_mapped(
+                        SpeedUnit.SECONDS,
+                        "travel_time",
+                        quality=FieldQuality.STANDARDIZED,
+                    ),
+                    value=_mapped(Decimal("88"), "travel_time"),
+                ),
+            )
+        )
+
+        assert [metric.metric_type.value for metric in observation.metrics] == [
+            SpeedMetricType.OBSERVED_SPEED,
+            SpeedMetricType.TRAVEL_TIME,
+        ]
+
+    def test_frozen(self) -> None:
+        observation = _speed()
+
+        with pytest.raises(ValidationError):
+            observation.site_id = "link-2"  # type: ignore[misc]
+
+    def test_negative_speed_rejected(self) -> None:
+        with pytest.raises(ValidationError):
+            _speed_metric(value=_mapped(Decimal("-0.1"), "speed"))
+
+    def test_empty_metrics_rejected(self) -> None:
+        with pytest.raises(ValidationError):
+            _speed(metrics=())
+
+    def test_empty_observation_id_rejected(self) -> None:
+        with pytest.raises(ValidationError):
+            _speed(observation_id="")
+
+    def test_invalid_enum_value_rejected(self) -> None:
+        with pytest.raises(ValidationError):
+            _speed_metric(
+                metric_type=MappedField[SpeedMetricType].model_validate(
+                    {
+                        "value": "congestion_score",
+                        "quality": "standardized",
+                        "source_fields": ("speed",),
+                    }
+                )
+            )
+
+
 class TestJurisdictionRepresentability:
     def test_minimal_source_shapes(self) -> None:
         scenarios = (
@@ -382,3 +513,39 @@ class TestJurisdictionRepresentability:
 
         assert len(observations) == 5
         assert len(sites) == 5
+
+    def test_speed_source_shape(self) -> None:
+        observation = _speed(
+            observation_id="nyc-speed",
+            site_id="link-123",
+            metrics=(
+                _speed_metric(
+                    metric_type=_mapped(
+                        SpeedMetricType.OBSERVED_SPEED,
+                        "SPEED",
+                        quality=FieldQuality.STANDARDIZED,
+                    ),
+                    unit=_mapped(
+                        SpeedUnit.MILES_PER_HOUR,
+                        "SPEED",
+                        quality=FieldQuality.STANDARDIZED,
+                    ),
+                    value=_mapped(Decimal("22.4"), "SPEED"),
+                ),
+                _speed_metric(
+                    metric_type=_mapped(
+                        SpeedMetricType.TRAVEL_TIME,
+                        "TRAVEL_TIME",
+                        quality=FieldQuality.STANDARDIZED,
+                    ),
+                    unit=_mapped(
+                        SpeedUnit.SECONDS,
+                        "TRAVEL_TIME",
+                        quality=FieldQuality.STANDARDIZED,
+                    ),
+                    value=_mapped(Decimal("140"), "TRAVEL_TIME"),
+                ),
+            ),
+        )
+
+        assert observation.metrics[1].unit.value is SpeedUnit.SECONDS
