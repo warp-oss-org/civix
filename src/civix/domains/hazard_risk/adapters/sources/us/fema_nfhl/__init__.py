@@ -1,0 +1,69 @@
+"""FEMA National Flood Hazard Layer source slice."""
+
+from civix.domains.hazard_risk.adapters.sources.us.fema_nfhl.adapter import (
+    DEFAULT_PAGE_SIZE,
+    FEMA_NFHL_FLOOD_HAZARD_ZONES_DATASET_ID,
+    FEMA_NFHL_FLOOD_HAZARD_ZONES_LAYER_NAME,
+    FEMA_NFHL_FLOOD_HAZARD_ZONES_ORDER,
+    FEMA_NFHL_FLOOD_HAZARD_ZONES_QUERY_URL,
+    FEMA_NFHL_FLOOD_HAZARD_ZONES_SERVICE_URL,
+    FEMA_NFHL_FLOOD_HAZARD_ZONES_SOURCE_CRS,
+    FEMA_NFHL_SOURCE_SCOPE,
+    SOURCE_ID,
+    US_JURISDICTION,
+    FemaNfhlFloodHazardZonesAdapter,
+    FemaNfhlFloodHazardZonesFetchConfig,
+)
+from civix.domains.hazard_risk.adapters.sources.us.fema_nfhl.caveats import (
+    FEMA_NFHL_CAVEAT_TAXONOMY_ID,
+    FEMA_NFHL_CAVEAT_TAXONOMY_VERSION,
+    FEMA_NFHL_METADATA_SOURCE_FIELD,
+    FemaNfhlCaveat,
+    fema_nfhl_caveat_categories,
+)
+from civix.domains.hazard_risk.adapters.sources.us.fema_nfhl.mapper import (
+    ZONE_MAPPER_ID,
+    ZONE_MAPPER_VERSION,
+    FemaNfhlZoneMapper,
+)
+from civix.domains.hazard_risk.adapters.sources.us.fema_nfhl.schema import (
+    FEMA_NFHL_FLOOD_HAZARD_ZONES_OUT_FIELDS,
+    FEMA_NFHL_FLOOD_HAZARD_ZONES_SCHEMA,
+    FEMA_NFHL_FLOOD_HAZARD_ZONES_TAXONOMIES,
+    FEMA_NFHL_SCHEMA_VERSION,
+    FEMA_NFHL_SFHA_FLAG_TAXONOMY,
+    FEMA_NFHL_TAXONOMY_VERSION,
+    FEMA_NFHL_ZONE_SUBTYPE_TAXONOMY,
+    FEMA_NFHL_ZONE_TAXONOMY,
+)
+
+__all__ = [
+    "DEFAULT_PAGE_SIZE",
+    "FEMA_NFHL_CAVEAT_TAXONOMY_ID",
+    "FEMA_NFHL_CAVEAT_TAXONOMY_VERSION",
+    "FEMA_NFHL_FLOOD_HAZARD_ZONES_DATASET_ID",
+    "FEMA_NFHL_FLOOD_HAZARD_ZONES_LAYER_NAME",
+    "FEMA_NFHL_FLOOD_HAZARD_ZONES_ORDER",
+    "FEMA_NFHL_FLOOD_HAZARD_ZONES_OUT_FIELDS",
+    "FEMA_NFHL_FLOOD_HAZARD_ZONES_QUERY_URL",
+    "FEMA_NFHL_FLOOD_HAZARD_ZONES_SCHEMA",
+    "FEMA_NFHL_FLOOD_HAZARD_ZONES_SERVICE_URL",
+    "FEMA_NFHL_FLOOD_HAZARD_ZONES_SOURCE_CRS",
+    "FEMA_NFHL_FLOOD_HAZARD_ZONES_TAXONOMIES",
+    "FEMA_NFHL_METADATA_SOURCE_FIELD",
+    "FEMA_NFHL_SCHEMA_VERSION",
+    "FEMA_NFHL_SFHA_FLAG_TAXONOMY",
+    "FEMA_NFHL_SOURCE_SCOPE",
+    "FEMA_NFHL_TAXONOMY_VERSION",
+    "FEMA_NFHL_ZONE_SUBTYPE_TAXONOMY",
+    "FEMA_NFHL_ZONE_TAXONOMY",
+    "SOURCE_ID",
+    "US_JURISDICTION",
+    "ZONE_MAPPER_ID",
+    "ZONE_MAPPER_VERSION",
+    "FemaNfhlCaveat",
+    "FemaNfhlFloodHazardZonesAdapter",
+    "FemaNfhlFloodHazardZonesFetchConfig",
+    "FemaNfhlZoneMapper",
+    "fema_nfhl_caveat_categories",
+]

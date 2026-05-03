@@ -1,0 +1,73 @@
+{
+  "objectIdFieldName": "OBJECTID",
+  "globalIdFieldName": "GlobalID",
+  "geometryType": "esriGeometryPolygon",
+  "spatialReference": {
+    "wkid": 4269,
+    "latestWkid": 4269
+  },
+  "fields": [
+    {
+      "name": "OBJECTID",
+      "type": "esriFieldTypeOID",
+      "alias": "OBJECTID"
+    },
+    {
+      "name": "FLD_AR_ID",
+      "type": "esriFieldTypeString",
+      "alias": "FLD_AR_ID"
+    }
+  ],
+  "features": [
+    {
+      "attributes": {
+        "OBJECTID": 1001,
+        "DFIRM_ID": "01001C",
+        "FLD_AR_ID": "01001C_0001",
+        "STUDY_TYP": "NP",
+        "FLD_ZONE": "AE",
+        "ZONE_SUBTY": "FLOODWAY",
+        "SFHA_TF": "Y",
+        "STATIC_BFE": 253.0,
+        "V_DATUM": "NAVD88",
+        "DEPTH": null,
+        "LEN_UNIT": "Feet",
+        "VELOCITY": null,
+        "VEL_UNIT": null,
+        "AR_REVERT": null,
+        "AR_SUBTRV": null,
+        "BFE_REVERT": null,
+        "DEP_REVERT": null,
+        "DUAL_ZONE": "N",
+        "SOURCE_CIT": "01001C_STUDY1",
+        "GFID": "nfhl-gfid-0001",
+        "GlobalID": "{11111111-1111-1111-1111-111111111111}"
+      }
+    },
+    {
+      "attributes": {
+        "OBJECTID": 1002,
+        "DFIRM_ID": "01001C",
+        "FLD_AR_ID": "01001C_0002",
+        "STUDY_TYP": "NP",
+        "FLD_ZONE": "X",
+        "ZONE_SUBTY": null,
+        "SFHA_TF": "N",
+        "STATIC_BFE": null,
+        "V_DATUM": null,
+        "DEPTH": null,
+        "LEN_UNIT": null,
+        "VELOCITY": null,
+        "VEL_UNIT": null,
+        "AR_REVERT": null,
+        "AR_SUBTRV": null,
+        "BFE_REVERT": null,
+        "DEP_REVERT": null,
+        "DUAL_ZONE": "N",
+        "SOURCE_CIT": "01001C_STUDY1",
+        "GFID": "nfhl-gfid-0002",
+        "GlobalID": "{22222222-2222-2222-2222-222222222222}"
+      }
+    }
+  ]
+}
