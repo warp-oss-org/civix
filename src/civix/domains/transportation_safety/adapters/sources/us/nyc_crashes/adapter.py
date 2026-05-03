@@ -48,7 +48,7 @@ NYC_CRASHES_DATASET_CONFIG: Final[SocrataDatasetConfig] = SocrataDatasetConfig(
     dataset_id=NYC_CRASHES_DATASET_ID,
     jurisdiction=NYC_JURISDICTION,
     base_url=DEFAULT_BASE_URL,
-    source_record_id_field=_SOURCE_RECORD_ID_FIELD,
+    source_record_id_fields=(_SOURCE_RECORD_ID_FIELD,),
 )
 
 

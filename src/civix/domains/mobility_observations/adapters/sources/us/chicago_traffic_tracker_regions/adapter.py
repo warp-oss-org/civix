@@ -42,7 +42,7 @@ CHICAGO_TRAFFIC_TRACKER_REGIONS_DATASET_CONFIG: Final[SocrataDatasetConfig] = So
     dataset_id=CHICAGO_TRAFFIC_TRACKER_REGIONS_DATASET_ID,
     jurisdiction=CHICAGO_JURISDICTION,
     base_url=DEFAULT_BASE_URL,
-    source_record_id_field=_SOURCE_RECORD_ID_FIELD,
+    source_record_id_fields=(_SOURCE_RECORD_ID_FIELD,),
 )
 
 

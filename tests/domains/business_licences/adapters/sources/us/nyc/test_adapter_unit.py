@@ -19,6 +19,7 @@ from civix.domains.business_licences.adapters.sources.us.nyc import (
     SOURCE_ID,
     NycBusinessLicencesAdapter,
 )
+from civix.infra.sources.socrata import SOCRATA_DEFAULT_ORDER
 
 PINNED_NOW = datetime(2026, 4, 30, 12, 0, tzinfo=UTC)
 DATASET = DatasetId("w7w3-xahh")
@@ -113,7 +114,10 @@ class TestFetchHappyPath:
             assert result.snapshot.record_count == 53318
             assert result.snapshot.fetched_at == PINNED_NOW
             assert result.snapshot.source_url == RESOURCE_URL
-            assert result.snapshot.fetch_params == {"$where": PREMISES_FILTER}
+            assert result.snapshot.fetch_params == {
+                "$where": PREMISES_FILTER,
+                "$order": SOCRATA_DEFAULT_ORDER,
+            }
             assert yielded == []
             assert requests[0].url.params["$select"] == "count(*)"
             assert requests[0].url.params["$where"] == PREMISES_FILTER

@@ -42,7 +42,7 @@ NYC_TRAFFIC_SPEEDS_DATASET_CONFIG: Final[SocrataDatasetConfig] = SocrataDatasetC
     dataset_id=NYC_TRAFFIC_SPEEDS_DATASET_ID,
     jurisdiction=NYC_JURISDICTION,
     base_url=DEFAULT_BASE_URL,
-    source_record_id_field=_SOURCE_RECORD_ID_FIELD,
+    source_record_id_fields=(_SOURCE_RECORD_ID_FIELD,),
 )
 
 

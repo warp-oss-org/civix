@@ -30,7 +30,7 @@ class SocrataDatasetConfig:
     dataset_id: DatasetId
     jurisdiction: Jurisdiction
     base_url: str
-    source_record_id_field: str | None
+    source_record_id_fields: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -43,6 +43,7 @@ class SocrataFetchConfig:
     app_token: str | None = None
     where: str | None = None
     order: str = SOCRATA_DEFAULT_ORDER
+    select: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
         if self.page_size <= 0:
@@ -220,17 +221,13 @@ def _build_record(
         for name, value in row_dict.items()
         if not name.startswith(SOCRATA_COMPUTED_REGION_PREFIX)
     }
-    source_record_id = (
-        raw_data.get(dataset.source_record_id_field)
-        if dataset.source_record_id_field is not None
-        else None
-    )
+    source_record_id = _source_record_id(raw_data, dataset.source_record_id_fields)
 
     try:
         return RawRecord(
             snapshot_id=snapshot_id,
             raw_data=raw_data,
-            source_record_id=str(source_record_id) if source_record_id else None,
+            source_record_id=source_record_id,
             source_updated_at=None,
         )
     except ValidationError as e:
@@ -240,6 +237,28 @@ def _build_record(
             dataset_id=dataset.dataset_id,
             operation="stream-records",
         ) from e
+
+
+def _source_record_id(row: dict[str, Any], fields: tuple[str, ...]) -> str | None:
+    if not fields:
+        return None
+
+    values: list[str] = []
+
+    for field_name in fields:
+        value = row.get(field_name)
+
+        if value is None:
+            return None
+
+        text = str(value).strip()
+
+        if not text:
+            return None
+
+        values.append(text)
+
+    return ":".join(values)
 
 
 def _read_count(*, payload: object, dataset: SocrataDatasetConfig) -> int:
@@ -337,6 +356,9 @@ def _page_params(*, fetch: SocrataFetchConfig, offset: int) -> dict[str, str | i
     if fetch.where is not None:
         params["$where"] = fetch.where
 
+    if fetch.select:
+        params["$select"] = ",".join(fetch.select)
+
     return params
 
 
@@ -345,6 +367,10 @@ def _snapshot_fetch_params(fetch: SocrataFetchConfig) -> dict[str, str]:
 
     if fetch.where is not None:
         params["$where"] = fetch.where
+
+    if fetch.select:
+        params["$select"] = ",".join(fetch.select)
+        params["$limit"] = str(fetch.page_size)
 
     return params
 

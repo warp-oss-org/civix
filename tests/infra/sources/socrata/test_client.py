@@ -28,13 +28,13 @@ SOURCE_ID = SourceId("example-socrata")
 JURISDICTION = Jurisdiction(country="US", region="IL", locality="Chicago")
 
 
-def _dataset(source_record_id_field: str | None = "record_id") -> SocrataDatasetConfig:
+def _dataset(source_record_id_fields: tuple[str, ...] = ("record_id",)) -> SocrataDatasetConfig:
     return SocrataDatasetConfig(
         source_id=SOURCE_ID,
         dataset_id=DATASET_ID,
         jurisdiction=JURISDICTION,
         base_url=BASE_URL,
-        source_record_id_field=source_record_id_field,
+        source_record_id_fields=source_record_id_fields,
     )
 
 
@@ -151,7 +151,7 @@ class TestSocrataFetch:
 
         assert records == []
 
-    async def test_optional_source_record_id_field_leaves_record_id_unset(self) -> None:
+    async def test_optional_source_record_id_fields_leave_record_id_unset(self) -> None:
         async with respx.mock(assert_all_called=True) as respx_mock:
             respx_mock.get(RESOURCE_URL).mock(
                 side_effect=[
@@ -162,7 +162,7 @@ class TestSocrataFetch:
 
             async with httpx.AsyncClient() as client:
                 result = await fetch_socrata_dataset(
-                    dataset=_dataset(source_record_id_field=None),
+                    dataset=_dataset(source_record_id_fields=()),
                     fetch=_fetch(client),
                 )
                 records = [r async for r in result.records]

@@ -136,6 +136,7 @@ modules = [
     "civix.domains.mobility_observations.adapters.sources.ca.toronto_turning_movement_counts",
     "civix.domains.mobility_observations.adapters.sources.fr.tmja_road_traffic",
     "civix.domains.hazard_risk.adapters.sources.us.fema_nri",
+    "civix.domains.building_energy_emissions.adapters.sources.us.nyc_ll84",
     "civix.domains.hazard_mitigation.adapters.sources.ca.dmaf",
     "civix.domains.hazard_mitigation.adapters.sources.gb.fcerm",
     "civix.domains.hazard_mitigation.adapters.sources.us.fema_hma",

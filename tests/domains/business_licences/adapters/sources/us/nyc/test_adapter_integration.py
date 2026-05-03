@@ -15,6 +15,7 @@ from civix.domains.business_licences.adapters.sources.us.nyc import (
     PREMISES_FILTER,
     NycBusinessLicencesAdapter,
 )
+from civix.infra.sources.socrata import SOCRATA_DEFAULT_ORDER
 
 PINNED_NOW = datetime(2026, 4, 30, 12, 0, tzinfo=UTC)
 DATASET = DatasetId("w7w3-xahh")
@@ -51,7 +52,10 @@ class TestNycShapedFixtures:
                 records = [r async for r in result.records]
 
         assert result.snapshot.record_count == 3
-        assert result.snapshot.fetch_params == {"$where": PREMISES_FILTER}
+        assert result.snapshot.fetch_params == {
+            "$where": PREMISES_FILTER,
+            "$order": SOCRATA_DEFAULT_ORDER,
+        }
         assert len(records) == 3
 
     async def test_record_shape_preserved_after_transport_strip(self) -> None:
