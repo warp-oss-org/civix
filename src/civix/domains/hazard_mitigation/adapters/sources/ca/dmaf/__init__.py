@@ -1,0 +1,65 @@
+"""Canada Disaster Mitigation and Adaptation Fund source slice."""
+
+from civix.domains.hazard_mitigation.adapters.sources.ca.dmaf.adapter import (
+    CA_JURISDICTION,
+    CANADA_DMAF_PROGRAM_CODE,
+    CANADA_DMAF_PROJECTS_DATASET_CONFIG,
+    CANADA_DMAF_PROJECTS_DATASET_ID,
+    CANADA_DMAF_PROJECTS_RESOURCE_FORMAT,
+    CANADA_DMAF_PROJECTS_RESOURCE_LANGUAGES,
+    CANADA_DMAF_PROJECTS_RESOURCE_NAME,
+    CANADA_DMAF_ROW_FILTER,
+    CANADA_DMAF_SOURCE_SCOPE,
+    OPEN_CANADA_CKAN_BASE_URL,
+    SOURCE_ID,
+    CanadaDmafProjectsAdapter,
+)
+from civix.domains.hazard_mitigation.adapters.sources.ca.dmaf.caveats import (
+    CANADA_DMAF_CAVEAT_TAXONOMY_ID,
+    CANADA_DMAF_TAXONOMY_VERSION,
+    CanadaDmafCaveat,
+    canada_dmaf_caveat_category,
+)
+from civix.domains.hazard_mitigation.adapters.sources.ca.dmaf.mapper import (
+    MAPPER_VERSION,
+    PROJECT_MAPPER_ID,
+    CanadaDmafProjectMapper,
+)
+from civix.domains.hazard_mitigation.adapters.sources.ca.dmaf.schema import (
+    CANADA_DMAF_CATEGORY_TAXONOMY,
+    CANADA_DMAF_PROGRAM_CODE_TAXONOMY,
+    CANADA_DMAF_PROGRAM_TAXONOMY,
+    CANADA_DMAF_PROJECTS_SCHEMA,
+    CANADA_DMAF_PROJECTS_TAXONOMIES,
+    CANADA_DMAF_REGION_TAXONOMY,
+    CANADA_DMAF_SCHEMA_VERSION,
+)
+
+__all__ = [
+    "CA_JURISDICTION",
+    "CANADA_DMAF_CATEGORY_TAXONOMY",
+    "CANADA_DMAF_CAVEAT_TAXONOMY_ID",
+    "CANADA_DMAF_PROGRAM_CODE",
+    "CANADA_DMAF_PROGRAM_CODE_TAXONOMY",
+    "CANADA_DMAF_PROGRAM_TAXONOMY",
+    "CANADA_DMAF_PROJECTS_DATASET_CONFIG",
+    "CANADA_DMAF_PROJECTS_DATASET_ID",
+    "CANADA_DMAF_PROJECTS_RESOURCE_FORMAT",
+    "CANADA_DMAF_PROJECTS_RESOURCE_LANGUAGES",
+    "CANADA_DMAF_PROJECTS_RESOURCE_NAME",
+    "CANADA_DMAF_PROJECTS_SCHEMA",
+    "CANADA_DMAF_PROJECTS_TAXONOMIES",
+    "CANADA_DMAF_REGION_TAXONOMY",
+    "CANADA_DMAF_ROW_FILTER",
+    "CANADA_DMAF_SCHEMA_VERSION",
+    "CANADA_DMAF_SOURCE_SCOPE",
+    "CANADA_DMAF_TAXONOMY_VERSION",
+    "MAPPER_VERSION",
+    "OPEN_CANADA_CKAN_BASE_URL",
+    "PROJECT_MAPPER_ID",
+    "SOURCE_ID",
+    "CanadaDmafCaveat",
+    "CanadaDmafProjectMapper",
+    "CanadaDmafProjectsAdapter",
+    "canada_dmaf_caveat_category",
+]

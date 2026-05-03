@@ -19,6 +19,7 @@ from civix.infra.sources.ckan import (
     CkanFetchConfig,
     CkanSourceAdapter,
     fetch_ckan_dataset,
+    fetch_ckan_static_json_resource,
 )
 
 PINNED_NOW = datetime(2026, 5, 1, 12, 0, tzinfo=UTC)
@@ -28,6 +29,7 @@ JURISDICTION = Jurisdiction(country="CA", region="ON", locality="Toronto")
 RESOURCE_ID = "resource-1"
 PACKAGE_SHOW_URL = f"{DEFAULT_BASE_URL}package_show"
 DATASTORE_SEARCH_URL = f"{DEFAULT_BASE_URL}datastore_search"
+STATIC_RESOURCE_URL = "https://example.test/static/project-list.json"
 
 
 def _dataset(
@@ -57,6 +59,30 @@ def _package_payload(*, datastore_active: bool = True) -> dict[str, Any]:
                     "id": RESOURCE_ID,
                     "name": "target-resource",
                     "datastore_active": datastore_active,
+                },
+            ]
+        },
+    }
+
+
+def _static_package_payload(*, language: list[str] | None = None) -> dict[str, Any]:
+    return {
+        "success": True,
+        "result": {
+            "resources": [
+                {
+                    "id": "csv-resource",
+                    "name": "Project List",
+                    "format": "CSV",
+                    "language": ["en", "fr"],
+                    "url": "https://example.test/static/project-list.csv",
+                },
+                {
+                    "id": RESOURCE_ID,
+                    "name": "Project List",
+                    "format": "JSON",
+                    "language": language or ["en", "fr"],
+                    "url": STATIC_RESOURCE_URL,
                 },
             ]
         },
@@ -187,6 +213,66 @@ class TestCkanFetch:
         async with httpx.AsyncClient() as client:
             with pytest.raises(ValueError, match="page_size"):
                 _fetch(client, page_size=0)
+
+    async def test_fetches_named_static_json_resource(self) -> None:
+        payload = {"indexTitles": ["projectNumber"], "data": [["1"]]}
+
+        async with respx.mock(assert_all_called=True) as respx_mock:
+            respx_mock.get(PACKAGE_SHOW_URL).mock(
+                return_value=httpx.Response(200, json=_static_package_payload())
+            )
+            respx_mock.get(STATIC_RESOURCE_URL).mock(return_value=httpx.Response(200, json=payload))
+
+            async with httpx.AsyncClient() as client:
+                resource = await fetch_ckan_static_json_resource(
+                    dataset=_dataset(),
+                    fetch=_fetch(client),
+                    resource_name="Project List",
+                    resource_format="JSON",
+                    languages=("en", "fr"),
+                )
+
+        assert resource.resource_id == RESOURCE_ID
+        assert resource.resource_name == "Project List"
+        assert resource.resource_format == "JSON"
+        assert resource.resource_url == STATIC_RESOURCE_URL
+        assert resource.payload == payload
+
+    async def test_static_json_resource_requires_language_match(self) -> None:
+        async with respx.mock(assert_all_called=True) as respx_mock:
+            respx_mock.get(PACKAGE_SHOW_URL).mock(
+                return_value=httpx.Response(
+                    200,
+                    json=_static_package_payload(language=["en"]),
+                )
+            )
+
+            async with httpx.AsyncClient() as client:
+                with pytest.raises(FetchError, match="static resource"):
+                    await fetch_ckan_static_json_resource(
+                        dataset=_dataset(),
+                        fetch=_fetch(client),
+                        resource_name="Project List",
+                        resource_format="JSON",
+                        languages=("en", "fr"),
+                    )
+
+    async def test_static_json_resource_non_json_raises_fetch_error(self) -> None:
+        async with respx.mock(assert_all_called=True) as respx_mock:
+            respx_mock.get(PACKAGE_SHOW_URL).mock(
+                return_value=httpx.Response(200, json=_static_package_payload())
+            )
+            respx_mock.get(STATIC_RESOURCE_URL).mock(httpx.Response(200, text="not json"))
+
+            async with httpx.AsyncClient() as client:
+                with pytest.raises(FetchError, match="non-JSON response"):
+                    await fetch_ckan_static_json_resource(
+                        dataset=_dataset(),
+                        fetch=_fetch(client),
+                        resource_name="Project List",
+                        resource_format="JSON",
+                        languages=("en", "fr"),
+                    )
 
     async def test_no_datastore_resource_raises_fetch_error(self) -> None:
         async with respx.mock(assert_all_called=True) as respx_mock:

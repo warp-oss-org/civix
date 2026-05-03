@@ -6,7 +6,9 @@ from civix.infra.sources.ckan.client import (
     CkanDatasetConfig,
     CkanFetchConfig,
     CkanSourceAdapter,
+    CkanStaticJsonResource,
     fetch_ckan_dataset,
+    fetch_ckan_static_json_resource,
 )
 
 __all__ = [
@@ -15,5 +17,7 @@ __all__ = [
     "CkanDatasetConfig",
     "CkanFetchConfig",
     "CkanSourceAdapter",
+    "CkanStaticJsonResource",
     "fetch_ckan_dataset",
+    "fetch_ckan_static_json_resource",
 ]

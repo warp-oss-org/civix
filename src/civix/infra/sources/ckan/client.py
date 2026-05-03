@@ -1,4 +1,4 @@
-"""Shared CKAN datastore fetch loop."""
+"""Shared CKAN source acquisition helpers."""
 
 from __future__ import annotations
 
@@ -43,6 +43,17 @@ class CkanFetchConfig:
     def __post_init__(self) -> None:
         if self.page_size <= 0:
             raise ValueError("page_size must be greater than zero")
+
+
+@dataclass(frozen=True, slots=True)
+class CkanStaticJsonResource:
+    """One static JSON resource resolved from a CKAN package."""
+
+    resource_id: str
+    resource_name: str
+    resource_format: str
+    resource_url: str
+    payload: Any
 
 
 @dataclass(frozen=True, slots=True)
@@ -94,7 +105,100 @@ async def fetch_ckan_dataset(*, dataset: CkanDatasetConfig, fetch: CkanFetchConf
     )
 
 
+async def fetch_ckan_static_json_resource(
+    *,
+    dataset: CkanDatasetConfig,
+    fetch: CkanFetchConfig,
+    resource_name: str,
+    resource_format: str = "JSON",
+    languages: tuple[str, ...] = (),
+) -> CkanStaticJsonResource:
+    """Fetch a named static JSON resource from a CKAN package.
+
+    This covers CKAN packages whose resources are downloadable files rather
+    than datastore-backed tables, such as Open Canada JSON resources.
+    """
+    resources = await _read_package_resources(dataset=dataset, fetch=fetch)
+    resource = _resolve_static_resource(
+        resources=resources,
+        dataset=dataset,
+        resource_name=resource_name,
+        resource_format=resource_format,
+        languages=languages,
+    )
+    resource_id = _required_resource_text(
+        resource,
+        "id",
+        dataset=dataset,
+        operation="resolve-static-resource",
+    )
+    resolved_name = _required_resource_text(
+        resource,
+        "name",
+        dataset=dataset,
+        operation="resolve-static-resource",
+    )
+    resolved_format = _required_resource_text(
+        resource,
+        "format",
+        dataset=dataset,
+        operation="resolve-static-resource",
+    )
+    resource_url = _required_resource_text(
+        resource,
+        "url",
+        dataset=dataset,
+        operation="resolve-static-resource",
+    )
+    payload = await _fetch_static_json_payload(
+        dataset=dataset,
+        fetch=fetch,
+        resource_url=resource_url,
+    )
+
+    return CkanStaticJsonResource(
+        resource_id=resource_id,
+        resource_name=resolved_name,
+        resource_format=resolved_format,
+        resource_url=resource_url,
+        payload=payload,
+    )
+
+
 async def _resolve_resource_id(*, dataset: CkanDatasetConfig, fetch: CkanFetchConfig) -> str:
+    resource_entries = await _read_package_resources(dataset=dataset, fetch=fetch)
+
+    if dataset.resource_name is not None:
+        return _resolve_named_resource_id(
+            resources=resource_entries,
+            dataset=dataset,
+        )
+
+    for entry in resource_entries:
+        if not isinstance(entry, dict):
+            continue
+
+        resource = cast(dict[str, Any], entry)
+
+        if resource.get("datastore_active") is True:
+            resource_id = resource.get("id")
+
+            if isinstance(resource_id, str) and resource_id:
+                return resource_id
+
+    raise FetchError(
+        "no datastore-active resource found for dataset",
+        source_id=dataset.source_id,
+        dataset_id=dataset.dataset_id,
+        operation="resolve-resource",
+    )
+
+
+async def _read_package_resources(
+    *,
+    dataset: CkanDatasetConfig,
+    fetch: CkanFetchConfig,
+) -> list[Any]:
     url = _action_url(dataset, "package_show")
 
     try:
@@ -136,30 +240,7 @@ async def _resolve_resource_id(*, dataset: CkanDatasetConfig, fetch: CkanFetchCo
 
     resource_entries = cast(list[Any], resources)
 
-    if dataset.resource_name is not None:
-        return _resolve_named_resource_id(
-            resources=resource_entries,
-            dataset=dataset,
-        )
-
-    for entry in resource_entries:
-        if not isinstance(entry, dict):
-            continue
-
-        resource = cast(dict[str, Any], entry)
-
-        if resource.get("datastore_active") is True:
-            resource_id = resource.get("id")
-
-            if isinstance(resource_id, str) and resource_id:
-                return resource_id
-
-    raise FetchError(
-        "no datastore-active resource found for dataset",
-        source_id=dataset.source_id,
-        dataset_id=dataset.dataset_id,
-        operation="resolve-resource",
-    )
+    return resource_entries
 
 
 def _resolve_named_resource_id(
@@ -204,6 +285,114 @@ def _resolve_named_resource_id(
         dataset_id=dataset.dataset_id,
         operation="resolve-resource",
     )
+
+
+def _resolve_static_resource(
+    *,
+    resources: list[Any],
+    dataset: CkanDatasetConfig,
+    resource_name: str,
+    resource_format: str,
+    languages: tuple[str, ...],
+) -> dict[str, Any]:
+    matches: list[dict[str, Any]] = []
+
+    for entry in resources:
+        if not isinstance(entry, dict):
+            continue
+
+        resource = cast(dict[str, Any], entry)
+
+        if resource.get("name") != resource_name:
+            continue
+
+        if str(resource.get("format", "")).casefold() != resource_format.casefold():
+            continue
+
+        if languages and not _resource_has_languages(resource, languages):
+            continue
+
+        matches.append(resource)
+
+    if len(matches) == 1:
+        return matches[0]
+
+    if not matches:
+        raise FetchError(
+            f"static resource named {resource_name!r} with format {resource_format!r} not found",
+            source_id=dataset.source_id,
+            dataset_id=dataset.dataset_id,
+            operation="resolve-static-resource",
+        )
+
+    raise FetchError(
+        f"multiple static resources named {resource_name!r} with format {resource_format!r} found",
+        source_id=dataset.source_id,
+        dataset_id=dataset.dataset_id,
+        operation="resolve-static-resource",
+    )
+
+
+def _resource_has_languages(resource: dict[str, Any], languages: tuple[str, ...]) -> bool:
+    observed = resource.get("language")
+
+    if not isinstance(observed, list):
+        return False
+
+    observed_items = cast(list[Any], observed)
+    observed_languages = {
+        item.strip().casefold() for item in observed_items if isinstance(item, str) and item.strip()
+    }
+
+    return {language.casefold() for language in languages}.issubset(observed_languages)
+
+
+def _required_resource_text(
+    resource: dict[str, Any],
+    field_name: str,
+    *,
+    dataset: CkanDatasetConfig,
+    operation: str,
+) -> str:
+    value = resource.get(field_name)
+
+    if isinstance(value, str) and value.strip():
+        return value
+
+    raise FetchError(
+        f"static resource is missing required {field_name!r}",
+        source_id=dataset.source_id,
+        dataset_id=dataset.dataset_id,
+        operation=operation,
+    )
+
+
+async def _fetch_static_json_payload(
+    *,
+    dataset: CkanDatasetConfig,
+    fetch: CkanFetchConfig,
+    resource_url: str,
+) -> Any:
+    try:
+        response = await fetch.client.get(resource_url)
+
+        response.raise_for_status()
+
+        return response.json()
+    except httpx.HTTPError as e:
+        raise FetchError(
+            f"failed to read static JSON resource from {resource_url}",
+            source_id=dataset.source_id,
+            dataset_id=dataset.dataset_id,
+            operation="fetch-static-resource",
+        ) from e
+    except ValueError as e:
+        raise FetchError(
+            f"non-JSON response from {resource_url}",
+            source_id=dataset.source_id,
+            dataset_id=dataset.dataset_id,
+            operation="fetch-static-resource",
+        ) from e
 
 
 async def _fetch_page(
