@@ -1,7 +1,13 @@
 import pytest
 from pydantic import ValidationError
 
-from civix.core.spatial.models.geometry import BoundingBox, LineString, SpatialFootprint
+from civix.core.spatial.models.geometry import (
+    BoundingBox,
+    GeometryRef,
+    GeometryType,
+    LineString,
+    SpatialFootprint,
+)
 from civix.core.spatial.models.location import Address, Coordinate
 
 
@@ -122,6 +128,73 @@ class TestLineString:
     def test_short_line_rejected(self) -> None:
         with pytest.raises(ValidationError):
             LineString(coordinates=(Coordinate(latitude=40.0, longitude=-73.0),))
+
+
+class TestGeometryRef:
+    def test_valid_service_layer_reference(self) -> None:
+        ref = GeometryRef(
+            geometry_type=GeometryType.POLYGON,
+            uri="https://example.test/arcgis/rest/services/hazards/MapServer",
+            layer_name="Flood Hazard Zones",
+            geometry_id="FLD-1",
+            source_crs="EPSG:4326",
+        )
+
+        assert ref.geometry_type is GeometryType.POLYGON
+        assert ref.geometry_id == "FLD-1"
+
+    def test_valid_query_reference(self) -> None:
+        ref = GeometryRef(
+            geometry_type=GeometryType.RASTER,
+            uri="https://example.test/hazard-grid",
+            query_keys=(("tile", "10-20"), ("band", "risk")),
+        )
+
+        assert ref.query_keys == (("tile", "10-20"), ("band", "risk"))
+
+    def test_geometry_id_or_query_key_required(self) -> None:
+        with pytest.raises(ValidationError, match="geometry_id or query_keys"):
+            GeometryRef(
+                geometry_type=GeometryType.POLYGON,
+                uri="https://example.test/layer",
+            )
+
+    def test_empty_query_key_rejected(self) -> None:
+        with pytest.raises(ValidationError):
+            GeometryRef(
+                geometry_type=GeometryType.POLYGON,
+                uri="https://example.test/layer",
+                query_keys=(("", "A"),),
+            )
+
+    def test_surrounding_whitespace_rejected(self) -> None:
+        with pytest.raises(ValidationError, match="whitespace"):
+            GeometryRef(
+                geometry_type=GeometryType.POLYGON,
+                uri=" https://example.test/layer ",
+                geometry_id="FLD-1",
+            )
+
+    def test_frozen(self) -> None:
+        ref = GeometryRef(
+            geometry_type=GeometryType.POLYGON,
+            uri="https://example.test/layer",
+            geometry_id="FLD-1",
+        )
+
+        with pytest.raises(ValidationError):
+            ref.geometry_id = "FLD-2"  # type: ignore[misc]
+
+    def test_extra_fields_rejected(self) -> None:
+        with pytest.raises(ValidationError):
+            GeometryRef.model_validate(
+                {
+                    "geometry_type": "polygon",
+                    "uri": "https://example.test/layer",
+                    "geometry_id": "FLD-1",
+                    "retrieved_at": "2026-05-01T00:00:00Z",
+                }
+            )
 
 
 class TestSpatialFootprint:
