@@ -1,0 +1,4 @@
+Num_Acc;id_vehicule;num_veh;senc;catv;obs;obsm;choc;manv;motor;occutc
+202400000001;veh-001;A01;1;7;0;0;1;1;1;1
+202400000001;veh-002;A02;2;1;0;0;3;13;0;0
+202400000002;veh-003;B01;1;30;0;1;2;15;1;1

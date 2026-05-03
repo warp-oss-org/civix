@@ -1,0 +1,3 @@
+accident_index,vehicle_reference,casualty_reference,casualty_class,casualty_severity,casualty_type,age_of_casualty,age_band_of_casualty
+2024010000001,1,1,2,2,9,34,7
+2024010000001,-1,2,3,3,0,,5

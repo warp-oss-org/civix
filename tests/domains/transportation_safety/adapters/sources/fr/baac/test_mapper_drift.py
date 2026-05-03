@@ -2,13 +2,19 @@
 
 from __future__ import annotations
 
-import json
+import csv
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+import httpx
+import pytest
+import respx
+
 from civix.core.drift import SchemaObserver, TaxonomyDriftKind, TaxonomyObserver
 from civix.core.identity.models.identifiers import DatasetId, SnapshotId
+from civix.core.ports.errors import FetchError
+from civix.core.ports.models.adapter import SourceAdapter
 from civix.core.quality.models.fields import FieldQuality
 from civix.core.snapshots.models.snapshot import RawRecord, SourceSnapshot
 from civix.domains.transportation_safety.adapters.sources.fr.baac import (
@@ -17,6 +23,7 @@ from civix.domains.transportation_safety.adapters.sources.fr.baac import (
     BAAC_CHARACTERISTICS_RESOURCE_TITLE,
     BAAC_CHARACTERISTICS_SCHEMA,
     BAAC_CHARACTERISTICS_TAXONOMIES,
+    BAAC_CHARACTERISTICS_URL,
     BAAC_DATASET_LAST_UPDATE,
     BAAC_JURISDICTION,
     BAAC_LICENCE,
@@ -25,6 +32,7 @@ from civix.domains.transportation_safety.adapters.sources.fr.baac import (
     BAAC_LOCATIONS_RESOURCE_TITLE,
     BAAC_LOCATIONS_SCHEMA,
     BAAC_LOCATIONS_TAXONOMIES,
+    BAAC_LOCATIONS_URL,
     BAAC_RELEASE,
     BAAC_RELEASE_CAVEATS,
     BAAC_SOURCE_SCOPE,
@@ -34,18 +42,25 @@ from civix.domains.transportation_safety.adapters.sources.fr.baac import (
     BAAC_USERS_RESOURCE_TITLE,
     BAAC_USERS_SCHEMA,
     BAAC_USERS_TAXONOMIES,
+    BAAC_USERS_URL,
     BAAC_VEHICLES_DATASET_ID,
     BAAC_VEHICLES_RESOURCE_ID,
     BAAC_VEHICLES_RESOURCE_TITLE,
     BAAC_VEHICLES_SCHEMA,
     BAAC_VEHICLES_TAXONOMIES,
+    BAAC_VEHICLES_URL,
     COLLISION_MAPPER_ID,
     MAPPER_VERSION,
     SOURCE_ID,
     USER_MAPPER_ID,
     VEHICLE_MAPPER_ID,
+    BaacCharacteristicsAdapter,
     BaacCollisionMapper,
+    BaacFetchConfig,
     BaacLinkedMapper,
+    BaacLocationsAdapter,
+    BaacUsersAdapter,
+    BaacVehiclesAdapter,
 )
 from civix.domains.transportation_safety.models.collision import CollisionSeverity
 from civix.domains.transportation_safety.models.parties import RoadUserRole
@@ -56,10 +71,19 @@ from civix.domains.transportation_safety.models.vehicle import VehicleCategory
 
 PINNED_NOW = datetime(2026, 5, 1, 12, 0, tzinfo=UTC)
 FIXTURES = Path(__file__).parent / "fixtures"
+CHARACTERISTICS_CSV = FIXTURES / "caracteristiques.csv"
+LOCATIONS_CSV = FIXTURES / "lieux.csv"
+VEHICLES_CSV = FIXTURES / "vehicules.csv"
+USERS_CSV = FIXTURES / "usagers.csv"
+
+
+def _csv_rows(path: Path) -> list[dict[str, Any]]:
+    with path.open() as handle:
+        return [dict(row) for row in csv.DictReader(handle, delimiter=";")]
 
 
 def _fixture(name: str) -> list[dict[str, Any]]:
-    return json.loads((FIXTURES / name).read_text())
+    return _csv_rows(FIXTURES / name)
 
 
 def _snapshot(snapshot_id: str, dataset_id: DatasetId, record_count: int) -> SourceSnapshot:
@@ -90,28 +114,28 @@ def _records(
 
 
 def _characteristic_records() -> tuple[RawRecord, ...]:
-    rows = _fixture("caracteristiques.json")
+    rows = _fixture("caracteristiques.csv")
     snapshot = _snapshot("snap-baac-caracteristiques", BAAC_CHARACTERISTICS_DATASET_ID, len(rows))
 
     return _records(rows, snapshot=snapshot, source_id_fields=("Num_Acc",))
 
 
 def _location_records() -> tuple[RawRecord, ...]:
-    rows = _fixture("lieux.json")
+    rows = _fixture("lieux.csv")
     snapshot = _snapshot("snap-baac-lieux", BAAC_LOCATIONS_DATASET_ID, len(rows))
 
     return _records(rows, snapshot=snapshot, source_id_fields=("Num_Acc",))
 
 
 def _vehicle_records() -> tuple[RawRecord, ...]:
-    rows = _fixture("vehicules.json")
+    rows = _fixture("vehicules.csv")
     snapshot = _snapshot("snap-baac-vehicules", BAAC_VEHICLES_DATASET_ID, len(rows))
 
     return _records(rows, snapshot=snapshot, source_id_fields=("Num_Acc", "id_vehicule"))
 
 
 def _user_records() -> tuple[RawRecord, ...]:
-    rows = _fixture("usagers.json")
+    rows = _fixture("usagers.csv")
     snapshot = _snapshot("snap-baac-usagers", BAAC_USERS_DATASET_ID, len(rows))
 
     return _records(rows, snapshot=snapshot, source_id_fields=("Num_Acc", "id_usager"))
@@ -143,6 +167,10 @@ def _linked_results():
     )
 
 
+def _fetch_config(client: httpx.AsyncClient) -> BaacFetchConfig:
+    return BaacFetchConfig(client=client, clock=lambda: PINNED_NOW)
+
+
 def test_source_metadata_preserves_data_gouv_release_identity_scope_and_caveats() -> None:
     assert SOURCE_ID == "onisr-open-data"
     assert BAAC_SOURCE_YEAR == "2024"
@@ -165,6 +193,21 @@ def test_source_metadata_preserves_data_gouv_release_identity_scope_and_caveats(
     assert VEHICLE_MAPPER_ID == "baac-vehicles"
     assert USER_MAPPER_ID == "baac-users"
     assert MAPPER_VERSION == "0.1.0"
+
+
+def test_upstream_urls_target_data_gouv_resources() -> None:
+    assert BAAC_CHARACTERISTICS_URL == (
+        f"https://www.data.gouv.fr/fr/datasets/r/{BAAC_CHARACTERISTICS_RESOURCE_ID}"
+    )
+    assert BAAC_LOCATIONS_URL == (
+        f"https://www.data.gouv.fr/fr/datasets/r/{BAAC_LOCATIONS_RESOURCE_ID}"
+    )
+    assert BAAC_VEHICLES_URL == (
+        f"https://www.data.gouv.fr/fr/datasets/r/{BAAC_VEHICLES_RESOURCE_ID}"
+    )
+    assert BAAC_USERS_URL == (
+        f"https://www.data.gouv.fr/fr/datasets/r/{BAAC_USERS_RESOURCE_ID}"
+    )
 
 
 def test_linked_fixture_maps_collisions_vehicles_and_users() -> None:
@@ -239,8 +282,8 @@ def test_collision_mapper_handles_date_only_and_missing_coordinates() -> None:
 
 
 def test_collision_mapper_does_not_treat_intersection_topology_as_traffic_control() -> None:
-    characteristic_rows = _fixture("caracteristiques.json")
-    location_rows = _fixture("lieux.json")
+    characteristic_rows = _fixture("caracteristiques.csv")
+    location_rows = _fixture("lieux.csv")
     characteristic_rows[0]["int"] = "3"
     characteristic_rows[0]["atm"] = "99"
     characteristic_snapshot = _snapshot(
@@ -275,8 +318,8 @@ def test_collision_mapper_does_not_treat_intersection_topology_as_traffic_contro
 
 
 def test_unknown_intersection_topology_still_marks_intersection_related() -> None:
-    characteristic_rows = _fixture("caracteristiques.json")
-    location_rows = _fixture("lieux.json")
+    characteristic_rows = _fixture("caracteristiques.csv")
+    location_rows = _fixture("lieux.csv")
     characteristic_rows[0]["int"] = "99"
     characteristic_snapshot = _snapshot(
         "snap-baac-caracteristiques",
@@ -393,7 +436,7 @@ def test_fixture_raw_records_match_schema_and_taxonomies() -> None:
 
 
 def test_unknown_baac_code_surfaces_as_taxonomy_drift() -> None:
-    rows = _fixture("vehicules.json")
+    rows = _fixture("vehicules.csv")
     rows[0]["catv"] = "999"
     snapshot = _snapshot("snap-baac-vehicules", BAAC_VEHICLES_DATASET_ID, len(rows))
     records = _records(rows, snapshot=snapshot, source_id_fields=("Num_Acc", "id_vehicule"))
@@ -413,7 +456,7 @@ def test_unknown_baac_code_surfaces_as_taxonomy_drift() -> None:
 
 
 def test_unknown_baac_place_surfaces_as_taxonomy_drift() -> None:
-    rows = _fixture("usagers.json")
+    rows = _fixture("usagers.csv")
     rows[0]["place"] = "99"
     snapshot = _snapshot("snap-baac-usagers", BAAC_USERS_DATASET_ID, len(rows))
     records = _records(rows, snapshot=snapshot, source_id_fields=("Num_Acc", "id_usager"))
@@ -430,3 +473,168 @@ def test_unknown_baac_place_surfaces_as_taxonomy_drift() -> None:
         for finding in report.findings
     )
     assert report.has_errors
+
+
+class TestCharacteristicsAdapter:
+    async def test_adapter_fetches_csv_and_streams_records(self) -> None:
+        async with respx.mock(assert_all_called=True) as respx_mock:
+            respx_mock.get(BAAC_CHARACTERISTICS_URL).mock(
+                return_value=httpx.Response(200, content=CHARACTERISTICS_CSV.read_bytes())
+            )
+
+            async with httpx.AsyncClient() as client:
+                adapter = BaacCharacteristicsAdapter(fetch_config=_fetch_config(client))
+                result = await adapter.fetch()
+                records = [record async for record in result.records]
+
+        assert isinstance(adapter, SourceAdapter)
+        assert result.snapshot.source_id == SOURCE_ID
+        assert result.snapshot.dataset_id == BAAC_CHARACTERISTICS_DATASET_ID
+        assert result.snapshot.jurisdiction.country == "FR"
+        assert result.snapshot.source_url == BAAC_CHARACTERISTICS_URL
+        assert result.snapshot.fetch_params == {
+            "resource_id": BAAC_CHARACTERISTICS_RESOURCE_ID,
+            "release": BAAC_RELEASE,
+        }
+        assert result.snapshot.content_hash is not None
+        assert result.snapshot.record_count == 2
+        assert records[0].source_record_id == "202400000001"
+        assert records[1].source_record_id == "202400000002"
+        assert records[0].raw_data["lat"] == "48,8566"
+        assert records[1].raw_data["hrmn"] == ""
+
+    async def test_adapter_follows_data_gouv_redirect(self) -> None:
+        final_url = "https://static.data.gouv.fr/resources/baac/2024/Caract_2024.csv"
+
+        async with respx.mock(assert_all_called=True) as respx_mock:
+            respx_mock.get(BAAC_CHARACTERISTICS_URL).mock(
+                return_value=httpx.Response(302, headers={"location": final_url})
+            )
+            respx_mock.get(final_url).mock(
+                return_value=httpx.Response(200, content=CHARACTERISTICS_CSV.read_bytes())
+            )
+
+            async with httpx.AsyncClient() as client:
+                adapter = BaacCharacteristicsAdapter(fetch_config=_fetch_config(client))
+                result = await adapter.fetch()
+
+        assert result.snapshot.record_count == 2
+
+    async def test_adapter_http_failure_is_fetch_error(self) -> None:
+        async with respx.mock(assert_all_called=True) as respx_mock:
+            respx_mock.get(BAAC_CHARACTERISTICS_URL).mock(return_value=httpx.Response(503))
+
+            async with httpx.AsyncClient() as client:
+                adapter = BaacCharacteristicsAdapter(fetch_config=_fetch_config(client))
+
+                with pytest.raises(FetchError, match="failed to read BAAC CSV"):
+                    await adapter.fetch()
+
+    async def test_adapter_falls_back_to_cp1252(self) -> None:
+        text = CHARACTERISTICS_CSV.read_text().replace(
+            "12 RUE DE RIVOLI", "12 RUE DE RIVOLI é"
+        )
+
+        async with respx.mock(assert_all_called=True) as respx_mock:
+            respx_mock.get(BAAC_CHARACTERISTICS_URL).mock(
+                return_value=httpx.Response(200, content=text.encode("cp1252"))
+            )
+
+            async with httpx.AsyncClient() as client:
+                adapter = BaacCharacteristicsAdapter(fetch_config=_fetch_config(client))
+                result = await adapter.fetch()
+                records = [record async for record in result.records]
+
+        assert records[0].raw_data["adr"] == "12 RUE DE RIVOLI é"
+
+    async def test_adapter_missing_header_field_is_fetch_error(self) -> None:
+        bad_csv = CHARACTERISTICS_CSV.read_text().replace("Num_Acc", "num_acc")
+
+        async with respx.mock(assert_all_called=True) as respx_mock:
+            respx_mock.get(BAAC_CHARACTERISTICS_URL).mock(
+                return_value=httpx.Response(200, content=bad_csv.encode())
+            )
+
+            async with httpx.AsyncClient() as client:
+                adapter = BaacCharacteristicsAdapter(fetch_config=_fetch_config(client))
+
+                with pytest.raises(FetchError, match="missing required fields"):
+                    await adapter.fetch()
+
+    async def test_adapter_rejects_empty_csv(self) -> None:
+        async with respx.mock(assert_all_called=True) as respx_mock:
+            respx_mock.get(BAAC_CHARACTERISTICS_URL).mock(
+                return_value=httpx.Response(200, content=b"")
+            )
+
+            async with httpx.AsyncClient() as client:
+                adapter = BaacCharacteristicsAdapter(fetch_config=_fetch_config(client))
+
+                with pytest.raises(FetchError, match="empty BAAC CSV"):
+                    await adapter.fetch()
+
+    async def test_adapter_rejects_non_csv_200_response(self) -> None:
+        async with respx.mock(assert_all_called=True) as respx_mock:
+            respx_mock.get(BAAC_CHARACTERISTICS_URL).mock(
+                return_value=httpx.Response(200, content=b"<html>maintenance</html>")
+            )
+
+            async with httpx.AsyncClient() as client:
+                adapter = BaacCharacteristicsAdapter(fetch_config=_fetch_config(client))
+
+                with pytest.raises(FetchError, match="non-CSV BAAC response"):
+                    await adapter.fetch()
+
+
+class TestLocationsAdapter:
+    async def test_adapter_fetches_and_yields_two_locations(self) -> None:
+        async with respx.mock(assert_all_called=True) as respx_mock:
+            respx_mock.get(BAAC_LOCATIONS_URL).mock(
+                return_value=httpx.Response(200, content=LOCATIONS_CSV.read_bytes())
+            )
+
+            async with httpx.AsyncClient() as client:
+                adapter = BaacLocationsAdapter(fetch_config=_fetch_config(client))
+                result = await adapter.fetch()
+                records = [record async for record in result.records]
+
+        assert result.snapshot.dataset_id == BAAC_LOCATIONS_DATASET_ID
+        assert result.snapshot.record_count == 2
+        assert records[0].source_record_id == "202400000001"
+        assert records[1].raw_data["voie"] == ""
+
+
+class TestVehiclesAdapter:
+    async def test_adapter_fetches_and_yields_three_vehicles(self) -> None:
+        async with respx.mock(assert_all_called=True) as respx_mock:
+            respx_mock.get(BAAC_VEHICLES_URL).mock(
+                return_value=httpx.Response(200, content=VEHICLES_CSV.read_bytes())
+            )
+
+            async with httpx.AsyncClient() as client:
+                adapter = BaacVehiclesAdapter(fetch_config=_fetch_config(client))
+                result = await adapter.fetch()
+                records = [record async for record in result.records]
+
+        assert result.snapshot.dataset_id == BAAC_VEHICLES_DATASET_ID
+        assert result.snapshot.record_count == 3
+        assert records[0].source_record_id == "202400000001:veh-001"
+        assert records[2].source_record_id == "202400000002:veh-003"
+
+
+class TestUsersAdapter:
+    async def test_adapter_fetches_and_yields_three_users(self) -> None:
+        async with respx.mock(assert_all_called=True) as respx_mock:
+            respx_mock.get(BAAC_USERS_URL).mock(
+                return_value=httpx.Response(200, content=USERS_CSV.read_bytes())
+            )
+
+            async with httpx.AsyncClient() as client:
+                adapter = BaacUsersAdapter(fetch_config=_fetch_config(client))
+                result = await adapter.fetch()
+                records = [record async for record in result.records]
+
+        assert result.snapshot.dataset_id == BAAC_USERS_DATASET_ID
+        assert result.snapshot.record_count == 3
+        assert records[0].source_record_id == "202400000001:usr-001"
+        assert records[2].raw_data["place"] == ""

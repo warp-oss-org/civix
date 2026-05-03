@@ -1,0 +1,2 @@
+accident_index,date,time,accident_severity,longitude,latitude,first_road_class,second_road_class,road_type,speed_limit,junction_detail,junction_control,light_conditions,weather_conditions,road_surface_conditions,number_of_vehicles,number_of_casualties
+2024010000001,14/02/2024,08:35,2,-0.1278,51.5074,3,6,6,30,3,4,1,1,2,2,2
