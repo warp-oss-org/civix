@@ -1,0 +1,1 @@
+"""Hazard-risk adapter tests."""
