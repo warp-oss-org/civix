@@ -1,0 +1,28 @@
+[
+  {
+    "projectIdentifier": "DR-0820-0001-R",
+    "transactionIdentifier": 0,
+    "transactionDate": "1990-07-25T00:00:00.000Z",
+    "commitmentIdentifier": null,
+    "accsLine": null,
+    "fundCode": "6N",
+    "federalShareProjectCostAmt": 57000,
+    "recipientAdminCostAmt": null,
+    "subrecipientAdminCostAmt": null,
+    "subrecipientMgmtCostAmt": null,
+    "id": "4f574eb4-f9fc-4c30-a22a-993a0bb82e26"
+  },
+  {
+    "projectIdentifier": "DR-4332-0300-R",
+    "transactionIdentifier": 2,
+    "transactionDate": "2025-02-26T00:00:00.000Z",
+    "commitmentIdentifier": null,
+    "accsLine": null,
+    "fundCode": "6M",
+    "federalShareProjectCostAmt": -18274.93,
+    "recipientAdminCostAmt": 0,
+    "subrecipientAdminCostAmt": 0,
+    "subrecipientMgmtCostAmt": -1620,
+    "id": "c6c9176b-87db-4d63-be53-30fb9a24bc9a"
+  }
+]

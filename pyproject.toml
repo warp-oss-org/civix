@@ -98,6 +98,7 @@ source_modules = [
 ]
 forbidden_modules = [
     "civix.domains.business_licences.adapters",
+    "civix.domains.hazard_mitigation.adapters",
     "civix.domains.mobility_observations.adapters",
     "civix.domains.transportation_safety.adapters",
     "civix.infra",
@@ -130,6 +131,7 @@ modules = [
     "civix.domains.mobility_observations.adapters.sources.ca.toronto_bicycle_counters",
     "civix.domains.mobility_observations.adapters.sources.ca.toronto_turning_movement_counts",
     "civix.domains.mobility_observations.adapters.sources.fr.tmja_road_traffic",
+    "civix.domains.hazard_mitigation.adapters.sources.us.fema_hma",
 ]
 
 [[tool.importlinter.contracts]]
@@ -146,5 +148,7 @@ modules = [
 name = "infra source helpers stay independent"
 type = "independence"
 modules = [
+    "civix.infra.sources.ckan",
+    "civix.infra.sources.openfema",
     "civix.infra.sources.socrata",
 ]

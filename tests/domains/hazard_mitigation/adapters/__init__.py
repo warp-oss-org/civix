@@ -1,0 +1,1 @@
+"""Hazard mitigation adapter tests."""
