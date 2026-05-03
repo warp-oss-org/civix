@@ -91,8 +91,10 @@ A domain package contains:
   domain's source slices and any other domain-specific boundary
   implementations. May import `civix.core`, `civix.infra`, and the
   domain's own `models/`.
-- **`__init__.py`** — re-exports the canonical model(s). Source slices
-  are imported from their own package paths, not eagerly re-exported.
+- **`__init__.py`** — may re-export the canonical model(s). Source
+  slices are imported from their own package paths, not eagerly
+  re-exported. Do not define models, functions, constants, validators,
+  or source logic in package initializers.
 
 ## Module shape inside a capability or domain
 
@@ -105,13 +107,16 @@ same internal split:
 - **Flat `.py` files at the package root** — behavior: functions,
   observers, runners, validators, exception classes. May import from
   the local `models/` or from any other capability.
+- **`__init__.py`** — package marker and compatibility surface only.
+  It may contain a docstring, imports, and `__all__`/`__version__`
+  assignments. It must not define classes, functions, type aliases,
+  validators, constants, or execute package behavior.
 
 A type moves into `models/` when it is imported by more than one
 sibling file, or when its definition would otherwise dominate a
 behavior-oriented module. Small modules that mix one type with the
-single function that operates on it (`temporal/__init__.py`,
-`pipeline/runner.py`) stay flat — splitting them adds overhead without
-clarifying anything.
+single function that operates on it may stay flat in a named module
+such as `pipeline/runner.py`; they still do not belong in `__init__.py`.
 
 Examples:
 

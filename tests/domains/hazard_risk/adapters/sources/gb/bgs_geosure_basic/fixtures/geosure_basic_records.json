@@ -1,0 +1,19 @@
+{
+  "records": [
+    {
+      "hex_id": "geosure-hex-0001",
+      "area_name": "North Wales sample hex",
+      "country_part": "Wales",
+      "geohazard_theme": "Combined GeoHazard",
+      "susceptibility_rating": "Moderate - High",
+      "susceptibility_score": 3,
+      "publication_version": "GeoSure Basic v8",
+      "publication_date": "2026-04-09",
+      "product_url": "https://www.data.gov.uk/dataset/b6c7976d-a0c3-4bfe-b4a0-d68a47d07102/geosure-basic-version-8",
+      "geometry_uri": "https://www.bgs.ac.uk/datasets/geosure/",
+      "geometry_layer": "GeoSure Basic 5km Hex Grid",
+      "geometry_id": "geosure-hex-0001",
+      "source_crs": "EPSG:27700"
+    }
+  ]
+}

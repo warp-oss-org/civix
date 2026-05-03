@@ -27,8 +27,9 @@ Each source package should usually contain:
 - `mapper.py`: maps raw records into a source-agnostic domain model.
 - `schema.py`: pins raw source schema expectations and bounded taxonomy
   drift specs.
-- `__init__.py`: exports the public adapter, mapper, schema, and
-  taxonomy constants.
+- `__init__.py`: re-exports the public adapter, mapper, schema, and
+  taxonomy constants. It must not define adapter logic, mapper logic,
+  schemas, models, validators, or constants directly.
 
 Tests mirror the package path under
 `tests/domains/<domain>/adapters/sources/...`.

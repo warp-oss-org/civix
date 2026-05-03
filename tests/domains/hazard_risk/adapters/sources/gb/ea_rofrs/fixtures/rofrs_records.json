@@ -1,0 +1,17 @@
+{
+  "records": [
+    {
+      "risk_area_id": "rofrs-eng-0001",
+      "risk_area_name": "Thames rivers and sea risk area",
+      "risk_band": "High",
+      "flood_source": "Rivers and Sea",
+      "publication_date": "2026-01-16",
+      "product_version": "RoFRS-2026-01",
+      "product_url": "https://www.data.gov.uk/dataset/943d2bbb-aa08-45d1-96cb-42556cd01d94/risk-of-flooding-from-rivers-and-sea2",
+      "geometry_uri": "https://environment.data.gov.uk/dataset/96ab4342-82c1-4095-87f1-0082e8d84ef1",
+      "geometry_layer": "Risk of Flooding from Rivers and Sea",
+      "geometry_id": "rofrs-eng-0001",
+      "source_crs": "EPSG:27700"
+    }
+  ]
+}

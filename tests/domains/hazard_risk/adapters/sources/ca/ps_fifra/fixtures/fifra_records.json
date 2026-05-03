@@ -1,0 +1,18 @@
+{
+  "records": [
+    {
+      "area_id": "fifra-on-0001",
+      "area_name": "Ottawa River flood screening area",
+      "province_code": "ON",
+      "flood_risk_rating": "Extreme",
+      "flood_type": "riverine",
+      "publication_version": "fifra-2026",
+      "publication_date": "2026-04-27",
+      "methodology_url": "https://www.publicsafety.gc.ca/cnt/mrgnc-mngmnt/dsstr-prvntn-mtgtn/ntrl-hzrd-rsk-ssssmnt/index-en.aspx",
+      "geometry_uri": "https://canada.ca/flood-risk/fifra",
+      "geometry_layer": "Federally Identified Flood Risk Areas",
+      "geometry_id": "fifra-on-0001",
+      "source_crs": "EPSG:3978"
+    }
+  ]
+}
