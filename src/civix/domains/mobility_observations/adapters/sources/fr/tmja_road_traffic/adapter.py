@@ -20,6 +20,7 @@ from civix.core.ports.errors import FetchError
 from civix.core.ports.models.adapter import FetchResult
 from civix.core.snapshots.models.snapshot import RawRecord, SourceSnapshot
 from civix.core.temporal import Clock, utc_now
+from civix.infra.sources.csv import fetch_csv_bytes
 
 SOURCE_ID: Final[SourceId] = SourceId("fr-mte-road-traffic")
 FR_TMJA_RRNC_2024_DATASET_ID: Final[DatasetId] = DatasetId("tmja-rrnc-2024")
@@ -104,7 +105,13 @@ class FrTmjaRoadTrafficAdapter:
 
     async def fetch(self) -> FetchResult:
         fetched_at = self.fetch_config.clock()
-        content = await _fetch_bytes(self.fetch_config)
+        content = await fetch_csv_bytes(
+            self.fetch_config.client,
+            self.fetch_config.resource_url,
+            source_id=SOURCE_ID,
+            dataset_id=FR_TMJA_RRNC_2024_DATASET_ID,
+            error_message=(f"failed to read TMJA CSV from {self.fetch_config.resource_url}"),
+        )
         content_hash = hashlib.sha256(content).hexdigest()
         rows = _parse_csv(content)
         snapshot = _build_snapshot(
@@ -118,22 +125,6 @@ class FrTmjaRoadTrafficAdapter:
             snapshot=snapshot,
             records=_stream_records(snapshot=snapshot, rows=rows),
         )
-
-
-async def _fetch_bytes(fetch: FrTmjaRoadTrafficFetchConfig) -> bytes:
-    try:
-        response = await fetch.client.get(fetch.resource_url)
-
-        response.raise_for_status()
-    except httpx.HTTPError as e:
-        raise FetchError(
-            f"failed to read TMJA CSV from {fetch.resource_url}",
-            source_id=SOURCE_ID,
-            dataset_id=FR_TMJA_RRNC_2024_DATASET_ID,
-            operation="fetch-csv",
-        ) from e
-
-    return response.content
 
 
 def _parse_csv(content: bytes) -> tuple[dict[str, str], ...]:

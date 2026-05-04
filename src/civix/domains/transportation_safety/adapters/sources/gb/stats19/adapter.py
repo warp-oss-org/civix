@@ -20,6 +20,7 @@ from civix.core.ports.errors import FetchError
 from civix.core.ports.models.adapter import FetchResult
 from civix.core.snapshots.models.snapshot import RawRecord, SourceSnapshot
 from civix.core.temporal import Clock, utc_now
+from civix.infra.sources.csv import fetch_csv_bytes
 
 SOURCE_ID: Final[SourceId] = SourceId("dft-open-data")
 STATS19_RELEASE: Final[str] = "2024-final"
@@ -197,11 +198,15 @@ class Stats19CasualtiesAdapter:
         )
 
 
-async def _fetch_table(
-    config: Stats19FetchConfig, url: str, spec: _TableSpec
-) -> FetchResult:
+async def _fetch_table(config: Stats19FetchConfig, url: str, spec: _TableSpec) -> FetchResult:
     fetched_at = config.clock()
-    content = await _fetch_bytes(config.client, url, dataset_id=spec.dataset_id)
+    content = await fetch_csv_bytes(
+        config.client,
+        url,
+        source_id=SOURCE_ID,
+        dataset_id=spec.dataset_id,
+        error_message=f"failed to read STATS19 CSV from {url}",
+    )
     content_hash = hashlib.sha256(content).hexdigest()
     rows = _parse_csv(content, dataset_id=spec.dataset_id, expected_fields=spec.expected_fields)
     snapshot = _build_snapshot(
@@ -216,24 +221,6 @@ async def _fetch_table(
         snapshot=snapshot,
         records=_stream_records(snapshot=snapshot, rows=rows, spec=spec),
     )
-
-
-async def _fetch_bytes(
-    client: httpx.AsyncClient, url: str, *, dataset_id: DatasetId
-) -> bytes:
-    try:
-        response = await client.get(url)
-
-        response.raise_for_status()
-    except httpx.HTTPError as e:
-        raise FetchError(
-            f"failed to read STATS19 CSV from {url}",
-            source_id=SOURCE_ID,
-            dataset_id=dataset_id,
-            operation="fetch-csv",
-        ) from e
-
-    return response.content
 
 
 def _parse_csv(
@@ -354,9 +341,7 @@ def _build_record(
         ) from e
 
 
-def _source_record_id(
-    row: Mapping[str, str], *, fields: tuple[str, ...], index: int
-) -> str | None:
+def _source_record_id(row: Mapping[str, str], *, fields: tuple[str, ...], index: int) -> str | None:
     parts = tuple(str_or_none(row.get(field_name)) for field_name in fields)
 
     if None in parts:

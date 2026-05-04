@@ -157,6 +157,7 @@ name = "infra source helpers stay independent"
 type = "independence"
 modules = [
     "civix.infra.sources.ckan",
+    "civix.infra.sources.csv",
     "civix.infra.sources.openfema",
     "civix.infra.sources.socrata",
 ]

@@ -20,6 +20,7 @@ from civix.core.ports.errors import FetchError
 from civix.core.ports.models.adapter import FetchResult
 from civix.core.snapshots.models.snapshot import RawRecord, SourceSnapshot
 from civix.core.temporal import Clock, utc_now
+from civix.infra.sources.csv import fetch_csv_bytes
 
 SOURCE_ID: Final[SourceId] = SourceId("onisr-open-data")
 BAAC_SOURCE_YEAR: Final[str] = "2024"
@@ -59,9 +60,7 @@ BAAC_LOCATIONS_URL: Final[str] = BAAC_RESOURCE_URL_TEMPLATE.format(
 BAAC_VEHICLES_URL: Final[str] = BAAC_RESOURCE_URL_TEMPLATE.format(
     resource_id=BAAC_VEHICLES_RESOURCE_ID
 )
-BAAC_USERS_URL: Final[str] = BAAC_RESOURCE_URL_TEMPLATE.format(
-    resource_id=BAAC_USERS_RESOURCE_ID
-)
+BAAC_USERS_URL: Final[str] = BAAC_RESOURCE_URL_TEMPLATE.format(resource_id=BAAC_USERS_RESOURCE_ID)
 
 BAAC_SOURCE_SCOPE: Final[str] = (
     "Injury road traffic collisions on roads open to public traffic in France, "
@@ -69,8 +68,7 @@ BAAC_SOURCE_SCOPE: Final[str] = (
 )
 BAAC_LICENCE: Final[str] = "Licence Ouverte / Open Licence"
 BAAC_RELEASE_CAVEATS: Final[tuple[str, ...]] = (
-    "BAAC open data covers injury collisions and does not include property-damage-only "
-    "collisions.",
+    "BAAC open data covers injury collisions and does not include property-damage-only collisions.",
     "Hospitalised-injury qualification changed from 2018 and the indicator is not "
     "labelled by the official statistics authority from 2019.",
     "Some privacy-sensitive investigation, user, vehicle, and behaviour details are "
@@ -272,14 +270,22 @@ class BaacUsersAdapter:
         return BAAC_JURISDICTION
 
     async def fetch(self) -> FetchResult:
-        return await _fetch_table(
-            self.fetch_config, self.fetch_config.users_url, _USERS_TABLE
-        )
+        return await _fetch_table(self.fetch_config, self.fetch_config.users_url, _USERS_TABLE)
 
 
 async def _fetch_table(config: BaacFetchConfig, url: str, spec: _TableSpec) -> FetchResult:
     fetched_at = config.clock()
-    content = await _fetch_bytes(config.client, url, dataset_id=spec.dataset_id)
+    # data.gouv.fr issues signed redirects to object storage for BAAC CSV
+    # archives, so this fetch must follow redirects even though the shared
+    # helper defaults to off.
+    content = await fetch_csv_bytes(
+        config.client,
+        url,
+        source_id=SOURCE_ID,
+        dataset_id=spec.dataset_id,
+        follow_redirects=True,
+        error_message=f"failed to read BAAC CSV from {url}",
+    )
     content_hash = hashlib.sha256(content).hexdigest()
     rows = _parse_csv(content, dataset_id=spec.dataset_id, expected_fields=spec.expected_fields)
     snapshot = _build_snapshot(
@@ -295,24 +301,6 @@ async def _fetch_table(config: BaacFetchConfig, url: str, spec: _TableSpec) -> F
         snapshot=snapshot,
         records=_stream_records(snapshot=snapshot, rows=rows, spec=spec),
     )
-
-
-async def _fetch_bytes(
-    client: httpx.AsyncClient, url: str, *, dataset_id: DatasetId
-) -> bytes:
-    try:
-        response = await client.get(url, follow_redirects=True)
-
-        response.raise_for_status()
-    except httpx.HTTPError as e:
-        raise FetchError(
-            f"failed to read BAAC CSV from {url}",
-            source_id=SOURCE_ID,
-            dataset_id=dataset_id,
-            operation="fetch-csv",
-        ) from e
-
-    return response.content
 
 
 def _parse_csv(
@@ -433,9 +421,7 @@ def _build_record(
         ) from e
 
 
-def _source_record_id(
-    row: Mapping[str, str], *, fields: tuple[str, ...], index: int
-) -> str | None:
+def _source_record_id(row: Mapping[str, str], *, fields: tuple[str, ...], index: int) -> str | None:
     parts = tuple(str_or_none(row.get(field_name)) for field_name in fields)
 
     if None in parts:

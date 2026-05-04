@@ -23,6 +23,7 @@ from civix.core.temporal import Clock, utc_now
 from civix.domains.hazard_risk.adapters.sources.fr.georisques_pprn.schema import (
     GEORISQUES_PPRN_FIELDS,
 )
+from civix.infra.sources.csv import fetch_csv_bytes
 
 SOURCE_ID: Final[SourceId] = SourceId("georisques-gaspar")
 GEORISQUES_PPRN_DATASET_ID: Final[DatasetId] = DatasetId("pprn_gaspar")
@@ -63,7 +64,15 @@ class GeorisquesPprnAdapter:
 
     async def fetch(self) -> FetchResult:
         fetched_at = self.fetch_config.clock()
-        content = await _fetch_bytes(self.fetch_config)
+        content = await fetch_csv_bytes(
+            self.fetch_config.client,
+            self.fetch_config.csv_url,
+            source_id=SOURCE_ID,
+            dataset_id=GEORISQUES_PPRN_DATASET_ID,
+            error_message=(
+                f"failed to read Georisques PPRN CSV from {self.fetch_config.csv_url}"
+            ),
+        )
         content_hash = hashlib.sha256(content).hexdigest()
         rows = _parse_csv(content)
         snapshot = _build_snapshot(
@@ -77,22 +86,6 @@ class GeorisquesPprnAdapter:
             snapshot=snapshot,
             records=_stream_records(snapshot=snapshot, rows=rows),
         )
-
-
-async def _fetch_bytes(fetch: GeorisquesPprnFetchConfig) -> bytes:
-    try:
-        response = await fetch.client.get(fetch.csv_url)
-
-        response.raise_for_status()
-    except httpx.HTTPError as e:
-        raise FetchError(
-            f"failed to read Georisques PPRN CSV from {fetch.csv_url}",
-            source_id=SOURCE_ID,
-            dataset_id=GEORISQUES_PPRN_DATASET_ID,
-            operation="fetch-csv",
-        ) from e
-
-    return response.content
 
 
 def _parse_csv(content: bytes) -> tuple[dict[str, str], ...]:
