@@ -205,9 +205,7 @@ def test_upstream_urls_target_data_gouv_resources() -> None:
     assert BAAC_VEHICLES_URL == (
         f"https://www.data.gouv.fr/fr/datasets/r/{BAAC_VEHICLES_RESOURCE_ID}"
     )
-    assert BAAC_USERS_URL == (
-        f"https://www.data.gouv.fr/fr/datasets/r/{BAAC_USERS_RESOURCE_ID}"
-    )
+    assert BAAC_USERS_URL == (f"https://www.data.gouv.fr/fr/datasets/r/{BAAC_USERS_RESOURCE_ID}")
 
 
 def test_linked_fixture_maps_collisions_vehicles_and_users() -> None:
@@ -448,8 +446,7 @@ def test_unknown_baac_code_surfaces_as_taxonomy_drift() -> None:
     report = taxonomy_observer.finalize(snapshot)
 
     assert any(
-        finding.kind is TaxonomyDriftKind.UNRECOGNIZED_VALUE
-        and finding.taxonomy_id == "baac-catv"
+        finding.kind is TaxonomyDriftKind.UNRECOGNIZED_VALUE and finding.taxonomy_id == "baac-catv"
         for finding in report.findings
     )
     assert report.has_errors
@@ -468,8 +465,7 @@ def test_unknown_baac_place_surfaces_as_taxonomy_drift() -> None:
     report = taxonomy_observer.finalize(snapshot)
 
     assert any(
-        finding.kind is TaxonomyDriftKind.UNRECOGNIZED_VALUE
-        and finding.taxonomy_id == "baac-place"
+        finding.kind is TaxonomyDriftKind.UNRECOGNIZED_VALUE and finding.taxonomy_id == "baac-place"
         for finding in report.findings
     )
     assert report.has_errors
@@ -531,9 +527,7 @@ class TestCharacteristicsAdapter:
                     await adapter.fetch()
 
     async def test_adapter_falls_back_to_cp1252(self) -> None:
-        text = CHARACTERISTICS_CSV.read_text().replace(
-            "12 RUE DE RIVOLI", "12 RUE DE RIVOLI é"
-        )
+        text = CHARACTERISTICS_CSV.read_text().replace("12 RUE DE RIVOLI", "12 RUE DE RIVOLI é")
 
         async with respx.mock(assert_all_called=True) as respx_mock:
             respx_mock.get(BAAC_CHARACTERISTICS_URL).mock(

@@ -38,14 +38,12 @@ CHICAGO_TRAFFIC_TRACKER_SEGMENTS_RELEASE_CAVEATS: Final[tuple[str, ...]] = (
 
 _SOURCE_RECORD_ID_FIELD: Final[str] = "segmentid"
 
-CHICAGO_TRAFFIC_TRACKER_SEGMENTS_DATASET_CONFIG: Final[SocrataDatasetConfig] = (
-    SocrataDatasetConfig(
-        source_id=SOURCE_ID,
-        dataset_id=CHICAGO_TRAFFIC_TRACKER_SEGMENTS_DATASET_ID,
-        jurisdiction=CHICAGO_JURISDICTION,
-        base_url=DEFAULT_BASE_URL,
-        source_record_id_fields=(_SOURCE_RECORD_ID_FIELD,),
-    )
+CHICAGO_TRAFFIC_TRACKER_SEGMENTS_DATASET_CONFIG: Final[SocrataDatasetConfig] = SocrataDatasetConfig(
+    source_id=SOURCE_ID,
+    dataset_id=CHICAGO_TRAFFIC_TRACKER_SEGMENTS_DATASET_ID,
+    jurisdiction=CHICAGO_JURISDICTION,
+    base_url=DEFAULT_BASE_URL,
+    source_record_id_fields=(_SOURCE_RECORD_ID_FIELD,),
 )
 
 

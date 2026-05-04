@@ -98,7 +98,7 @@ class NycLl97Adapter:
 
     async def fetch(self) -> FetchResult:
         body = await _download(self.fetch_config)
-        record_count = _count_data_rows(body, self.fetch_config.sheet_name)
+        field_names, data_rows = _read_workbook_rows(body, self.fetch_config.sheet_name)
         fetched_at = self.fetch_config.clock()
         snapshot_id = SnapshotId(f"{SOURCE_ID}:{LL97_DATASET_ID}:{fetched_at.isoformat()}")
         snapshot = SourceSnapshot(
@@ -107,7 +107,7 @@ class NycLl97Adapter:
             dataset_id=LL97_DATASET_ID,
             jurisdiction=NYC_JURISDICTION,
             fetched_at=fetched_at,
-            record_count=record_count,
+            record_count=len(data_rows),
             source_url=self.fetch_config.url,
             fetch_params={
                 "sheet_name": self.fetch_config.sheet_name,
@@ -118,8 +118,8 @@ class NycLl97Adapter:
         return FetchResult(
             snapshot=snapshot,
             records=_stream_records(
-                body=body,
-                sheet_name=self.fetch_config.sheet_name,
+                field_names=field_names,
+                data_rows=data_rows,
                 snapshot_id=snapshot_id,
             ),
         )
@@ -140,25 +140,9 @@ async def _download(config: NycLl97FetchConfig) -> bytes:
     return response.content
 
 
-def _count_data_rows(body: bytes, sheet_name: str) -> int:
-    workbook = _load_workbook(body)
-    try:
-        worksheet = _get_sheet(workbook, sheet_name)
-        rows_iter = worksheet.iter_rows(values_only=True)
-        next(rows_iter, None)  # consume header
-        count = sum(1 for _ in rows_iter)
-    finally:
-        workbook.close()
-
-    return count
-
-
-async def _stream_records(
-    *,
-    body: bytes,
-    sheet_name: str,
-    snapshot_id: SnapshotId,
-) -> AsyncIterable[RawRecord]:
+def _read_workbook_rows(
+    body: bytes, sheet_name: str
+) -> tuple[tuple[str | None, ...], tuple[tuple[Any, ...], ...]]:
     workbook = _load_workbook(body)
     try:
         worksheet = _get_sheet(workbook, sheet_name)
@@ -166,18 +150,28 @@ async def _stream_records(
         header_row = next(rows_iter, None)
 
         if header_row is None:
-            return
+            return (), ()
 
         field_names = _resolve_field_names(header_row)
-
-        for row in rows_iter:
-            yield _build_record(
-                snapshot_id=snapshot_id,
-                field_names=field_names,
-                row=row,
-            )
+        data_rows = tuple(rows_iter)
     finally:
         workbook.close()
+
+    return field_names, data_rows
+
+
+async def _stream_records(
+    *,
+    field_names: tuple[str | None, ...],
+    data_rows: tuple[tuple[Any, ...], ...],
+    snapshot_id: SnapshotId,
+) -> AsyncIterable[RawRecord]:
+    for row in data_rows:
+        yield _build_record(
+            snapshot_id=snapshot_id,
+            field_names=field_names,
+            row=row,
+        )
 
 
 def _build_record(

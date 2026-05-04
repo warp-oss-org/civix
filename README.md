@@ -17,17 +17,34 @@ extension points.
 
 ## What works today
 
-- Typed primitives: identity, snapshots, quality, provenance,
-  mapping, spatial, temporal, adapters, pipeline.
-- Domain model: `BusinessLicence`.
-- Source adapter + mapper for the Vancouver Open Data Portal's
-  business-licences datasets.
-- JSON and Parquet snapshot exporters for normalized records, mapping
-  reports, schemas, and manifests.
-- Schema and taxonomy drift detection with sibling `drift.json` artifact.
-- Snapshot validation with pass/fail outcome and sibling `validation.json`
-  artifact.
-- Live opt-in test against the real Vancouver portal.
+Engine primitives:
+
+- Typed `core/` capabilities: identity, snapshots, quality, provenance,
+  mapping, spatial, temporal, taxonomy, drift, validation, ports, and
+  pipeline orchestration.
+- JSON and Parquet exporters for normalized records, mapping reports,
+  schemas, and manifests; sibling `drift.json` and `validation.json`
+  artifacts.
+
+Domains and source slices (each slice ships an `adapter.py`,
+`mapper.py`, `schema.py`, and fixture-backed tests):
+
+- `business_licences` — Calgary, Edmonton, Toronto, Vancouver, NYC.
+- `transportation_safety` — Chicago crashes/people/vehicles, NYC
+  crashes/persons/vehicles, Toronto KSI, GB STATS19, France BAAC.
+- `mobility_observations` — Chicago Traffic Tracker (regions, segments),
+  NYC bicycle/pedestrian counts, NYC traffic speeds, NYC traffic volume
+  counts, Toronto bicycle counters, Toronto turning-movement counts,
+  France TMJA, GB road-traffic counts.
+- `hazard_risk` — FEMA NRI, FEMA NFHL, NRCan FSI, PS FIFRA, France
+  Géorisques PPRN, GB BGS GeoSure, GB EA RoFRS.
+- `hazard_mitigation` — FEMA HMA, Canada DMAF, GB FCERM.
+- `building_energy_emissions` — NYC LL84, NYC LL97, Ontario EWRB.
+
+Live opt-in smoke tests are wired for Calgary, Toronto, and Vancouver
+business-licences slices today. Other slices are exercised through
+fixture-backed adapter, mapper, and drift tests; live coverage will
+broaden as the SDK consumer surface stabilizes.
 
 ## Tooling
 

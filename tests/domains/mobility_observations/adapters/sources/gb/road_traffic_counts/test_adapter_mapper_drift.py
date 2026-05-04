@@ -284,16 +284,12 @@ class TestCountMapper:
     def test_two_wheeled_emits_other_with_motorcycle_caveat(self) -> None:
         result = self._map()
         twm = next(
-            obs
-            for obs in result.record
-            if "two_wheeled_motor_vehicles" in obs.value.source_fields
+            obs for obs in result.record if "two_wheeled_motor_vehicles" in obs.value.source_fields
         )
 
         assert twm.travel_mode.value is TravelMode.OTHER
         assert twm.source_caveats.value is not None
-        assert any(
-            caveat.code == gb.TWO_WHEELED_CAVEAT_CODE for caveat in twm.source_caveats.value
-        )
+        assert any(caveat.code == gb.TWO_WHEELED_CAVEAT_CODE for caveat in twm.source_caveats.value)
 
     def test_all_hgvs_emits_truck_with_rollup_caveat(self) -> None:
         result = self._map()
@@ -418,9 +414,7 @@ class TestDrift:
         rows = json.loads((FIXTURES / "aadf_page.json").read_text())
 
         async with respx.mock(assert_all_called=True) as respx_mock:
-            respx_mock.get(AADF_URL).mock(
-                return_value=httpx.Response(200, json=_envelope(rows))
-            )
+            respx_mock.get(AADF_URL).mock(return_value=httpx.Response(200, json=_envelope(rows)))
 
             async with httpx.AsyncClient() as client:
                 pipeline_result = await run(
@@ -441,9 +435,7 @@ class TestDrift:
         rows[0]["direction_of_travel"] = "X"
 
         async with respx.mock(assert_all_called=True) as respx_mock:
-            respx_mock.get(AADF_URL).mock(
-                return_value=httpx.Response(200, json=_envelope(rows))
-            )
+            respx_mock.get(AADF_URL).mock(return_value=httpx.Response(200, json=_envelope(rows)))
 
             async with httpx.AsyncClient() as client:
                 pipeline_result = await run(
@@ -468,9 +460,7 @@ class TestDrift:
         rows[0]["estimation_method_detailed"] = "Estimated using a new method"
 
         async with respx.mock(assert_all_called=True) as respx_mock:
-            respx_mock.get(AADF_URL).mock(
-                return_value=httpx.Response(200, json=_envelope(rows))
-            )
+            respx_mock.get(AADF_URL).mock(return_value=httpx.Response(200, json=_envelope(rows)))
 
             async with httpx.AsyncClient() as client:
                 pipeline_result = await run(
@@ -498,9 +488,7 @@ class TestDrift:
             row["e_scooters"] = 17
 
         async with respx.mock(assert_all_called=True) as respx_mock:
-            respx_mock.get(AADF_URL).mock(
-                return_value=httpx.Response(200, json=_envelope(rows))
-            )
+            respx_mock.get(AADF_URL).mock(return_value=httpx.Response(200, json=_envelope(rows)))
 
             async with httpx.AsyncClient() as client:
                 pipeline_result = await run(

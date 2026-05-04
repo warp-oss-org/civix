@@ -273,9 +273,7 @@ class TestSiteMapper:
         assert site.footprint.value is None
         assert site.footprint.quality is FieldQuality.UNMAPPED
         assert site.footprint.source_fields == ()
-        assert {"xD", "yD", "xF", "yF", "zD", "zF"}.issubset(
-            result.report.unmapped_source_fields
-        )
+        assert {"xD", "yD", "xF", "yF", "zD", "zF"}.issubset(result.report.unmapped_source_fields)
         assert site.source_caveats.value is not None
         assert any(
             caveat.code == fr_tmja.PROJECTED_COORDINATES_CAVEAT_CODE

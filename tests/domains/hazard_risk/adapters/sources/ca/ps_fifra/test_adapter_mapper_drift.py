@@ -66,7 +66,11 @@ def _snapshot() -> SourceSnapshot:
 
 def _adapter(client: httpx.AsyncClient) -> fifra.PsFifraAdapter:
     return fifra.PsFifraAdapter(
-        fetch_config=fifra.PsFifraFetchConfig(client=client, clock=lambda: PINNED_NOW)
+        fetch_config=fifra.PsFifraFetchConfig(
+            client=client,
+            source_url=fifra.PS_FIFRA_DATASET_PAGE_URL,
+            clock=lambda: PINNED_NOW,
+        )
     )
 
 

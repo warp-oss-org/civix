@@ -309,9 +309,7 @@ class TestBuildingEnergyKeys:
                 "bee-report:v1:",
             ),
             (
-                lambda: build_building_compliance_case_key(
-                    SOURCE_ID, DATASET_ID, "case-1", "2024"
-                ),
+                lambda: build_building_compliance_case_key(SOURCE_ID, DATASET_ID, "case-1", "2024"),
                 "bee-case:v1:",
             ),
             (
@@ -367,9 +365,7 @@ class TestBuildingEnergyKeys:
             lambda: build_building_energy_report_key(SOURCE_ID, DATASET_ID, "", "2024"),
             lambda: build_building_energy_report_key(SOURCE_ID, DATASET_ID, "subject-1", ""),
             lambda: build_building_compliance_case_key(SOURCE_ID, DATASET_ID, "", "2024"),
-            lambda: build_building_metric_value_key(
-                SOURCE_ID, DATASET_ID, _report_key(), ""
-            ),
+            lambda: build_building_metric_value_key(SOURCE_ID, DATASET_ID, _report_key(), ""),
         ],
     )
     def test_empty_key_parts_rejected(self, builder: Callable[[], str]) -> None:
@@ -877,15 +873,9 @@ class TestPressureFixtures:
             ),
             source_subject_identifiers=_mapped(
                 (
-                    SourceIdentifier(
-                        value="bin-1234567", identifier_kind=_category("bin")
-                    ),
-                    SourceIdentifier(
-                        value="bin-1234568", identifier_kind=_category("bin")
-                    ),
-                    SourceIdentifier(
-                        value="bbl-1-00001-0001", identifier_kind=_category("bbl")
-                    ),
+                    SourceIdentifier(value="bin-1234567", identifier_kind=_category("bin")),
+                    SourceIdentifier(value="bin-1234568", identifier_kind=_category("bin")),
+                    SourceIdentifier(value="bbl-1-00001-0001", identifier_kind=_category("bbl")),
                 ),
                 "bin",
                 "bbl",

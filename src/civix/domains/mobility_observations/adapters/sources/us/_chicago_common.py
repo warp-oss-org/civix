@@ -288,12 +288,7 @@ def line_footprint(
     end_lat = float_or_none(raw.get(end_lat_field))
     end_lon = float_or_none(raw.get(end_lon_field))
 
-    if (
-        start_lat is None
-        or start_lon is None
-        or end_lat is None
-        or end_lon is None
-    ):
+    if start_lat is None or start_lon is None or end_lat is None or end_lon is None:
         raise MappingError(
             "invalid segment coordinates",
             mapper=mapper,

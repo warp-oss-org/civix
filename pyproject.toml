@@ -93,6 +93,7 @@ forbidden_modules = ["civix.domains"]
 name = "domain models stay pure"
 type = "forbidden"
 source_modules = [
+    "civix.domains.building_energy_emissions.models",
     "civix.domains.business_licences.models",
     "civix.domains.hazard_risk.models",
     "civix.domains.hazard_mitigation.models",
@@ -100,6 +101,7 @@ source_modules = [
     "civix.domains.transportation_safety.models",
 ]
 forbidden_modules = [
+    "civix.domains.building_energy_emissions.adapters",
     "civix.domains.business_licences.adapters",
     "civix.domains.hazard_risk.adapters",
     "civix.domains.hazard_mitigation.adapters",
@@ -135,8 +137,17 @@ modules = [
     "civix.domains.mobility_observations.adapters.sources.ca.toronto_bicycle_counters",
     "civix.domains.mobility_observations.adapters.sources.ca.toronto_turning_movement_counts",
     "civix.domains.mobility_observations.adapters.sources.fr.tmja_road_traffic",
+    "civix.domains.mobility_observations.adapters.sources.gb.road_traffic_counts",
     "civix.domains.hazard_risk.adapters.sources.us.fema_nri",
+    "civix.domains.hazard_risk.adapters.sources.us.fema_nfhl",
+    "civix.domains.hazard_risk.adapters.sources.ca.nrcan_fsi",
+    "civix.domains.hazard_risk.adapters.sources.ca.ps_fifra",
+    "civix.domains.hazard_risk.adapters.sources.fr.georisques_pprn",
+    "civix.domains.hazard_risk.adapters.sources.gb.bgs_geosure_basic",
+    "civix.domains.hazard_risk.adapters.sources.gb.ea_rofrs",
     "civix.domains.building_energy_emissions.adapters.sources.us.nyc_ll84",
+    "civix.domains.building_energy_emissions.adapters.sources.us.nyc_ll97",
+    "civix.domains.building_energy_emissions.adapters.sources.ca.ontario_ewrb",
     "civix.domains.hazard_mitigation.adapters.sources.ca.dmaf",
     "civix.domains.hazard_mitigation.adapters.sources.gb.fcerm",
     "civix.domains.hazard_mitigation.adapters.sources.us.fema_hma",

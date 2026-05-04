@@ -282,6 +282,7 @@ class TestMapper:
         assert "forecastedConstructionStartDate" not in report.unmapped_source_fields
         assert "forecastedConstructionEndDate" not in report.unmapped_source_fields
 
+
 class TestDrift:
     async def test_dmaf_fixture_drift_clean(self) -> None:
         async with respx.mock(assert_all_called=True) as respx_mock:

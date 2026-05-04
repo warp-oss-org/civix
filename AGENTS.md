@@ -48,14 +48,15 @@ The codebase has three top-level layers under `src/civix/`:
 
 - `core`: pure contracts and primitives. Identity, snapshots, quality, provenance, mapping, spatial, temporal, drift, pipeline orchestration, adapter Protocol, and export manifest contracts. No I/O, no third-party portal knowledge, no domain-specific vocabulary.
 - `domains/<x>`: a bounded context. Contains `models/` (canonical types; source-agnostic — a domain model never references a particular portal's field names) and optionally `adapters/` (the domain's source slices and other boundary implementations). The same `models <- adapters` rule repeats inside every domain. A `domains/<domain>/` package exists only when at least one source slice consumes it.
-- `infra`: cross-cutting I/O. Only `http.py` (shared HTTP transport) and `exporters/<format>/` (format-specific writers) live here. Domain-specific source adapters and mappers live under `domains/<x>/adapters/sources/`, not at the top level.
+- `infra`: cross-cutting I/O. Contains `http.py` (shared HTTP transport), `sources/<format>/` (cross-domain source-acquisition helpers — e.g. Socrata, CKAN, OpenFEMA — wrapped by domain source slices), and `exporters/<format>/` (format-specific writers). Domain-specific source adapters and mappers live under `domains/<x>/adapters/sources/`, not at the top level.
 
 Within `domains/<x>/adapters/sources/<country>/<city>/`: per-source `SourceAdapter` and `Mapper` implementations, colocated. Adapters fetch and snapshot raw records; mappers translate raw records into the domain's canonical model.
 
 Within top-level `infra/`:
 
-- `infra/exporters/<format>/`: writers that emit a `PipelineResult` to a target medium (filesystem layout, downstream system, etc.).
 - `infra/http.py`: shared transport helpers used by adapter implementations across domains.
+- `infra/sources/<format>/`: cross-domain acquisition helpers for source technologies. Domain source slices wrap these; the helper itself stays free of source semantics.
+- `infra/exporters/<format>/`: writers that emit a `PipelineResult` to a target medium (filesystem layout, downstream system, etc.).
 
 External consumers — command-line tools, notebooks, dashboards, applications — sit outside the package and decide where artifacts are written or stored.
 

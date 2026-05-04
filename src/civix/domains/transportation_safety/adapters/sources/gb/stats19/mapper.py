@@ -55,9 +55,7 @@ _ADDRESS_SOURCE_FIELD: Final[str] = "dft_open_data.address"
 _LOCALITY_SOURCE_FIELD: Final[str] = "dft_open_data.locality"
 
 _COLLISION_CONSUMED_FIELDS: Final[frozenset[str]] = frozenset({"accident_index"})
-_VEHICLE_CONSUMED_FIELDS: Final[frozenset[str]] = frozenset(
-    {"accident_index", "vehicle_reference"}
-)
+_VEHICLE_CONSUMED_FIELDS: Final[frozenset[str]] = frozenset({"accident_index", "vehicle_reference"})
 _CASUALTY_CONSUMED_FIELDS: Final[frozenset[str]] = frozenset(
     {"accident_index", "vehicle_reference", "casualty_reference"}
 )
@@ -172,6 +170,7 @@ _CASUALTY_CLASS_LABELS: Final[dict[str, str]] = {
     "2": "Passenger",
     "3": "Pedestrian",
 }
+
 
 @dataclass(frozen=True, slots=True)
 class Stats19LinkedResult:

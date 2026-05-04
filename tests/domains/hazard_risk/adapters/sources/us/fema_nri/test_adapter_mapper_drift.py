@@ -241,8 +241,7 @@ class TestScoresMapper:
         avalanche_scores = [
             score
             for score in scores
-            if score.source_hazard.value is not None
-            and score.source_hazard.value.code == "avln"
+            if score.source_hazard.value is not None and score.source_hazard.value.code == "avln"
         ]
 
         assert [score.score_id for score in avalanche_scores] == ["01001020100:avln_riskr"]

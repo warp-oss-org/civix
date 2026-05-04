@@ -23,8 +23,9 @@ NRCAN_FSI_DATASET_PAGE_URL: Final[str] = (
 )
 NRCAN_FSI_SOURCE_SCOPE: Final[str] = (
     "Natural Resources Canada Flood Susceptibility Index fixture-shaped extract. "
-    "The default source URL is the official dataset page; callers should provide a "
-    "fixture-shaped JSON extract URL until a stable machine endpoint is confirmed. "
+    "Callers must supply a JSON extract URL via NrcanFsiFetchConfig.source_url; "
+    "NRCAN_FSI_DATASET_PAGE_URL points at the dataset landing page (HTML) and is "
+    "exported only for traceability until a stable machine endpoint is confirmed. "
     "The source is a national screening layer, not a site-level flood-risk assessment."
 )
 
@@ -39,11 +40,17 @@ _SOURCE_SPEC: Final[JsonArraySourceSpec] = JsonArraySourceSpec(
 
 @dataclass(frozen=True, slots=True)
 class NrcanFsiFetchConfig:
-    """Runtime fetch options for an NRCan FSI JSON extract."""
+    """Runtime fetch options for an NRCan FSI JSON extract.
+
+    `source_url` is required: NRCan publishes the FSI as a dataset
+    landing page rather than a stable machine endpoint, so callers must
+    point at a JSON extract they have staged. `NRCAN_FSI_DATASET_PAGE_URL`
+    is exported for traceability, not as a default.
+    """
 
     client: httpx.AsyncClient
+    source_url: str
     clock: Clock = field(default=utc_now)
-    source_url: str = NRCAN_FSI_DATASET_PAGE_URL
 
 
 @dataclass(frozen=True, slots=True)

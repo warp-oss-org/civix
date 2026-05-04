@@ -60,9 +60,7 @@ REPORT_MAPPER_VERSION: Final[str] = "0.1.0"
 METRICS_MAPPER_VERSION: Final[str] = "0.1.0"
 
 METHODOLOGY_LABEL: Final[str] = "ENERGY STAR Portfolio Manager"
-METHODOLOGY_URL: Final[str] = (
-    "https://www.ontario.ca/page/report-energy-water-use-large-buildings"
-)
+METHODOLOGY_URL: Final[str] = "https://www.ontario.ca/page/report-energy-water-use-large-buildings"
 
 # Methodology version tokens applied to source-side metrics depending on the
 # row-level NRCan source-factor flag. NRCan changed source factors as of
@@ -954,9 +952,7 @@ def _map_property_types(raw: Mapping[str, Any]) -> MappedField[tuple[CategoryRef
                 continue
 
             seen.add(code)
-            categories.append(
-                _category(code, label=part, taxonomy_id=_PROPERTY_TYPE_TAXONOMY_ID)
-            )
+            categories.append(_category(code, label=part, taxonomy_id=_PROPERTY_TYPE_TAXONOMY_ID))
 
     if not categories:
         return MappedField(

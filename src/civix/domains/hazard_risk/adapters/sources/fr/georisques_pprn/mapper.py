@@ -64,9 +64,7 @@ _STATUS_SOURCE_FIELDS: Final[tuple[str, ...]] = ("LIBELLE ETAT", "LIBELLE SOUS-E
 _IGNORED_MAPPING_REPORT_FIELDS: Final[frozenset[str]] = frozenset()
 _EFFECTIVE_STATUS_LABELS: Final[frozenset[str]] = frozenset({"opposable", "approuve", "anticipe"})
 _IN_PROGRESS_STATUS_LABELS: Final[frozenset[str]] = frozenset({"prescrit", "proroge"})
-_CANCELLED_STATUS_LABELS: Final[frozenset[str]] = frozenset(
-    {"annule", "deprescrit"}
-)
+_CANCELLED_STATUS_LABELS: Final[frozenset[str]] = frozenset({"annule", "deprescrit"})
 _ABROGATED_STATUS_LABELS: Final[frozenset[str]] = frozenset({"abroge"})
 
 

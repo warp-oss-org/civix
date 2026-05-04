@@ -177,9 +177,7 @@ class TestSiteMapper:
 
     def test_invalid_coordinates_raise_mapping_error(self) -> None:
         with pytest.raises(MappingError, match="invalid segment coordinates"):
-            ChicagoTrafficTrackerSegmentSiteMapper()(
-                _record(_lif_lat="not-a-number"), _snapshot()
-            )
+            ChicagoTrafficTrackerSegmentSiteMapper()(_record(_lif_lat="not-a-number"), _snapshot())
 
 
 class TestSpeedMapper:
@@ -225,9 +223,7 @@ class TestSpeedMapper:
 
     def test_invalid_last_updt_raises(self) -> None:
         with pytest.raises(MappingError, match="invalid datetime"):
-            ChicagoTrafficTrackerSegmentSpeedMapper()(
-                _record(_last_updt="not-a-date"), _snapshot()
-            )
+            ChicagoTrafficTrackerSegmentSpeedMapper()(_record(_last_updt="not-a-date"), _snapshot())
 
 
 class TestDrift:
@@ -338,6 +334,4 @@ def test_source_metadata_preserves_scope_and_caveats() -> None:
     assert SOURCE_ID == "chicago-data-portal"
     assert CHICAGO_TRAFFIC_TRACKER_SEGMENTS_DATASET_ID == "n4j6-wkkf"
     assert "segment" in CHICAGO_TRAFFIC_TRACKER_SEGMENTS_SOURCE_SCOPE.casefold()
-    assert any(
-        "_traffic" in caveat for caveat in CHICAGO_TRAFFIC_TRACKER_SEGMENTS_RELEASE_CAVEATS
-    )
+    assert any("_traffic" in caveat for caveat in CHICAGO_TRAFFIC_TRACKER_SEGMENTS_RELEASE_CAVEATS)

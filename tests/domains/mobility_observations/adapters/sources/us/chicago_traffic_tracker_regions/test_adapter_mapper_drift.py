@@ -189,9 +189,7 @@ class TestSpeedMapper:
         assert REFRESH_NOT_INTERVAL_CAVEAT_CODE in codes
 
     def test_current_speed_sentinel_maps_to_not_provided(self) -> None:
-        result = ChicagoTrafficTrackerRegionSpeedMapper()(
-            _record(current_speed="-1"), _snapshot()
-        )
+        result = ChicagoTrafficTrackerRegionSpeedMapper()(_record(current_speed="-1"), _snapshot())
         metric = result.record.metrics[0]
 
         assert metric.value.value is None
@@ -199,15 +197,11 @@ class TestSpeedMapper:
 
     def test_other_negative_current_speed_raises(self) -> None:
         with pytest.raises(MappingError, match="negative numeric"):
-            ChicagoTrafficTrackerRegionSpeedMapper()(
-                _record(current_speed="-3.5"), _snapshot()
-            )
+            ChicagoTrafficTrackerRegionSpeedMapper()(_record(current_speed="-3.5"), _snapshot())
 
     def test_invalid_last_updt_raises(self) -> None:
         with pytest.raises(MappingError, match="invalid datetime"):
-            ChicagoTrafficTrackerRegionSpeedMapper()(
-                _record(_last_updt="garbage"), _snapshot()
-            )
+            ChicagoTrafficTrackerRegionSpeedMapper()(_record(_last_updt="garbage"), _snapshot())
 
 
 class TestDrift:
@@ -237,6 +231,5 @@ def test_source_metadata_preserves_scope_and_caveats() -> None:
     assert CHICAGO_TRAFFIC_TRACKER_REGIONS_DATASET_ID == "t2qc-9pjd"
     assert "region" in CHICAGO_TRAFFIC_TRACKER_REGIONS_SOURCE_SCOPE.casefold()
     assert any(
-        "rollup" in caveat.casefold()
-        for caveat in CHICAGO_TRAFFIC_TRACKER_REGIONS_RELEASE_CAVEATS
+        "rollup" in caveat.casefold() for caveat in CHICAGO_TRAFFIC_TRACKER_REGIONS_RELEASE_CAVEATS
     )

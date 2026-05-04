@@ -51,9 +51,7 @@ _LOCALITY_SOURCE_FIELD: Final[str] = "baac.commune_code"
 _EJECTION_SOURCE_FIELD: Final[str] = "baac_open_data.ejection"
 
 _COLLISION_CONSUMED_FIELDS: Final[frozenset[str]] = frozenset({"Num_Acc"})
-_VEHICLE_CONSUMED_FIELDS: Final[frozenset[str]] = frozenset(
-    {"Num_Acc", "id_vehicule", "num_veh"}
-)
+_VEHICLE_CONSUMED_FIELDS: Final[frozenset[str]] = frozenset({"Num_Acc", "id_vehicule", "num_veh"})
 _USER_CONSUMED_FIELDS: Final[frozenset[str]] = frozenset(
     {"Num_Acc", "id_usager", "id_vehicule", "num_veh"}
 )

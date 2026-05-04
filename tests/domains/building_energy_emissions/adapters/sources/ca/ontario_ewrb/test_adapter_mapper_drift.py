@@ -246,9 +246,7 @@ class TestAdapter:
 
             async with httpx.AsyncClient() as client:
                 fetch_result = await _adapter(client).fetch()
-                cities = [
-                    record.raw_data.get("city") async for record in fetch_result.records
-                ]
+                cities = [record.raw_data.get("city") async for record in fetch_result.records]
 
         assert "Toronto" in cities
         assert any(city != "Toronto" and city is not None for city in cities)
@@ -292,9 +290,7 @@ class TestAdapter:
 
     async def test_http_error_surfaces_as_fetch_error(self) -> None:
         async with respx.mock(assert_all_called=True) as respx_mock:
-            respx_mock.get(EWRB_DEFAULT_URL).mock(
-                return_value=httpx.Response(503, text="oops")
-            )
+            respx_mock.get(EWRB_DEFAULT_URL).mock(return_value=httpx.Response(503, text="oops"))
 
             async with httpx.AsyncClient() as client:
                 with pytest.raises(FetchError) as exc_info:
@@ -375,10 +371,7 @@ class TestReportMapper:
         assert report.reporting_period.value is not None
         assert report.reporting_period.value.precision is TemporalPeriodPrecision.YEAR
         assert report.reporting_period.value.year_value == 2024
-        assert (
-            report.reporting_period_precision.value
-            is ReportingPeriodPrecision.CALENDAR_YEAR
-        )
+        assert report.reporting_period_precision.value is ReportingPeriodPrecision.CALENDAR_YEAR
 
     def test_data_quality_caveats_flag_checker_not_run(self) -> None:
         report = OntarioEwrbReportMapper()(_row_record(2), _snapshot()).record
@@ -502,8 +495,7 @@ class TestMetricsMapper:
             for metric in metrics
             if metric.water_metric_type.value is WaterMetricType.WATER_USE_INTENSITY
             and metric.source_metric_label.value is not None
-            and metric.source_metric_label.value.code
-            == "indoor-water-intensity-m3-per-m2"
+            and metric.source_metric_label.value.code == "indoor-water-intensity-m3-per-m2"
         )
         assert water_intensity.metric_family is MetricFamily.WATER
 

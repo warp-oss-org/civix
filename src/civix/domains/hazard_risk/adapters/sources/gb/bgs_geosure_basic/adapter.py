@@ -19,8 +19,7 @@ SOURCE_ID: Final[SourceId] = SourceId("british-geological-survey")
 BGS_GEOSURE_BASIC_DATASET_ID: Final[DatasetId] = DatasetId("geosure_basic")
 GB_JURISDICTION: Final[Jurisdiction] = Jurisdiction(country="GB")
 BGS_GEOSURE_BASIC_DATASET_PAGE_URL: Final[str] = (
-    "https://www.data.gov.uk/dataset/b6c7976d-a0c3-4bfe-b4a0-d68a47d07102/"
-    "geosure-basic-version-8"
+    "https://www.data.gov.uk/dataset/b6c7976d-a0c3-4bfe-b4a0-d68a47d07102/geosure-basic-version-8"
 )
 BGS_GEOSURE_BASIC_SOURCE_SCOPE: Final[str] = (
     "British Geological Survey GeoSure Basic fixture-shaped extract. Records are "

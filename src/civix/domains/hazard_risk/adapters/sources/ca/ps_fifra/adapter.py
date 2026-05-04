@@ -24,8 +24,9 @@ PS_FIFRA_DATASET_PAGE_URL: Final[str] = (
 )
 PS_FIFRA_SOURCE_SCOPE: Final[str] = (
     "Public Safety Canada Federally Identified Flood Risk Areas fixture-shaped extract. "
-    "The default source URL is the official dataset page; callers should provide a "
-    "fixture-shaped JSON extract URL until a stable machine endpoint is confirmed. "
+    "Callers must supply a JSON extract URL via PsFifraFetchConfig.source_url; "
+    "PS_FIFRA_DATASET_PAGE_URL points at the dataset landing page (HTML) and is "
+    "exported only for traceability until a stable machine endpoint is confirmed. "
     "These records are Canada-wide flood screening areas, not local regulatory maps."
 )
 
@@ -40,11 +41,17 @@ _SOURCE_SPEC: Final[JsonArraySourceSpec] = JsonArraySourceSpec(
 
 @dataclass(frozen=True, slots=True)
 class PsFifraFetchConfig:
-    """Runtime fetch options for a FIFRA JSON extract."""
+    """Runtime fetch options for a FIFRA JSON extract.
+
+    `source_url` is required: PS Canada publishes FIFRA as a dataset
+    landing page rather than a stable machine endpoint, so callers must
+    point at a JSON extract they have staged. `PS_FIFRA_DATASET_PAGE_URL`
+    is exported for traceability, not as a default.
+    """
 
     client: httpx.AsyncClient
+    source_url: str
     clock: Clock = field(default=utc_now)
-    source_url: str = PS_FIFRA_DATASET_PAGE_URL
 
 
 @dataclass(frozen=True, slots=True)

@@ -1,2 +1,1 @@
 """Great Britain source tests."""
-

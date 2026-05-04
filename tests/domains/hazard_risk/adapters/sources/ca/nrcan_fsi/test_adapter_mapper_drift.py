@@ -68,7 +68,11 @@ def _snapshot() -> SourceSnapshot:
 
 def _adapter(client: httpx.AsyncClient) -> fsi.NrcanFsiAdapter:
     return fsi.NrcanFsiAdapter(
-        fetch_config=fsi.NrcanFsiFetchConfig(client=client, clock=lambda: PINNED_NOW)
+        fetch_config=fsi.NrcanFsiFetchConfig(
+            client=client,
+            source_url=fsi.NRCAN_FSI_DATASET_PAGE_URL,
+            clock=lambda: PINNED_NOW,
+        )
     )
 
 

@@ -152,14 +152,10 @@ class BuildingMetricValue(BaseModel):
         case_populated = self.case_key.quality not in _PARENT_UNPOPULATED_QUALITIES
 
         if report_populated and case_populated:
-            raise ValueError(
-                "BuildingMetricValue must attach to a report or a case, not both"
-            )
+            raise ValueError("BuildingMetricValue must attach to a report or a case, not both")
 
         if not report_populated and not case_populated:
-            raise ValueError(
-                "BuildingMetricValue must attach to either a report or a case"
-            )
+            raise ValueError("BuildingMetricValue must attach to either a report or a case")
 
     def _check_family_slot_consistency(self) -> None:
         family = self.metric_family
