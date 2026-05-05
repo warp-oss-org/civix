@@ -50,6 +50,7 @@ from civix.domains.building_energy_emissions.adapters.sources.ca.ontario_ewrb im
     OntarioEwrbSubjectMapper,
 )
 from civix.domains.building_energy_emissions.models import (
+    BuildingMetricValue,
     BuildingSubjectKind,
     EmissionsMetricType,
     EnergyMetricType,
@@ -226,6 +227,7 @@ class TestAdapter:
             "sheet_name": EWRB_DEFAULT_SHEET_NAME,
             "reporting_year": str(EWRB_DEFAULT_REPORTING_YEAR),
         }
+
         assert [record.source_record_id for record in records] == [
             "100001:2024",
             "100002:2024",
@@ -233,6 +235,7 @@ class TestAdapter:
             "100004:2024",
         ]
         first = records[0]
+
         assert first.raw_data["ewrb_id"] == "100001"
         assert first.raw_data["city"] == "Toronto"
         assert first.raw_data["postal_code"] == "M5V"
@@ -308,11 +311,13 @@ class TestSubjectMapper:
         assert subject.subject_key == build_building_energy_subject_key(
             SOURCE_ID, EWRB_DATASET_ID, "100001"
         )
+
         assert subject.subject_kind.value is BuildingSubjectKind.REPORTING_ACCOUNT
         assert subject.identity_certainty.value is IdentityCertainty.AMBIGUOUS
         assert subject.parent_subject_key.value is None
 
         identifiers = subject.source_subject_identifiers.value or ()
+
         assert len(identifiers) == 1
         assert identifiers[0].value == "100001"
         assert identifiers[0].identifier_kind is not None
@@ -335,6 +340,7 @@ class TestSubjectMapper:
         assert subject.address.value.street is None
 
         codes = {caveat.code for caveat in (subject.source_caveats.value or ())}
+
         assert OntarioEwrbCaveat.PARTIAL_POSTAL_DISCLOSURE_FSA_ONLY.value in codes
         assert OntarioEwrbCaveat.SUPPRESSED_TOTAL_METRICS_AND_FLOOR_AREA.value in codes
 
@@ -344,6 +350,7 @@ class TestSubjectMapper:
 
         assert all(caveat.taxonomy_id == EWRB_CAVEAT_TAXONOMY_ID for caveat in caveats)
         codes = {caveat.code for caveat in caveats}
+
         assert OntarioEwrbCaveat.OWNER_REPORTED_NOT_CLEANSED.value in codes
         assert OntarioEwrbCaveat.NRCAN_SOURCE_FACTOR_CHANGE_2023_08_28.value in codes
         assert OntarioEwrbCaveat.OPEN_GOVERNMENT_LICENCE_ONTARIO.value in codes
@@ -365,9 +372,11 @@ class TestReportMapper:
         assert report.report_key == build_building_energy_report_key(
             SOURCE_ID, EWRB_DATASET_ID, "100001", "2024"
         )
+
         assert report.subject_key == build_building_energy_subject_key(
             SOURCE_ID, EWRB_DATASET_ID, "100001"
         )
+
         assert report.reporting_period.value is not None
         assert report.reporting_period.value.precision is TemporalPeriodPrecision.YEAR
         assert report.reporting_period.value.year_value == 2024
@@ -401,6 +410,7 @@ class TestMetricsMapper:
         assert all(
             metric.value_source.value is MetricValueSource.SOURCE_PUBLISHED for metric in metrics
         )
+
         assert all(metric.case_key.quality is FieldQuality.UNMAPPED for metric in metrics)
 
     def test_withheld_total_metrics_carry_distinct_value_state(self) -> None:
@@ -414,12 +424,14 @@ class TestMetricsMapper:
             for metric in withheld
             if metric.source_metric_label.value is not None
         }
+
         assert labels == {
             "total-site-energy-withheld",
             "total-natural-gas-use-withheld",
             "total-ghg-withheld",
             "total-water-use-withheld",
         }
+
         assert all(metric.measure.value is None for metric in withheld)
         assert all(metric.measure.quality is FieldQuality.REDACTED for metric in withheld)
 
@@ -459,11 +471,12 @@ class TestMetricsMapper:
 
     def test_not_available_sentinel_preserves_distinct_value_state(self) -> None:
         metrics = OntarioEwrbMetricsMapper()(_row_record(2), _snapshot()).record
-        by_label = {
-            metric.source_metric_label.value.code: metric  # type: ignore[union-attr]
-            for metric in metrics
-            if metric.source_metric_label.value is not None
-        }
+        by_label: dict[str, BuildingMetricValue] = {}
+        for metric in metrics:
+            label = metric.source_metric_label.value
+            if label is None:
+                continue
+            by_label[label.code] = metric
 
         electricity = by_label["weather-normalized-electricity-intensity-gj-per-m2"]
         score = by_label["energy-star-score-score"]
@@ -497,6 +510,7 @@ class TestMetricsMapper:
             and metric.source_metric_label.value is not None
             and metric.source_metric_label.value.code == "indoor-water-intensity-m3-per-m2"
         )
+
         assert water_intensity.metric_family is MetricFamily.WATER
 
     def test_invalid_decimal_raises_mapping_error_with_source_field(self) -> None:

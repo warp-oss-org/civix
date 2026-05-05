@@ -341,13 +341,15 @@ def _build_record(
         ) from e
 
 
-def _source_record_id(row: Mapping[str, str], *, fields: tuple[str, ...], index: int) -> str | None:
-    parts = tuple(str_or_none(row.get(field_name)) for field_name in fields)
+def _source_record_id(row: Mapping[str, str], *, fields: tuple[str, ...], index: int) -> str:
+    parts: list[str] = []
+    for field_name in fields:
+        value = str_or_none(row.get(field_name))
+        if value is None:
+            return f"row:{index}"
+        parts.append(value)
 
-    if None in parts:
-        return None
-
-    return ":".join(parts)  # type: ignore[arg-type]
+    return ":".join(parts)
 
 
 def _build_snapshot(

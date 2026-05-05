@@ -161,7 +161,7 @@ class TestMappedFieldFrozen:
         f = MappedField[str](value="x", quality=FieldQuality.DIRECT, source_fields=("a",))
 
         with pytest.raises(ValidationError):
-            f.value = "y"  # type: ignore[misc]
+            f.value = "y"
 
     def test_extra_fields_rejected(self) -> None:
         with pytest.raises(ValidationError):

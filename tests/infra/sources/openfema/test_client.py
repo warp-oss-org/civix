@@ -131,6 +131,7 @@ class TestOpenFemaFetch:
             "$filter": "state eq 'Utah'",
             "$select": "record_id,name",
         }
+
         assert requests[0].url.params["$count"] == "true"
         assert requests[0].url.params["$skip"] == "0"
         assert requests[0].url.params["$top"] == "2"

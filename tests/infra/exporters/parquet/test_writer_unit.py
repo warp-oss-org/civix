@@ -109,11 +109,11 @@ def _result(records: Iterable[PipelineRecord[_FakeRecord]]) -> PipelineResult[_F
     )
 
 
-def _read_jsonl(path: Path) -> list[dict[str, object]]:
+def _read_jsonl(path: Path) -> list[dict[str, Any]]:
     return [json.loads(line) for line in path.read_text().splitlines() if line]
 
 
-def _read_parquet(path: Path) -> list[dict[str, object]]:
+def _read_parquet(path: Path) -> list[dict[str, Any]]:
     return PQ.read_table(path).to_pylist()
 
 
@@ -167,7 +167,7 @@ class TestRecordsFile:
 
         rows = _read_parquet(tmp_path / SNAP / "records.parquet")
 
-        assert [row["name"]["value"] for row in rows] == ["A", "B", "C"]  # type: ignore[index]
+        assert [row["name"]["value"] for row in rows] == ["A", "B", "C"]
 
     async def test_records_are_written_in_row_groups(self, tmp_path: Path) -> None:
         result = _result(
@@ -191,7 +191,7 @@ class TestRecordsFile:
         rows = parquet_file.read().to_pylist()
 
         assert parquet_file.metadata.num_row_groups == 3
-        assert [row["name"]["value"] for row in rows] == ["A", "B", "C", "D", "E"]  # type: ignore[index]
+        assert [row["name"]["value"] for row in rows] == ["A", "B", "C", "D", "E"]
 
     async def test_row_group_size_must_be_positive(self, tmp_path: Path) -> None:
         result = _result([])
@@ -287,6 +287,7 @@ class TestManifest:
         assert set(index) == {"records.parquet", "reports.jsonl", "schema.json"}
         for filename, entry in index.items():
             on_disk = (snap_dir / filename).read_bytes()
+
             assert entry.sha256 == hashlib.sha256(on_disk).hexdigest()
             assert entry.byte_count == len(on_disk)
 

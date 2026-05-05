@@ -21,7 +21,7 @@ from civix.core.ports.models.adapter import SourceAdapter
 from civix.core.quality.models.fields import FieldQuality
 from civix.core.snapshots.models.snapshot import RawRecord, SourceSnapshot
 from civix.core.spatial.models.geometry import LineString
-from civix.domains.mobility_observations.adapters.sources.us.chicago_traffic_tracker_segments import (  # noqa: E501
+from civix.domains.mobility_observations.adapters.sources.us.chicago_traffic_tracker_segments import (
     CHICAGO_JURISDICTION,
     CHICAGO_TRAFFIC_TRACKER_SEGMENTS_DATASET_ID,
     CHICAGO_TRAFFIC_TRACKER_SEGMENTS_RELEASE_CAVEATS,
@@ -144,9 +144,11 @@ class TestSiteMapper:
         assert site.measurement_method.value is MeasurementMethod.BUS_GPS_ESTIMATE
 
         footprint = site.footprint.value
+
         assert footprint is not None
         assert isinstance(footprint.line, LineString)
         coords = footprint.line.coordinates
+
         assert len(coords) == 2
         assert coords[0].latitude == 41.997
         assert coords[0].longitude == -87.7264
@@ -192,20 +194,24 @@ class TestSpeedMapper:
         assert observation.aggregation_window.value is AggregationWindow.SOURCE_SPECIFIC
 
         period = observation.period.value
+
         assert period is not None
         assert period.timezone == "America/Chicago"
         assert period.datetime_value == datetime(2026, 4, 13, 10, 10, 54)
 
         assert len(observation.metrics) == 1
         metric = observation.metrics[0]
+
         assert metric.metric_type.value is SpeedMetricType.OBSERVED_SPEED
         assert metric.unit.value is SpeedUnit.MILES_PER_HOUR
         assert metric.value.value == Decimal("25")
         assert metric.value.quality is FieldQuality.DIRECT
 
         caveats = observation.source_caveats.value
+
         assert caveats is not None
         codes = {caveat.code for caveat in caveats}
+
         assert REFRESH_NOT_INTERVAL_CAVEAT_CODE in codes
         assert "regional-bus-gps-rollup" not in codes
 

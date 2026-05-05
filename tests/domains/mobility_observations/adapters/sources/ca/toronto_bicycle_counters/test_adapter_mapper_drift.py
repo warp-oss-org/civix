@@ -218,6 +218,7 @@ class TestMappers:
         assert (
             observation.period.value.end_datetime - observation.period.value.start_datetime
         ).total_seconds() == 900
+
         assert observation.travel_mode.value is TravelMode.MICROMOBILITY
         assert observation.value.value == Decimal("0")
         assert observation.source_caveats.value is not None

@@ -225,6 +225,7 @@ class TestAddress:
             street="100 MAIN ST SE",
             postal_code=None,
         )
+
         assert licence.address.quality is FieldQuality.DERIVED
 
     def test_missing_street_still_carries_inferred_city(self) -> None:

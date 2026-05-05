@@ -253,7 +253,7 @@ class TestHazardRiskArea:
         area = _area()
 
         with pytest.raises(ValidationError):
-            area.area_key = _area_key("area-2")  # type: ignore[misc]
+            area.area_key = _area_key("area-2")
 
     def test_extra_fields_rejected(self) -> None:
         payload = _area().model_dump(mode="python")
@@ -296,6 +296,7 @@ class TestHazardRiskScore:
         assert {score.area_key for score in (composite_score, rating_score, text_score)} == {
             area.area_key
         }
+
         assert isinstance(rating_score.score_measure.value, CategoryScoreMeasure)
         assert isinstance(text_score.score_measure.value, TextScoreMeasure)
 

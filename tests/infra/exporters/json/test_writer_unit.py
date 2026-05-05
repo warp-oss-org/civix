@@ -13,6 +13,7 @@ import json
 from collections.abc import AsyncIterable, Iterable
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict
 
@@ -107,7 +108,7 @@ def _result(records: Iterable[PipelineRecord[_FakeRecord]]) -> PipelineResult[_F
     )
 
 
-def _read_jsonl(path: Path) -> list[dict[str, object]]:
+def _read_jsonl(path: Path) -> list[dict[str, Any]]:
     return [json.loads(line) for line in path.read_text().splitlines() if line]
 
 
@@ -157,7 +158,7 @@ class TestRecordsFile:
         await write_snapshot(result, output_dir=tmp_path, record_type=_FakeRecord)
 
         lines = _read_jsonl(tmp_path / SNAP / "records.jsonl")
-        names = [line["name"]["value"] for line in lines]  # type: ignore[index]
+        names = [line["name"]["value"] for line in lines]
 
         assert names == ["A", "B", "C"]
 
@@ -283,6 +284,7 @@ class TestManifest:
         assert set(index) == {"records.jsonl", "reports.jsonl", "schema.json"}
         for filename, entry in index.items():
             on_disk = (snap_dir / filename).read_bytes()
+
             assert entry.sha256 == hashlib.sha256(on_disk).hexdigest()
             assert entry.byte_count == len(on_disk)
 

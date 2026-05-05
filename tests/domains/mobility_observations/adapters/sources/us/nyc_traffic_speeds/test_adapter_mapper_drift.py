@@ -137,14 +137,17 @@ class TestMapper:
             SpeedMetricType.OBSERVED_SPEED,
             SpeedMetricType.TRAVEL_TIME,
         ]
+
         assert [metric.unit.value for metric in observation.metrics] == [
             SpeedUnit.MILES_PER_HOUR,
             SpeedUnit.SECONDS,
         ]
+
         assert [metric.value.value for metric in observation.metrics] == [
             Decimal("22.4"),
             Decimal("140"),
         ]
+
         assert "STATUS" in result.report.unmapped_source_fields
         assert "LINK_POINTS" in result.report.unmapped_source_fields
         assert "LINK_NAME" in result.report.unmapped_source_fields

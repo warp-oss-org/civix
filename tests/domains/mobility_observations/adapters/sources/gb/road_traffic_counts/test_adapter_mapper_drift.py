@@ -164,6 +164,7 @@ class TestAdapters:
         assert result.snapshot.fetch_params == {
             "endpoint": gb.GB_DFT_AADF_BY_DIRECTION_ENDPOINT,
         }
+
         assert [r.source_record_id for r in records] == ["1001", "1002", "1003"]
 
     async def test_pagination_stops_when_next_page_url_is_null(self) -> None:
@@ -243,6 +244,7 @@ class TestCountMapper:
         assert len(observations) == len(gb.AADF_VEHICLE_CLASS_COLUMNS)
         emitted_fields = {obs.value.source_fields[0] for obs in observations}
         expected_fields = {column.source_field for column in gb.AADF_VEHICLE_CLASS_COLUMNS}
+
         assert emitted_fields == expected_fields
 
     def test_all_motor_vehicles_is_never_emitted(self) -> None:
@@ -521,6 +523,7 @@ def test_source_metadata_preserves_scope_and_caveats() -> None:
     assert any(
         "open government licence" in caveat.casefold() for caveat in gb.GB_DFT_RELEASE_CAVEATS
     )
+
     assert any("annual-average" in caveat.casefold() for caveat in gb.GB_DFT_RELEASE_CAVEATS)
     assert any("dft-specific" in caveat.casefold() for caveat in gb.GB_DFT_RELEASE_CAVEATS)
     assert any(

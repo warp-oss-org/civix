@@ -58,10 +58,8 @@ class TestValidationFinding:
 
     def test_rejects_unknown_source(self) -> None:
         with pytest.raises(ValidationError):
-            ValidationFinding(
-                source="not_a_source",  # type: ignore[arg-type]
-                severity=DriftSeverity.ERROR,
-                message="x",
+            ValidationFinding.model_validate(
+                {"source": "not_a_source", "severity": "error", "message": "x"}
             )
 
 
@@ -91,4 +89,4 @@ class TestValidationReport:
         report = _report()
 
         with pytest.raises(ValidationError):
-            report.outcome = ValidationOutcome.FAIL  # type: ignore[misc]
+            report.outcome = ValidationOutcome.FAIL

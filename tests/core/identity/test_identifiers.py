@@ -39,7 +39,7 @@ class TestJurisdiction:
 
     def test_country_required(self) -> None:
         with pytest.raises(ValidationError):
-            Jurisdiction()  # type: ignore[call-arg]
+            Jurisdiction.model_validate({})
 
     def test_empty_country_rejected(self) -> None:
         with pytest.raises(ValidationError):
@@ -53,4 +53,4 @@ class TestJurisdiction:
         j = Jurisdiction(country="CA")
 
         with pytest.raises(ValidationError):
-            j.country = "US"  # type: ignore[misc]
+            j.country = "US"

@@ -247,7 +247,7 @@ class TestMobilityObservationSite:
         site = _site()
 
         with pytest.raises(ValidationError):
-            site.site_id = "site-2"  # type: ignore[misc]
+            site.site_id = "site-2"
 
     def test_empty_site_id_rejected(self) -> None:
         with pytest.raises(ValidationError):
@@ -417,7 +417,7 @@ class TestMobilitySpeedObservation:
         observation = _speed()
 
         with pytest.raises(ValidationError):
-            observation.site_id = "link-2"  # type: ignore[misc]
+            observation.site_id = "link-2"
 
     def test_negative_speed_rejected(self) -> None:
         with pytest.raises(ValidationError):

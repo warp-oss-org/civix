@@ -346,7 +346,7 @@ class TestHazardMitigationProject:
         project = _project()
 
         with pytest.raises(ValidationError):
-            project.project_id = "HMA-P-2"  # type: ignore[misc]
+            project.project_id = "HMA-P-2"
 
     def test_extra_fields_rejected(self) -> None:
         with pytest.raises(ValidationError):
@@ -420,6 +420,7 @@ class TestMitigationFundingTransaction:
             Decimal("-30.00"),
             Decimal("-40.00"),
         ]
+
         assert [component.lifecycle for component in transaction.amount_components.value] == [
             MitigationFundingEventType.REVERSAL,
             MitigationFundingEventType.REFUND,

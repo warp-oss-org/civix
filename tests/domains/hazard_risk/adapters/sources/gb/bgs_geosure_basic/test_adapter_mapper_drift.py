@@ -89,6 +89,7 @@ class TestAdapter:
         assert result.snapshot.dataset_id == geosure.BGS_GEOSURE_BASIC_DATASET_ID
         assert result.snapshot.content_hash == hashlib.sha256(_json_bytes()).hexdigest()
         source_record_id = records[0].source_record_id
+
         assert source_record_id is not None
         assert source_record_id.startswith("geosure-hex-0001:sha256-")
 
@@ -103,6 +104,7 @@ class TestMappers:
             geosure.BGS_GEOSURE_BASIC_DATASET_ID,
             "geosure-hex-0001",
         )
+
         assert area.area_kind.value is HazardRiskAreaKind.RISK_INDEX_AREA
         assert area.jurisdiction.value is not None
         assert area.jurisdiction.value.country == "GB"

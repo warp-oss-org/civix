@@ -130,10 +130,12 @@ class TestCategoryRef:
 
     def test_all_fields_required(self) -> None:
         with pytest.raises(ValidationError):
-            CategoryRef(  # type: ignore[call-arg]
-                code="restaurant",
-                label="Restaurant",
-                taxonomy_id="civix.business-licences",
+            CategoryRef.model_validate(
+                {
+                    "code": "restaurant",
+                    "label": "Restaurant",
+                    "taxonomy_id": "civix.business-licences",
+                }
             )
 
     def test_empty_field_rejected(self) -> None:
@@ -158,7 +160,7 @@ class TestCategoryRef:
         c = _category()
 
         with pytest.raises(ValidationError):
-            c.code = "other"  # type: ignore[misc]
+            c.code = "other"
 
 
 class TestBusinessLicence:
@@ -239,7 +241,7 @@ class TestBusinessLicence:
         licence = _licence()
 
         with pytest.raises(ValidationError):
-            licence.business_name = MappedField[str](  # type: ignore[misc]
+            licence.business_name = MappedField[str](
                 value="Other", quality=FieldQuality.DIRECT, source_fields=("x",)
             )
 

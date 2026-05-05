@@ -193,6 +193,7 @@ class TestMappers:
         assert observation.observation_id == (
             "eco-100:flow-nb:Bicycle:2026-04-03T08:15:00:15 minutes:Northbound"
         )
+
         assert observation.site_id == "eco-100"
         assert observation.travel_mode.value is TravelMode.BICYCLE
         assert observation.direction.value is ObservationDirection.NORTHBOUND
@@ -212,6 +213,7 @@ class TestMappers:
         assert result.record.observation_id == (
             "eco-100:flow-nb:Bicycle:2026-04-03T08:15:00:15 minutes:unknown-direction"
         )
+
         assert result.record.direction.quality is FieldQuality.NOT_PROVIDED
 
     def test_unknown_travel_mode_is_unmapped_not_other(self) -> None:

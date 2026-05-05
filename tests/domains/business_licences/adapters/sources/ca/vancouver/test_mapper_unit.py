@@ -294,6 +294,7 @@ class TestAddress:
             street="100 Main St",
             postal_code="V6B 1A1",
         )
+
         assert licence.address.quality is FieldQuality.DERIVED
 
     def test_with_suite_unit(self) -> None:

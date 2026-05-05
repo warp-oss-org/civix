@@ -78,6 +78,7 @@ class TestPipelineEndToEnd:
             locality="Calgary",
             street="100 MAIN ST SE",
         )
+
         assert first.coordinate.value == Coordinate(latitude=51.0447, longitude=-114.0719)
         assert first.neighbourhood.value == "DOWNTOWN COMMERCIAL CORE"
 

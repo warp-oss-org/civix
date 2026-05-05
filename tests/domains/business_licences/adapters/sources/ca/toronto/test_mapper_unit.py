@@ -232,6 +232,7 @@ class TestAddress:
             street="100 KING ST W, SUITE 200",
             postal_code="M5X 1A9",
         )
+
         assert licence.address.quality is FieldQuality.DERIVED
 
     def test_locality_outside_toronto(self) -> None:

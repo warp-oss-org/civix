@@ -91,6 +91,7 @@ class TestAdapter:
         assert result.snapshot.dataset_id == fifra.PS_FIFRA_DATASET_ID
         assert result.snapshot.content_hash == hashlib.sha256(_json_bytes()).hexdigest()
         source_record_id = records[0].source_record_id
+
         assert source_record_id is not None
         assert source_record_id.startswith("fifra-on-0001:sha256-")
 
@@ -105,6 +106,7 @@ class TestZoneMapper:
             fifra.PS_FIFRA_DATASET_ID,
             "fifra-on-0001",
         )
+
         assert zone.hazard_type.value is HazardRiskHazardType.FLOOD
         assert zone.source_hazard.value is not None
         assert zone.source_hazard.value.code == "riverine"

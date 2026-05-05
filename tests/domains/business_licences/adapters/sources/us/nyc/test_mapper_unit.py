@@ -236,6 +236,7 @@ class TestAddress:
             street="608 8TH AVE",
             postal_code="10018",
         )
+
         assert licence.address.quality is FieldQuality.DERIVED
 
     def test_street_with_unit(self) -> None:
@@ -264,6 +265,7 @@ class TestAddress:
             locality="NEW YORK",
             postal_code="10018",
         )
+
         assert licence.address.quality is FieldQuality.DERIVED
 
 
@@ -348,6 +350,7 @@ class TestUnmappedSourceFields:
             "license_type",
             "nta",
         }
+
         assert list(unmapped) == sorted(unmapped)
 
 

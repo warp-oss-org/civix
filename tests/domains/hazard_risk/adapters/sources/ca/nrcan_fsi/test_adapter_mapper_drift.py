@@ -99,6 +99,7 @@ class TestAdapter:
             "source_family": "nrcan-fsi",
         }
         source_record_id = records[0].source_record_id
+
         assert source_record_id is not None
         assert source_record_id.startswith("fsi-cell-0001:sha256-")
 
@@ -113,6 +114,7 @@ class TestMappers:
             fsi.NRCAN_FSI_DATASET_ID,
             "fsi-cell-0001",
         )
+
         assert area.area_kind.value is HazardRiskAreaKind.RISK_INDEX_AREA
         assert area.jurisdiction.value is not None
         assert area.jurisdiction.value.country == "CA"

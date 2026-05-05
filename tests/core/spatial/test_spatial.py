@@ -43,7 +43,7 @@ class TestCoordinate:
         c = Coordinate(latitude=49.0, longitude=-123.0)
 
         with pytest.raises(ValidationError):
-            c.latitude = 50.0  # type: ignore[misc]
+            c.latitude = 50.0
 
     def test_extra_fields_rejected(self) -> None:
         with pytest.raises(ValidationError):
@@ -73,7 +73,7 @@ class TestAddress:
 
     def test_country_required(self) -> None:
         with pytest.raises(ValidationError):
-            Address()  # type: ignore[call-arg]
+            Address.model_validate({})
 
     def test_empty_country_rejected(self) -> None:
         with pytest.raises(ValidationError):
@@ -87,7 +87,7 @@ class TestAddress:
         a = Address(country="CA")
 
         with pytest.raises(ValidationError):
-            a.country = "US"  # type: ignore[misc]
+            a.country = "US"
 
     def test_extra_fields_rejected(self) -> None:
         with pytest.raises(ValidationError):
@@ -183,7 +183,7 @@ class TestGeometryRef:
         )
 
         with pytest.raises(ValidationError):
-            ref.geometry_id = "FLD-2"  # type: ignore[misc]
+            ref.geometry_id = "FLD-2"
 
     def test_extra_fields_rejected(self) -> None:
         with pytest.raises(ValidationError):

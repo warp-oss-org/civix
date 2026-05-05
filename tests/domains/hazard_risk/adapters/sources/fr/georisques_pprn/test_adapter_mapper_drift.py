@@ -138,6 +138,7 @@ class TestAdapter:
         assert [record.source_record_id for record in records] == [
             _source_record_id(row) for row in _fixture_rows()
         ]
+
         assert records[0].raw_data["CODE RISQUE 2"] == "11"
         assert records[0].raw_data["CODE RISQUE 3"] == "110"
         assert records[0].raw_data["LIBELLE SOUS-ETAT"] == "Approuvé"
@@ -177,6 +178,7 @@ class TestAreaMapper:
             pprn.GEORISQUES_PPRN_DATASET_ID,
             "84091",
         )
+
         assert area.area_kind.value is HazardRiskAreaKind.ADMINISTRATIVE_AREA
         assert area.name.value == "Piolenc"
         assert area.jurisdiction.value is not None
@@ -188,11 +190,13 @@ class TestAreaMapper:
             "VAUCLUSE",
             "Piolenc",
         )
+
         assert area.footprint.quality is FieldQuality.UNMAPPED
         assert area.geometry_ref.quality is FieldQuality.UNMAPPED
         assert area.source_hazards.quality is FieldQuality.UNMAPPED
 
         identifiers = area.source_area_identifiers.value
+
         assert identifiers is not None
         assert [identifier.value for identifier in identifiers] == [
             "84091",
@@ -211,6 +215,7 @@ class TestZoneMapper:
             pprn.GEORISQUES_PPRN_DATASET_ID,
             _source_record_id(_row()),
         )
+
         assert zone.plan_identifier.value == "84DDT20020008"
         assert zone.plan_name.value == "PPRN-I - Rhône [ Piolenc ]"
         assert zone.hazard_type.value is HazardRiskHazardType.FLOOD
@@ -218,6 +223,7 @@ class TestZoneMapper:
         assert zone.source_hazard.value.label == (
             "Inondation - Inondation - Par une crue à débordement lent de cours d'eau"
         )
+
         assert zone.source_zone.value is not None
         assert zone.source_zone.value.code.startswith("model-pprn-i-risk-110")
         assert zone.status.value is HazardRiskZoneStatus.EFFECTIVE
@@ -334,11 +340,13 @@ class TestDrift:
             and finding.taxonomy_id == "georisques-pprn-risk"
             for finding in report.findings
         )
+
         assert any(
             finding.kind is TaxonomyDriftKind.UNRECOGNIZED_VALUE
             and finding.taxonomy_id == "georisques-pprn-state"
             for finding in report.findings
         )
+
         assert any(
             finding.kind is TaxonomyDriftKind.UNRECOGNIZED_VALUE
             and finding.taxonomy_id == "georisques-pprn-substate"

@@ -81,6 +81,7 @@ class TestPipelineEndToEnd:
             street="123 W Pender St",
             postal_code="V6B 1A1",
         )
+
         assert first.neighbourhood.value == "Downtown"
 
     async def test_redacted_record_partial_address_survives(self) -> None:
@@ -94,6 +95,7 @@ class TestPipelineEndToEnd:
             region="BC",
             locality="Vancouver",
         )
+
         assert redacted.address.quality is FieldQuality.DERIVED
         assert redacted.coordinate.value is None
         assert redacted.coordinate.quality is FieldQuality.NOT_PROVIDED

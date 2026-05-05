@@ -210,6 +210,7 @@ class TestAdapter:
             "sheet_name": LL97_SHEET_NAME,
             "filing_year": str(LL97_DEFAULT_FILING_YEAR),
         }
+
         assert [record.source_record_id for record in records] == [
             "1009990001:1011223",
             "1009990002:1011224",
@@ -218,6 +219,7 @@ class TestAdapter:
             "3001000004:3001500",
         ]
         first = records[0]
+
         assert first.raw_data["bbl"] == "1009990001"
         assert first.raw_data["on_ll97_cbl"] == "Y"
         assert first.raw_data["ll97_compliance_pathway"] == "2"
@@ -279,6 +281,7 @@ class TestSubjectMapper:
         assert subject.subject_key == build_building_energy_subject_key(
             SOURCE_ID, LL97_DATASET_ID, "1011223"
         )
+
         assert subject.subject_kind.value is BuildingSubjectKind.BUILDING
         assert subject.identity_certainty.value is IdentityCertainty.STABLE_CROSS_YEAR
         assert subject.parent_subject_key.quality is FieldQuality.UNMAPPED
@@ -291,6 +294,7 @@ class TestSubjectMapper:
             if identifier.identifier_kind is not None
         ]
         identifier_values = [identifier.value for identifier in identifiers]
+
         assert identifier_kinds == ["dob-bin", "dof-bbl"]
         assert identifier_values == ["1011223", "1009990001"]
 
@@ -307,6 +311,7 @@ class TestSubjectMapper:
         assert first.subject_key == build_building_energy_subject_key(
             SOURCE_ID, LL97_DATASET_ID, "2050010"
         )
+
         assert second.subject_key == build_building_energy_subject_key(
             SOURCE_ID, LL97_DATASET_ID, "2050011"
         )
@@ -323,6 +328,7 @@ class TestSubjectMapper:
             if identifier.identifier_kind is not None
             and identifier.identifier_kind.code == "dof-bbl"
         ]
+
         assert first_bbls == ["2034560020"]
         assert second_bbls == ["2034560020"]
 
@@ -359,9 +365,11 @@ class TestCaseMapper:
             "1009990001:1011223",
             f"filing-year-{LL97_DEFAULT_FILING_YEAR}",
         )
+
         assert case.subject_key == build_building_energy_subject_key(
             SOURCE_ID, LL97_DATASET_ID, "1011223"
         )
+
         assert case.related_report_key.quality is FieldQuality.UNMAPPED
         assert case.related_report_key.value is None
 
@@ -371,6 +379,7 @@ class TestCaseMapper:
 
         assert case.compliance_pathway.quality is FieldQuality.STANDARDIZED
         pathway = case.compliance_pathway.value
+
         assert pathway is not None
         assert pathway.code == "pathway-2"
         assert pathway.taxonomy_id == "nyc-ll97-compliance-pathway"

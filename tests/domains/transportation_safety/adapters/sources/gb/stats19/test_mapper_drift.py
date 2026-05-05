@@ -189,10 +189,12 @@ def test_linked_fixture_maps_collision_vehicles_and_casualties() -> None:
         "2024010000001:1",
         "2024010000001:2",
     }
+
     assert {person.person_id for person in people} == {
         "2024010000001:1",
         "2024010000001:2",
     }
+
     assert people[0].vehicle_id == "2024010000001:1"
     assert people[1].vehicle_id is None
     assert linked.collision.record.provenance.source_record_id == "2024010000001"
@@ -397,6 +399,7 @@ def test_unknown_stats19_code_surfaces_as_taxonomy_drift() -> None:
         and finding.taxonomy_id == "stats19-weather-conditions"
         for finding in report.findings
     )
+
     assert report.has_errors
 
 

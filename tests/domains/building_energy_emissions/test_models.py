@@ -393,7 +393,7 @@ class TestBuildingEnergySubject:
         subject = _subject()
 
         with pytest.raises(ValidationError):
-            subject.subject_key = _subject_key("subject-2")  # type: ignore[misc]
+            subject.subject_key = _subject_key("subject-2")
 
     def test_extra_fields_rejected(self) -> None:
         payload = _subject().model_dump(mode="python")
@@ -479,7 +479,7 @@ class TestBuildingEnergyReport:
         report = _report()
 
         with pytest.raises(ValidationError):
-            report.report_key = _report_key("subject-2", "2025")  # type: ignore[misc]
+            report.report_key = _report_key("subject-2", "2025")
 
     def test_extra_fields_rejected(self) -> None:
         payload = _report().model_dump(mode="python")
@@ -516,7 +516,7 @@ class TestBuildingMetricValue:
         metric = _metric()
 
         with pytest.raises(ValidationError):
-            metric.metric_family = MetricFamily.EMISSIONS  # type: ignore[misc]
+            metric.metric_family = MetricFamily.EMISSIONS
 
     def test_extra_fields_rejected(self) -> None:
         payload = _metric().model_dump(mode="python")
@@ -749,7 +749,7 @@ class TestBuildingComplianceCase:
         case = _case()
 
         with pytest.raises(ValidationError):
-            case.case_key = _case_key("case-2", "2024")  # type: ignore[misc]
+            case.case_key = _case_key("case-2", "2024")
 
     def test_extra_fields_rejected(self) -> None:
         payload = _case().model_dump(mode="python")

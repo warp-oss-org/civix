@@ -69,9 +69,7 @@ class GeorisquesPprnAdapter:
             self.fetch_config.csv_url,
             source_id=SOURCE_ID,
             dataset_id=GEORISQUES_PPRN_DATASET_ID,
-            error_message=(
-                f"failed to read Georisques PPRN CSV from {self.fetch_config.csv_url}"
-            ),
+            error_message=(f"failed to read Georisques PPRN CSV from {self.fetch_config.csv_url}"),
         )
         content_hash = hashlib.sha256(content).hexdigest()
         rows = _parse_csv(content)

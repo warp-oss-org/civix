@@ -57,13 +57,13 @@ class TestSourceSnapshot:
 
     def test_extra_fields_rejected(self) -> None:
         with pytest.raises(ValidationError):
-            _snapshot(unexpected="nope")  # type: ignore[arg-type]
+            _snapshot(unexpected="nope")
 
     def test_frozen(self) -> None:
         s = _snapshot()
 
         with pytest.raises(ValidationError):
-            s.record_count = 10  # type: ignore[misc]
+            s.record_count = 10
 
 
 class TestRawRecord:
@@ -94,17 +94,13 @@ class TestRawRecord:
 
     def test_extra_fields_rejected(self) -> None:
         with pytest.raises(ValidationError):
-            RawRecord(
-                snapshot_id=SnapshotId("snap-1"),
-                raw_data={},
-                surprise="nope",  # type: ignore[call-arg]
-            )
+            RawRecord.model_validate({"snapshot_id": "snap-1", "raw_data": {}, "surprise": "nope"})
 
     def test_frozen(self) -> None:
         r = RawRecord(snapshot_id=SnapshotId("snap-1"), raw_data={"a": 1})
 
         with pytest.raises(ValidationError):
-            r.source_record_id = "x"  # type: ignore[misc]
+            r.source_record_id = "x"
 
     def test_raw_data_preserves_arbitrary_payload(self) -> None:
         payload = {

@@ -36,6 +36,7 @@ class TestProperties:
     async def test_source_id_is_constant(self) -> None:
         async with httpx.AsyncClient() as client:
             adapter = _adapter(client)
+
             assert adapter.source_id == SOURCE_ID
 
     async def test_dataset_id_and_jurisdiction_round_trip(self) -> None:
@@ -301,4 +302,5 @@ class TestUserAgentOnWire:
                 _ = [r async for r in result.records]
 
             sent = count_route.calls.last.request
+
             assert sent.headers["User-Agent"] == "civix-test/0.0.0"

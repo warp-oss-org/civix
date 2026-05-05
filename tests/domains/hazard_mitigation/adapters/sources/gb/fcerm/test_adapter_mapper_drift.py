@@ -200,6 +200,7 @@ class TestAdapter:
             "sheet_name": ENGLAND_FCERM_SCHEMES_SHEET_NAME,
             "source_record_id_policy": ENGLAND_FCERM_SOURCE_RECORD_ID_POLICY,
         }
+
         assert [record.source_record_id for record in records] == [
             "abingdon-partnership-flood-alleviation-scheme:environment-agency:oxfordshire:row-2",
             (
@@ -209,6 +210,7 @@ class TestAdapter:
             ("alfold-crossways-flood-alleviation-scheme:surrey-county-council:surrey:row-4"),
             "bispham-coast-protection-scheme:environment-agency:lancashire:row-5",
         ]
+
         assert records[0].raw_data[INDICATIVE_GOVERNMENT_INVESTMENT_FIELD] == 30
         assert records[0].record_hash is not None
 
@@ -299,18 +301,22 @@ class TestMapper:
             "Oxford West and Abingdon",
             "Oxfordshire",
         )
+
         assert project.funding_summaries.value is not None
         assert project.funding_summaries.value[0].money.amount == Decimal("30000")
         assert project.funding_summaries.value[0].money.currency == "GBP"
         assert project.funding_summaries.value[0].amount_kind is (
             MitigationFundingAmountKind.PROJECT_AMOUNT
         )
+
         assert project.funding_summaries.value[0].share_kind is (
             MitigationFundingShareKind.GOVERNMENT
         )
+
         assert project.funding_summaries.value[0].lifecycle is (
             MitigationFundingEventType.PLANNED_AMOUNT
         )
+
         assert project.source_caveats.value is not None
         assert {caveat.code for caveat in project.source_caveats.value} == {
             "compiled-information",
@@ -397,11 +403,13 @@ class TestDrift:
             and finding.taxonomy_id == "england-fcerm-risk-source"
             for finding in report.findings
         )
+
         assert any(
             finding.kind is TaxonomyDriftKind.UNRECOGNIZED_VALUE
             and finding.taxonomy_id == "england-fcerm-project-type"
             for finding in report.findings
         )
+
         assert any(
             finding.kind is TaxonomyDriftKind.UNRECOGNIZED_VALUE
             and finding.taxonomy_id == "england-fcerm-rfcc"

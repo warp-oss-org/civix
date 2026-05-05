@@ -148,6 +148,7 @@ class TestFetchHappyPath:
                 "100031017-001",
                 "100031018-001",
             ]
+
             assert [r.raw_data["business_name"] for r in yielded] == [
                 "PRAIRIE CAFE",
                 "PRAIRIE CAFE",
@@ -229,6 +230,7 @@ class TestPagination:
                 "100031018-001",
                 "100031019-001",
             ]
+
             assert requests[1].url.params["$offset"] == "0"
             assert requests[2].url.params["$offset"] == "2"
 

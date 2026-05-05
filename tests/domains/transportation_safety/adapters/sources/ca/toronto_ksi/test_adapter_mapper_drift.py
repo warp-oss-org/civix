@@ -264,6 +264,7 @@ class TestDriftAndExport:
         assert any(
             finding.kind is TaxonomyDriftKind.UNRECOGNIZED_VALUE for finding in report.findings
         )
+
         assert report.has_errors
 
     def test_unknown_accident_location_surfaces_as_taxonomy_drift(self) -> None:
@@ -281,6 +282,7 @@ class TestDriftAndExport:
             and finding.taxonomy_id == "toronto-ksi-accloc"
             for finding in report.findings
         )
+
         assert report.has_errors
 
     async def test_grouped_collision_export_preserves_traceable_records(

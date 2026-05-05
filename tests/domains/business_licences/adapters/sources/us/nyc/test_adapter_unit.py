@@ -118,6 +118,7 @@ class TestFetchHappyPath:
                 "$where": PREMISES_FILTER,
                 "$order": SOCRATA_DEFAULT_ORDER,
             }
+
             assert yielded == []
             assert requests[0].url.params["$select"] == "count(*)"
             assert requests[0].url.params["$where"] == PREMISES_FILTER
@@ -162,6 +163,7 @@ class TestFetchHappyPath:
                 "GEM FINANCIAL SERVICES, INC.",
                 "GEM FINANCIAL SERVICES, INC.",
             ]
+
             assert requests[1].url.params["$where"] == PREMISES_FILTER
 
     async def test_source_updated_at_is_none(self) -> None:
@@ -240,6 +242,7 @@ class TestPagination:
                 "0016371-DCA",
                 "0157941-DCA",
             ]
+
             assert requests[1].url.params["$offset"] == "0"
             assert requests[2].url.params["$offset"] == "2"
             assert requests[2].url.params["$where"] == PREMISES_FILTER

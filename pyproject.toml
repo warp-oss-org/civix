@@ -62,6 +62,15 @@ target-version = "py312"
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
 
+# Some source-slice import paths exceed 100 chars purely because of the
+# domains/<domain>/adapters/sources/<country>/<city> layout. Allow the
+# `from ... import (` opening line to overflow in those test files
+# rather than rebinding symbols just to dodge formatting.
+[tool.ruff.lint.per-file-ignores]
+"tests/domains/mobility_observations/adapters/sources/us/chicago_traffic_tracker_*/test_adapter_mapper_drift.py" = [
+    "E501",
+]
+
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
@@ -172,3 +181,50 @@ modules = [
     "civix.infra.sources.openfema",
     "civix.infra.sources.socrata",
 ]
+
+# Mappers must remain pure transformations of `RawRecord` and `SourceSnapshot`.
+# Network, filesystem, and other I/O belongs in adapters, not mappers — so no
+# mapper module may import `civix.infra`. Adapters in the same slice still can.
+[[tool.importlinter.contracts]]
+name = "mappers stay pure"
+type = "forbidden"
+source_modules = [
+    "civix.domains.building_energy_emissions.adapters.sources.ca.ontario_ewrb.mapper",
+    "civix.domains.building_energy_emissions.adapters.sources.us.nyc_ll84.mapper",
+    "civix.domains.building_energy_emissions.adapters.sources.us.nyc_ll97.mapper",
+    "civix.domains.business_licences.adapters.sources.ca.calgary.mapper",
+    "civix.domains.business_licences.adapters.sources.ca.edmonton.mapper",
+    "civix.domains.business_licences.adapters.sources.ca.toronto.mapper",
+    "civix.domains.business_licences.adapters.sources.ca.vancouver.mapper",
+    "civix.domains.business_licences.adapters.sources.us.nyc.mapper",
+    "civix.domains.hazard_mitigation.adapters.sources.ca.dmaf.mapper",
+    "civix.domains.hazard_mitigation.adapters.sources.gb.fcerm.mapper",
+    "civix.domains.hazard_mitigation.adapters.sources.us.fema_hma.mapper",
+    "civix.domains.hazard_risk.adapters.sources.ca.nrcan_fsi.mapper",
+    "civix.domains.hazard_risk.adapters.sources.ca.ps_fifra.mapper",
+    "civix.domains.hazard_risk.adapters.sources.fr.georisques_pprn.mapper",
+    "civix.domains.hazard_risk.adapters.sources.gb.bgs_geosure_basic.mapper",
+    "civix.domains.hazard_risk.adapters.sources.gb.ea_rofrs.mapper",
+    "civix.domains.hazard_risk.adapters.sources.us.fema_nfhl.mapper",
+    "civix.domains.hazard_risk.adapters.sources.us.fema_nri.mapper",
+    "civix.domains.mobility_observations.adapters.sources.ca.toronto_bicycle_counters.mapper",
+    "civix.domains.mobility_observations.adapters.sources.ca.toronto_turning_movement_counts.mapper",
+    "civix.domains.mobility_observations.adapters.sources.fr.tmja_road_traffic.mapper",
+    "civix.domains.mobility_observations.adapters.sources.gb.road_traffic_counts.mapper",
+    "civix.domains.mobility_observations.adapters.sources.us.chicago_traffic_tracker_regions.mapper",
+    "civix.domains.mobility_observations.adapters.sources.us.chicago_traffic_tracker_segments.mapper",
+    "civix.domains.mobility_observations.adapters.sources.us.nyc_bicycle_pedestrian_counts.mapper",
+    "civix.domains.mobility_observations.adapters.sources.us.nyc_traffic_speeds.mapper",
+    "civix.domains.mobility_observations.adapters.sources.us.nyc_traffic_volume_counts.mapper",
+    "civix.domains.transportation_safety.adapters.sources.ca.toronto_ksi.mapper",
+    "civix.domains.transportation_safety.adapters.sources.fr.baac.mapper",
+    "civix.domains.transportation_safety.adapters.sources.gb.stats19.mapper",
+    "civix.domains.transportation_safety.adapters.sources.us.chicago_crashes.mapper",
+    "civix.domains.transportation_safety.adapters.sources.us.chicago_people.mapper",
+    "civix.domains.transportation_safety.adapters.sources.us.chicago_vehicles.mapper",
+    "civix.domains.transportation_safety.adapters.sources.us.nyc_crashes.mapper",
+    "civix.domains.transportation_safety.adapters.sources.us.nyc_persons.mapper",
+    "civix.domains.transportation_safety.adapters.sources.us.nyc_vehicles.mapper",
+]
+forbidden_modules = ["civix.infra"]
+allow_indirect_imports = true

@@ -92,7 +92,7 @@ class TestFieldConflict:
         )
 
         with pytest.raises(ValidationError):
-            c.field_name = "other"  # type: ignore[misc]
+            c.field_name = "other"
 
 
 class TestMappingReport:
@@ -133,7 +133,7 @@ class TestMappingReport:
         r = MappingReport()
 
         with pytest.raises(ValidationError):
-            r.unmapped_source_fields = ("x",)  # type: ignore[misc]
+            r.unmapped_source_fields = ("x",)
 
 
 class _FakeNormalized(BaseModel):
@@ -211,7 +211,7 @@ class TestMapResult:
         result = mapper(raw, snap)
 
         with pytest.raises(ValidationError):
-            result.report = MappingReport()  # type: ignore[misc]
+            result.report = MappingReport()
 
 
 class TestMapperProtocol:

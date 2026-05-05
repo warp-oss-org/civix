@@ -171,6 +171,7 @@ class TestAdapters:
             "$top": "1000",
             "$orderby": FEMA_HMA_PROJECTS_ORDER,
         }
+
         assert requests[0].url.params["$count"] == "true"
         assert [record.source_record_id for record in records] == [
             "DR-0820-0001-R",
@@ -213,6 +214,7 @@ class TestProjectMapper:
         assert project.intervention_types.value == (
             MitigationInterventionType.PROPERTY_ACQUISITION,
         )
+
         assert project.source_interventions.value is not None
         assert project.organizations.value is not None
         assert project.organizations.value[0].name == "ST. GEORGE"
@@ -267,10 +269,12 @@ class TestProjectMapper:
             (component.amount_kind, component.share_kind)
             for component in project.funding_summaries.value
         ]
+
         assert (
             MitigationFundingAmountKind.PROJECT_AMOUNT,
             MitigationFundingShareKind.FEDERAL,
         ) in kinds
+
         assert (
             MitigationFundingAmountKind.ADMINISTRATIVE_COST,
             MitigationFundingShareKind.RECIPIENT,
@@ -281,6 +285,7 @@ class TestProjectMapper:
             if component.source_category is not None
             and component.source_category.code == "recipientadmincostamt"
         )
+
         assert admin_component.lifecycle is None
 
     def test_obligated_status_stays_source_specific(self) -> None:
@@ -304,6 +309,7 @@ class TestProjectMapper:
             "WASHINGTON",
             "IRON",
         ]
+
         assert "region" in result.report.unmapped_source_fields
 
 
@@ -337,6 +343,7 @@ class TestTransactionMapper:
 
         assert transaction.amount_components.value is not None
         amounts = [component.money.amount for component in transaction.amount_components.value]
+
         assert Decimal("-18274.93") in amounts
         assert Decimal("-1620") in amounts
         assert all(component.lifecycle is None for component in transaction.amount_components.value)
@@ -429,6 +436,7 @@ class TestDrift:
             and finding.taxonomy_id == "openfema-hma-project-status"
             for finding in report.findings
         )
+
         assert any(
             finding.kind is TaxonomyDriftKind.UNRECOGNIZED_VALUE
             and finding.taxonomy_id == "openfema-hma-project-type"
@@ -472,4 +480,5 @@ def test_source_metadata_preserves_scope_and_ids() -> None:
         FEMA_HMA_TRANSACTIONS_DATASET_ID
         == "HazardMitigationAssistanceProjectsFinancialTransactions"
     )
+
     assert "Hazard Mitigation Assistance" in FEMA_HMA_SOURCE_SCOPE

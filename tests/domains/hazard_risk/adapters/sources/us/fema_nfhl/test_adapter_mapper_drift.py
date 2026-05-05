@@ -150,6 +150,7 @@ class TestZoneMapper:
             FEMA_NFHL_FLOOD_HAZARD_ZONES_DATASET_ID,
             "01001C_0001",
         )
+
         assert zone.hazard_type.value is HazardRiskHazardType.FLOOD
         assert zone.status.value is HazardRiskZoneStatus.EFFECTIVE
         assert zone.source_status.value is not None
@@ -173,6 +174,7 @@ class TestZoneMapper:
         )
 
         identifiers = zone.source_zone_identifiers.value
+
         assert identifiers is not None
         assert [identifier.value for identifier in identifiers] == [
             "01001C_0001",
@@ -278,11 +280,13 @@ class TestDrift:
             and finding.taxonomy_id == "fema-nfhl-zone"
             for finding in report.findings
         )
+
         assert any(
             finding.kind is TaxonomyDriftKind.UNRECOGNIZED_VALUE
             and finding.taxonomy_id == "fema-nfhl-zone-subtype"
             for finding in report.findings
         )
+
         assert any(
             finding.kind is TaxonomyDriftKind.UNRECOGNIZED_VALUE
             and finding.taxonomy_id == "fema-nfhl-sfha-flag"

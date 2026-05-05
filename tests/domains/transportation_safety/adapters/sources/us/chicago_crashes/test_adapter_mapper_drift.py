@@ -176,6 +176,7 @@ class TestMapper:
             "street_direction",
             "street_name",
         )
+
         assert collision.coordinate.value is not None
         assert collision.coordinate.value.latitude == 41.8837
         assert collision.contributing_factors.value is not None

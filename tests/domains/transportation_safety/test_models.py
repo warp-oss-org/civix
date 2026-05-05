@@ -306,7 +306,7 @@ class TestTrafficCollision:
         collision = _collision()
 
         with pytest.raises(ValidationError):
-            collision.locality = _mapped("Other", "locality")  # type: ignore[misc]
+            collision.locality = _mapped("Other", "locality")
 
     def test_extra_fields_rejected(self) -> None:
         with pytest.raises(ValidationError):

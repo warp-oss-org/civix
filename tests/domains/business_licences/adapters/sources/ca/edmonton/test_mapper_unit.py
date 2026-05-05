@@ -194,6 +194,7 @@ class TestAddress:
             street="2020, 10060 - JASPER AVENUE NW",
             postal_code=None,
         )
+
         assert licence.address.quality is FieldQuality.DERIVED
 
     def test_missing_street_still_carries_inferred_city(self) -> None:
@@ -211,6 +212,7 @@ class TestCoordinate:
             latitude=53.5426116941546,
             longitude=-113.49464046380713,
         )
+
         assert licence.coordinate.quality is FieldQuality.STANDARDIZED
 
     def test_null_latitude(self) -> None:
@@ -279,6 +281,7 @@ class TestUnmappedSourceFields:
             "originalissuedate",
             "ward",
         }
+
         assert list(unmapped) == sorted(unmapped)
 
 

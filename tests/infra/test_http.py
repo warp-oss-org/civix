@@ -69,4 +69,5 @@ class TestDefaultHttpClient:
                 await client.get("https://opendata.vancouver.ca/ping")
 
             sent_request = route.calls.last.request
+
             assert sent_request.headers["User-Agent"] == f"civix/{__version__}"

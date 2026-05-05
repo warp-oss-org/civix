@@ -71,7 +71,7 @@ class TestMapperVersion:
         m = _mapper()
 
         with pytest.raises(ValidationError):
-            m.version = "0.2.0"  # type: ignore[misc]
+            m.version = "0.2.0"
 
     def test_extra_fields_rejected(self) -> None:
         with pytest.raises(ValidationError):
@@ -108,7 +108,7 @@ class TestProvenanceRef:
         r = _ref()
 
         with pytest.raises(ValidationError):
-            r.source_record_id = "x"  # type: ignore[misc]
+            r.source_record_id = "x"
 
     def test_equality_for_dedup(self) -> None:
         # Two refs built from the same fields should compare equal so

@@ -78,8 +78,10 @@ class TestFetchResult:
 
         result = FetchResult(snapshot=_snapshot(), records=gen())
 
+        attr = "snapshot"
+
         with pytest.raises(FrozenInstanceError):
-            result.snapshot = _snapshot()  # type: ignore[misc]
+            setattr(result, attr, _snapshot())
 
 
 class TestSourceAdapterProtocol:

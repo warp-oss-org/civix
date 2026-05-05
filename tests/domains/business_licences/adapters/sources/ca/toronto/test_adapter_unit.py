@@ -359,6 +359,7 @@ class TestPagination:
                 "B-3",
                 "B-4",
             ]
+
             assert len(search_route.calls) == 2
 
 

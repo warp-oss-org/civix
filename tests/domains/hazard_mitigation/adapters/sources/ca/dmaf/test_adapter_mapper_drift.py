@@ -159,6 +159,7 @@ class TestAdapter:
             "source_total_records": "3",
             "row_filter": CANADA_DMAF_ROW_FILTER,
         }
+
         assert [record.source_record_id for record in records] == ["DMAF-001", "DMAF-002"]
         assert all(record.raw_data["programCode_en"] == "DMAF" for record in records)
 
@@ -256,6 +257,7 @@ class TestMapper:
                 None,
             ),
         ]
+
         assert project.funding_summaries.value[0].money.amount == Decimal("5000000")
         assert project.funding_summaries.value[0].money.currency == "CAD"
 
@@ -332,6 +334,7 @@ class TestDrift:
             and finding.taxonomy_id == "canada-dmaf-category"
             for finding in report.findings
         )
+
         assert any(
             finding.kind is TaxonomyDriftKind.UNRECOGNIZED_VALUE
             and finding.taxonomy_id == "canada-dmaf-region"

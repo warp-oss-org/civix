@@ -22,10 +22,12 @@ class TestCategoryRef:
 
     def test_all_fields_required(self) -> None:
         with pytest.raises(ValidationError):
-            CategoryRef(  # type: ignore[call-arg]
-                code="passenger-car",
-                label="Passenger car",
-                taxonomy_id="civix.transportation-safety.vehicle-category",
+            CategoryRef.model_validate(
+                {
+                    "code": "passenger-car",
+                    "label": "Passenger car",
+                    "taxonomy_id": "civix.transportation-safety.vehicle-category",
+                }
             )
 
     def test_empty_field_rejected(self) -> None:
@@ -50,7 +52,7 @@ class TestCategoryRef:
         category = _category()
 
         with pytest.raises(ValidationError):
-            category.code = "truck"  # type: ignore[misc]
+            category.code = "truck"
 
     def test_extra_fields_rejected(self) -> None:
         with pytest.raises(ValidationError):

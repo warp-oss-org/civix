@@ -127,6 +127,7 @@ class TestSocrataFetch:
             "$order": SOCRATA_DEFAULT_ORDER,
             "$where": "status = 'Active'",
         }
+
         assert requests[0].url.params["$select"] == "count(*)"
         assert requests[0].url.params["$where"] == "status = 'Active'"
         assert "$order" not in requests[0].url.params

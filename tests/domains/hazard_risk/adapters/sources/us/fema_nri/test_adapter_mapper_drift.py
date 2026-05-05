@@ -148,6 +148,7 @@ class TestAreaMapper:
             FEMA_NRI_TRACTS_DATASET_ID,
             "01001020100",
         )
+
         assert area.area_kind.value is HazardRiskAreaKind.CENSUS_UNIT
         assert area.jurisdiction.value is not None
         assert area.jurisdiction.value.region == "AL"
@@ -157,6 +158,7 @@ class TestAreaMapper:
         assert area.geometry_ref.value.source_crs == FEMA_NRI_TRACTS_SOURCE_CRS
 
         identifiers = area.source_area_identifiers.value
+
         assert identifiers is not None
         assert [identifier.value for identifier in identifiers] == [
             "01001020100",
@@ -188,6 +190,7 @@ class TestScoresMapper:
         }
 
         risk_score = next(score for score in scores if score.score_id.endswith(":risk_score"))
+
         assert risk_score.score_type.value is HazardRiskScoreType.COMPOSITE_INDEX
         assert risk_score.hazard_type.value is HazardRiskHazardType.MULTI_HAZARD
         assert isinstance(risk_score.score_measure.value, NumericScoreMeasure)
@@ -198,12 +201,14 @@ class TestScoresMapper:
         assert risk_score.publication_vintage.value.month_value == 12
 
         inland_flooding = next(score for score in scores if score.score_id.endswith(":ifld_risks"))
+
         assert inland_flooding.hazard_type.value is HazardRiskHazardType.FLOOD
         assert inland_flooding.score_type.value is HazardRiskScoreType.PER_HAZARD_SCORE
         assert inland_flooding.source_hazard.value is not None
         assert inland_flooding.source_hazard.value.label == "Inland Flooding"
 
         resilience = next(score for score in scores if score.score_id.endswith(":resl_score"))
+
         assert resilience.score_direction.value is HazardRiskScoreDirection.HIGHER_IS_BETTER
 
     def test_hazard_prefix_type_mapping_is_explicit_for_all_nri_hazards(self) -> None:
@@ -246,6 +251,7 @@ class TestScoresMapper:
 
         assert [score.score_id for score in avalanche_scores] == ["01001020100:avln_riskr"]
         rating = avalanche_scores[0]
+
         assert rating.hazard_type.value is HazardRiskHazardType.SOURCE_SPECIFIC
         assert rating.score_type.value is HazardRiskScoreType.RATING
         assert isinstance(rating.score_measure.value, CategoryScoreMeasure)
@@ -308,6 +314,7 @@ class TestDrift:
             and finding.taxonomy_id == "fema-nri-risk-ratng"
             for finding in report.findings
         )
+
         assert any(
             finding.kind is TaxonomyDriftKind.UNRECOGNIZED_VALUE
             and finding.taxonomy_id == "fema-nri-version"

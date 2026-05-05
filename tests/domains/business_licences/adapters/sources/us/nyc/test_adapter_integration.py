@@ -56,6 +56,7 @@ class TestNycShapedFixtures:
             "$where": PREMISES_FILTER,
             "$order": SOCRATA_DEFAULT_ORDER,
         }
+
         assert len(records) == 3
 
     async def test_record_shape_preserved_after_transport_strip(self) -> None:

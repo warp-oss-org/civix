@@ -199,12 +199,15 @@ def test_upstream_urls_target_data_gouv_resources() -> None:
     assert BAAC_CHARACTERISTICS_URL == (
         f"https://www.data.gouv.fr/fr/datasets/r/{BAAC_CHARACTERISTICS_RESOURCE_ID}"
     )
+
     assert BAAC_LOCATIONS_URL == (
         f"https://www.data.gouv.fr/fr/datasets/r/{BAAC_LOCATIONS_RESOURCE_ID}"
     )
+
     assert BAAC_VEHICLES_URL == (
         f"https://www.data.gouv.fr/fr/datasets/r/{BAAC_VEHICLES_RESOURCE_ID}"
     )
+
     assert BAAC_USERS_URL == (f"https://www.data.gouv.fr/fr/datasets/r/{BAAC_USERS_RESOURCE_ID}")
 
 
@@ -220,10 +223,12 @@ def test_linked_fixture_maps_collisions_vehicles_and_users() -> None:
         "202400000001:veh-001",
         "202400000001:veh-002",
     }
+
     assert {person.record.person_id for person in first.people} == {
         "202400000001:usr-001",
         "202400000001:usr-002",
     }
+
     assert first.people[0].record.vehicle_id == "202400000001:veh-001"
     assert first.vehicles[0].record.provenance.source_record_id == "202400000001:veh-001"
     assert first.people[0].record.provenance.source_record_id == "202400000001:usr-001"
@@ -449,6 +454,7 @@ def test_unknown_baac_code_surfaces_as_taxonomy_drift() -> None:
         finding.kind is TaxonomyDriftKind.UNRECOGNIZED_VALUE and finding.taxonomy_id == "baac-catv"
         for finding in report.findings
     )
+
     assert report.has_errors
 
 
@@ -468,6 +474,7 @@ def test_unknown_baac_place_surfaces_as_taxonomy_drift() -> None:
         finding.kind is TaxonomyDriftKind.UNRECOGNIZED_VALUE and finding.taxonomy_id == "baac-place"
         for finding in report.findings
     )
+
     assert report.has_errors
 
 
@@ -492,6 +499,7 @@ class TestCharacteristicsAdapter:
             "resource_id": BAAC_CHARACTERISTICS_RESOURCE_ID,
             "release": BAAC_RELEASE,
         }
+
         assert result.snapshot.content_hash is not None
         assert result.snapshot.record_count == 2
         assert records[0].source_record_id == "202400000001"

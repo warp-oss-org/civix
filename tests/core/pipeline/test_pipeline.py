@@ -222,5 +222,7 @@ class TestPipelineResult:
 
         result = await run(adapter, mapper)
 
+        attr = "snapshot"
+
         with pytest.raises(FrozenInstanceError):
-            result.snapshot = _snapshot()  # type: ignore[misc]
+            setattr(result, attr, _snapshot())

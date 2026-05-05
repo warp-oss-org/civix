@@ -44,6 +44,7 @@ from civix.domains.building_energy_emissions.adapters.sources.us.nyc_ll84 import
     NycLl84SubjectMapper,
 )
 from civix.domains.building_energy_emissions.models import (
+    BuildingMetricValue,
     BuildingSubjectKind,
     EmissionsMetricType,
     EnergyMetricType,
@@ -150,6 +151,7 @@ class TestAdapter:
         assert "$select" in result.snapshot.fetch_params
 
         count_request, page_request = requests
+
         assert count_request.url.params["$select"] == "count(*)"
         assert count_request.url.params["$where"] == "report_year=2024"
         assert page_request.url.params["$where"] == "report_year=2024"
@@ -206,6 +208,7 @@ class TestSubjectMapper:
         assert subject.subject_key == build_building_energy_subject_key(
             SOURCE_ID, LL84_DATASET_ID, "8139"
         )
+
         assert subject.subject_kind.value is BuildingSubjectKind.REPORTING_ACCOUNT
         assert subject.identity_certainty.value is IdentityCertainty.STABLE_CROSS_YEAR
         assert subject.parent_subject_key.quality is FieldQuality.UNMAPPED
@@ -213,9 +216,11 @@ class TestSubjectMapper:
 
         identifiers = subject.source_subject_identifiers.value or ()
         identifier_values = [identifier.value for identifier in identifiers]
+
         assert identifier_values == ["8139", "1009990001", "1011223"]
 
         property_types = subject.property_types.value or ()
+
         assert [category.label for category in property_types] == ["Office"]
         assert subject.floor_area.value == Decimal("2768591")
         assert subject.year_built.value == 1931
@@ -235,10 +240,12 @@ class TestSubjectMapper:
             for identifier in identifiers
             if identifier.identifier_kind is not None and identifier.identifier_kind.code == "bin"
         ]
+
         assert bbl_values == ["2034560010", "2034560020", "2034560030"]
         assert bin_values == ["2050010", "2050011", "2050012"]
 
         parent_key = subject.parent_subject_key.value
+
         assert parent_key is not None
         assert parent_key != subject.subject_key
         assert parent_key == build_building_energy_subject_key(SOURCE_ID, LL84_DATASET_ID, "28401")
@@ -246,6 +253,7 @@ class TestSubjectMapper:
         assert subject.name.value is None
 
         property_type_labels = [category.label for category in (subject.property_types.value or ())]
+
         assert property_type_labels == ["Multifamily Housing", "Retail Store", "Other"]
 
     def test_classified_address_marks_redacted_without_value(self) -> None:
@@ -273,9 +281,11 @@ class TestReportMapper:
         assert report.report_key == build_building_energy_report_key(
             SOURCE_ID, LL84_DATASET_ID, "8139", "2024"
         )
+
         assert report.subject_key == build_building_energy_subject_key(
             SOURCE_ID, LL84_DATASET_ID, "8139"
         )
+
         assert report.reporting_period.value is not None
         assert report.reporting_period.value.precision is TemporalPeriodPrecision.YEAR
         assert report.reporting_period.value.year_value == 2024
@@ -288,6 +298,7 @@ class TestReportMapper:
         caveats = report.data_quality_caveats.value or ()
 
         labels = {category.label for category in caveats}
+
         assert "Data Quality Checker Flagged Possible Issue" in labels
         assert any("Electric Meter Alert" in label for label in labels)
 
@@ -301,12 +312,14 @@ class TestMetricsMapper:
         assert all(
             metric.value_source.value is MetricValueSource.SOURCE_REPUBLISHED for metric in metrics
         )
+
         assert all(
             metric.report_key.value is not None
             and metric.report_key.value
             == build_building_energy_report_key(SOURCE_ID, LL84_DATASET_ID, "8139", "2024")
             for metric in metrics
         )
+
         assert all(metric.case_key.quality is FieldQuality.UNMAPPED for metric in metrics)
         assert all(metric.value_state.value is SourceValueState.REPORTED for metric in metrics)
 
@@ -315,6 +328,7 @@ class TestMetricsMapper:
             for metric in metrics
             if metric.energy_metric_type.value is EnergyMetricType.SITE_EUI
         )
+
         assert isinstance(site_eui.measure.value, NumericMetricMeasure)
         assert site_eui.measure.value.value == Decimal("92.4")
         assert site_eui.unit.value is not None
@@ -325,6 +339,7 @@ class TestMetricsMapper:
             for metric in metrics
             if metric.emissions_metric_type.value is EmissionsMetricType.LOCATION_BASED_GHG
         )
+
         assert total_ghg.metric_family is MetricFamily.EMISSIONS
         assert isinstance(total_ghg.measure.value, NumericMetricMeasure)
         assert total_ghg.measure.value.value == Decimal("21450.7")
@@ -334,14 +349,17 @@ class TestMetricsMapper:
             for metric in metrics
             if metric.water_metric_type.value is WaterMetricType.WATER_USE
         )
+
         assert water.metric_family is MetricFamily.WATER
 
     def test_sentinel_values_preserve_distinct_value_states(self) -> None:
         metrics = NycLl84MetricsMapper()(_record(_row(2)), _snapshot()).record
-        by_label = {
-            metric.source_metric_label.value.code: metric  # type: ignore[union-attr]
-            for metric in metrics
-        }
+        by_label: dict[str, BuildingMetricValue] = {}
+        for metric in metrics:
+            label = metric.source_metric_label.value
+
+            assert label is not None
+            by_label[label.code] = metric
 
         not_available = by_label["site-eui-kbtu-ft2"]
         unable_to_check = by_label["weather-normalized-site-eui-kbtu-ft2"]
@@ -409,6 +427,7 @@ class TestPipelineDrift:
                     taxonomy_obs.observe(record)
 
         report = taxonomy_obs.finalize(fetch_result.snapshot)
+
         assert any(
             finding.kind is TaxonomyDriftKind.UNRECOGNIZED_VALUE
             and finding.taxonomy_id == "nyc-ll84-borough"
@@ -434,6 +453,7 @@ class TestPipelineDrift:
                     schema_obs.observe(record)
 
         report = schema_obs.finalize(fetch_result.snapshot)
+
         assert any(
             finding.kind is SchemaDriftKind.MISSING_FIELD and finding.field_name == "property_id"
             for finding in report.findings
