@@ -2,8 +2,7 @@
 
 from __future__ import annotations
 
-from collections import defaultdict
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import date, datetime
 from typing import Any, Final
@@ -29,7 +28,7 @@ from civix.domains.transportation_safety.models.parties import (
     RoadUserRole,
 )
 from civix.domains.transportation_safety.models.person import CollisionPerson, InjuryOutcome
-from civix.domains.transportation_safety.models.road import SpeedLimit, SpeedLimitUnit
+from civix.domains.transportation_safety.models.road import SpeedLimit
 from civix.domains.transportation_safety.models.time import (
     OccurrenceTime,
     OccurrenceTimePrecision,
@@ -100,10 +99,6 @@ _INTERSECTION_LABELS: Final[dict[str, str]] = {
     "8": "Level crossing",
     "9": "Other intersection",
 }
-_ROAD_SURFACE_LABELS: Final[dict[str, str]] = {
-    "1": "Normal",
-    "2": "Wet",
-}
 _MANOEUVRE_LABELS: Final[dict[str, str]] = {
     "1": "Straight ahead",
     "13": "Changing lane to the left",
@@ -128,66 +123,35 @@ _NO_DATA_CODES_BY_FIELD: Final[dict[str, frozenset[str]]] = {
     "actp": frozenset({"0"}),
     "an_nais": frozenset({"0"}),
     "secu1": frozenset({"0", "-1"}),
-    "vma": frozenset({"0", "-1"}),
 }
 
 
 @dataclass(frozen=True, slots=True)
-class BaacLinkedResult:
-    """Mapped records for one linked BAAC accident group."""
-
-    collision: MapResult[TrafficCollision]
-    vehicles: tuple[MapResult[CollisionVehicle], ...]
-    people: tuple[MapResult[CollisionPerson], ...]
-
-
-@dataclass(frozen=True, slots=True)
 class BaacCollisionMapper:
-    """Maps BAAC characteristics and location rows to `TrafficCollision`."""
+    """Maps BAAC characteristics rows to `TrafficCollision`."""
 
     @property
     def version(self) -> MapperVersion:
         return MapperVersion(mapper_id=COLLISION_MAPPER_ID, version=MAPPER_VERSION)
 
-    def __call__(
-        self,
-        record: RawRecord,
-        location_record: RawRecord,
-        snapshot: SourceSnapshot,
-        *,
-        user_records: Sequence[RawRecord] = (),
-        vehicle_records: Sequence[RawRecord] = (),
-    ) -> MapResult[TrafficCollision]:
-        raw = _merged_collision_raw(record.raw_data, location_record.raw_data)
+    def __call__(self, record: RawRecord, snapshot: SourceSnapshot) -> MapResult[TrafficCollision]:
+        raw = record.raw_data
         accident_id = require_text(
             record.raw_data.get("Num_Acc"),
             field_name="Num_Acc",
             mapper=self.version,
             source_record_id=record.source_record_id,
         )
-        _require_matching_accident_id(
-            accident_id=accident_id,
-            record=location_record,
-            mapper=self.version,
-        )
-        for user_record in user_records:
-            _require_matching_accident_id(
-                accident_id=accident_id,
-                record=user_record,
-                mapper=self.version,
-            )
-        for vehicle_record in vehicle_records:
-            _require_matching_accident_id(
-                accident_id=accident_id,
-                record=vehicle_record,
-                mapper=self.version,
-            )
 
         collision = TrafficCollision(
             provenance=_build_provenance(record=record, snapshot=snapshot, mapper=self.version),
             collision_id=accident_id,
             occurred_at=_map_occurred_at(record.raw_data),
-            severity=_map_collision_severity(user_records),
+            severity=MappedField[CollisionSeverity](
+                value=None,
+                quality=FieldQuality.UNMAPPED,
+                source_fields=(),
+            ),
             address=_map_address(record.raw_data),
             coordinate=_map_coordinate(record.raw_data),
             locality=MappedField[str](
@@ -195,7 +159,11 @@ class BaacCollisionMapper:
                 quality=FieldQuality.NOT_PROVIDED,
                 source_fields=(_LOCALITY_SOURCE_FIELD,),
             ),
-            road_names=_map_road_names(location_record.raw_data),
+            road_names=MappedField[tuple[str, ...]](
+                value=None,
+                quality=FieldQuality.UNMAPPED,
+                source_fields=(),
+            ),
             intersection_related=_map_intersection_related(record.raw_data),
             location_description=_map_location_description(record.raw_data),
             weather=_map_source_category(
@@ -210,11 +178,10 @@ class BaacCollisionMapper:
                 labels=_LIGHT_LABELS,
                 taxonomy_id="baac-lum",
             ),
-            road_surface=_map_source_category(
-                location_record.raw_data,
-                "surf",
-                labels=_ROAD_SURFACE_LABELS,
-                taxonomy_id="baac-surf",
+            road_surface=MappedField[CategoryRef](
+                value=None,
+                quality=FieldQuality.UNMAPPED,
+                source_fields=(),
             ),
             road_condition=MappedField[CategoryRef](
                 value=None,
@@ -226,20 +193,56 @@ class BaacCollisionMapper:
                 quality=FieldQuality.UNMAPPED,
                 source_fields=(),
             ),
-            speed_limit=_map_speed_limit(location_record.raw_data),
-            fatal_count=_map_injury_count(user_records, codes=frozenset({"2"})),
-            serious_injury_count=_map_injury_count(user_records, codes=frozenset({"3"})),
-            minor_injury_count=_map_injury_count(user_records, codes=frozenset({"4"})),
+            speed_limit=MappedField[SpeedLimit](
+                value=None,
+                quality=FieldQuality.UNMAPPED,
+                source_fields=(),
+            ),
+            fatal_count=MappedField[int](
+                value=None,
+                quality=FieldQuality.UNMAPPED,
+                source_fields=(),
+            ),
+            serious_injury_count=MappedField[int](
+                value=None,
+                quality=FieldQuality.UNMAPPED,
+                source_fields=(),
+            ),
+            minor_injury_count=MappedField[int](
+                value=None,
+                quality=FieldQuality.UNMAPPED,
+                source_fields=(),
+            ),
             possible_injury_count=MappedField[int](
                 value=None,
                 quality=FieldQuality.UNMAPPED,
                 source_fields=(),
             ),
-            uninjured_count=_map_injury_count(user_records, codes=frozenset({"1"})),
-            unknown_injury_count=_map_unknown_injury_count(user_records),
-            total_injured_count=_map_injury_count(user_records, codes=frozenset({"2", "3", "4"})),
-            vehicle_count=_map_record_count(vehicle_records, source_fields=("id_vehicule",)),
-            person_count=_map_record_count(user_records, source_fields=("id_usager",)),
+            uninjured_count=MappedField[int](
+                value=None,
+                quality=FieldQuality.UNMAPPED,
+                source_fields=(),
+            ),
+            unknown_injury_count=MappedField[int](
+                value=None,
+                quality=FieldQuality.UNMAPPED,
+                source_fields=(),
+            ),
+            total_injured_count=MappedField[int](
+                value=None,
+                quality=FieldQuality.UNMAPPED,
+                source_fields=(),
+            ),
+            vehicle_count=MappedField[int](
+                value=None,
+                quality=FieldQuality.UNMAPPED,
+                source_fields=(),
+            ),
+            person_count=MappedField[int](
+                value=None,
+                quality=FieldQuality.UNMAPPED,
+                source_fields=(),
+            ),
             contributing_factors=MappedField[tuple[ContributingFactor, ...]](
                 value=(
                     ContributingFactor(
@@ -363,79 +366,6 @@ class BaacUserMapper:
         return MapResult[CollisionPerson](record=person, report=report)
 
 
-@dataclass(frozen=True, slots=True)
-class BaacLinkedMapper:
-    """Maps linked BAAC characteristics, location, vehicle, and user rows by `Num_Acc`."""
-
-    collision_mapper: BaacCollisionMapper = BaacCollisionMapper()
-    vehicle_mapper: BaacVehicleMapper = BaacVehicleMapper()
-    user_mapper: BaacUserMapper = BaacUserMapper()
-
-    def map_records(
-        self,
-        *,
-        characteristics: Iterable[RawRecord],
-        locations: Iterable[RawRecord],
-        vehicles: Iterable[RawRecord],
-        users: Iterable[RawRecord],
-        characteristics_snapshot: SourceSnapshot,
-        locations_snapshot: SourceSnapshot,
-        vehicles_snapshot: SourceSnapshot,
-        users_snapshot: SourceSnapshot,
-    ) -> tuple[BaacLinkedResult, ...]:
-        location_groups = _group_by_accident_id(locations, mapper=self.collision_mapper.version)
-        vehicle_groups = _group_by_accident_id(vehicles, mapper=self.vehicle_mapper.version)
-        user_groups = _group_by_accident_id(users, mapper=self.user_mapper.version)
-
-        results: list[BaacLinkedResult] = []
-        for characteristic_record in sorted(
-            characteristics,
-            key=lambda row: require_text(
-                row.raw_data.get("Num_Acc"),
-                field_name="Num_Acc",
-                mapper=self.collision_mapper.version,
-                source_record_id=row.source_record_id,
-            ),
-        ):
-            accident_id = require_text(
-                characteristic_record.raw_data.get("Num_Acc"),
-                field_name="Num_Acc",
-                mapper=self.collision_mapper.version,
-                source_record_id=characteristic_record.source_record_id,
-            )
-            location_record = _single_location_record(
-                accident_id=accident_id,
-                records=location_groups.get(accident_id, ()),
-            )
-            user_records = user_groups.get(accident_id, ())
-            vehicle_records = vehicle_groups.get(accident_id, ())
-            occurrence_year = int_or_none(characteristic_record.raw_data.get("an"))
-            collision = self.collision_mapper(
-                characteristic_record,
-                location_record,
-                characteristics_snapshot,
-                user_records=user_records,
-                vehicle_records=vehicle_records,
-            )
-            mapped_vehicles = tuple(
-                self.vehicle_mapper(record, vehicles_snapshot) for record in vehicle_records
-            )
-            mapped_people = tuple(
-                self.user_mapper(record, users_snapshot, occurrence_year=occurrence_year)
-                for record in user_records
-            )
-
-            results.append(
-                BaacLinkedResult(
-                    collision=collision,
-                    vehicles=mapped_vehicles,
-                    people=mapped_people,
-                )
-            )
-
-        return tuple(results)
-
-
 def _map_occurred_at(raw: Mapping[str, Any]) -> MappedField[OccurrenceTime]:
     parsed_date = _parse_date(raw)
 
@@ -516,45 +446,6 @@ def _parse_datetime(date_value: date, value: object) -> datetime | None:
     )
 
 
-def _map_collision_severity(records: Sequence[RawRecord]) -> MappedField[CollisionSeverity]:
-    if not records:
-        return MappedField[CollisionSeverity](
-            value=None,
-            quality=FieldQuality.UNMAPPED,
-            source_fields=(),
-        )
-
-    codes = tuple(str_or_none(record.raw_data.get("grav")) for record in records)
-
-    if "2" in codes:
-        return _derived_collision_severity(CollisionSeverity.FATAL)
-
-    if "3" in codes:
-        return _derived_collision_severity(CollisionSeverity.SERIOUS_INJURY)
-
-    if "4" in codes:
-        return _derived_collision_severity(CollisionSeverity.MINOR_INJURY)
-
-    # BAAC is injury-collision scoped; an all-uninjured group is inconsistent enough
-    # that event severity should not be upgraded to property-damage-only.
-    if all(code == "1" for code in codes if code is not None):
-        return _derived_collision_severity(CollisionSeverity.UNKNOWN)
-
-    return MappedField[CollisionSeverity](
-        value=CollisionSeverity.UNKNOWN,
-        quality=FieldQuality.INFERRED,
-        source_fields=("grav",),
-    )
-
-
-def _derived_collision_severity(value: CollisionSeverity) -> MappedField[CollisionSeverity]:
-    return MappedField[CollisionSeverity](
-        value=value,
-        quality=FieldQuality.DERIVED,
-        source_fields=("grav",),
-    )
-
-
 def _map_address(raw: Mapping[str, Any]) -> MappedField[Address]:
     street = str_or_none(raw.get("adr"))
 
@@ -611,23 +502,6 @@ def _french_float(value: object) -> float | None:
         return None
 
 
-def _map_road_names(raw: Mapping[str, Any]) -> MappedField[tuple[str, ...]]:
-    road_name = str_or_none(raw.get("voie"))
-
-    if road_name is None:
-        return MappedField[tuple[str, ...]](
-            value=None,
-            quality=FieldQuality.NOT_PROVIDED,
-            source_fields=("voie",),
-        )
-
-    return MappedField[tuple[str, ...]](
-        value=(road_name,),
-        quality=FieldQuality.DIRECT,
-        source_fields=("voie",),
-    )
-
-
 def _map_intersection_related(raw: Mapping[str, Any]) -> MappedField[bool]:
     code = str_or_none(raw.get("int"))
 
@@ -675,81 +549,6 @@ def _map_location_description(raw: Mapping[str, Any]) -> MappedField[str]:
         value=label,
         quality=FieldQuality.STANDARDIZED,
         source_fields=("agg",),
-    )
-
-
-def _map_speed_limit(raw: Mapping[str, Any]) -> MappedField[SpeedLimit]:
-    code = str_or_none(raw.get("vma"))
-
-    if code is None or code in _no_data_codes("vma"):
-        return MappedField[SpeedLimit](
-            value=None,
-            quality=FieldQuality.NOT_PROVIDED,
-            source_fields=("vma",),
-        )
-
-    value = int_or_none(code)
-
-    if value is None or value < 0:
-        return MappedField[SpeedLimit](
-            value=None,
-            quality=FieldQuality.NOT_PROVIDED,
-            source_fields=("vma",),
-        )
-
-    return MappedField[SpeedLimit](
-        value=SpeedLimit(value=value, unit=SpeedLimitUnit.KILOMETRES_PER_HOUR),
-        quality=FieldQuality.STANDARDIZED,
-        source_fields=("vma",),
-    )
-
-
-def _map_injury_count(
-    records: Sequence[RawRecord],
-    *,
-    codes: frozenset[str],
-) -> MappedField[int]:
-    if not records:
-        return MappedField[int](value=None, quality=FieldQuality.UNMAPPED, source_fields=())
-
-    value = sum(1 for record in records if str_or_none(record.raw_data.get("grav")) in codes)
-
-    return MappedField[int](
-        value=value,
-        quality=FieldQuality.DERIVED,
-        source_fields=("grav",),
-    )
-
-
-def _map_unknown_injury_count(records: Sequence[RawRecord]) -> MappedField[int]:
-    if not records:
-        return MappedField[int](value=None, quality=FieldQuality.UNMAPPED, source_fields=())
-
-    value = sum(
-        1
-        for record in records
-        if str_or_none(record.raw_data.get("grav")) not in {"1", "2", "3", "4"}
-    )
-
-    return MappedField[int](
-        value=value,
-        quality=FieldQuality.DERIVED,
-        source_fields=("grav",),
-    )
-
-
-def _map_record_count(
-    records: Sequence[RawRecord],
-    *,
-    source_fields: tuple[str, ...],
-) -> MappedField[int]:
-    if not records:
-        return MappedField[int](value=None, quality=FieldQuality.UNMAPPED, source_fields=())
-
-    return MappedField[int](
-        value=len(records),
-        quality=FieldQuality.DERIVED,
-        source_fields=source_fields,
     )
 
 
@@ -1094,75 +893,6 @@ def _category_label(
 
 def _no_data_codes(field_name: str) -> frozenset[str]:
     return _NO_DATA_CODES_BY_FIELD.get(field_name, frozenset())
-
-
-def _require_matching_accident_id(
-    *,
-    accident_id: str,
-    record: RawRecord,
-    mapper: MapperVersion,
-) -> None:
-    record_accident_id = require_text(
-        record.raw_data.get("Num_Acc"),
-        field_name="Num_Acc",
-        mapper=mapper,
-        source_record_id=record.source_record_id,
-    )
-
-    if record_accident_id == accident_id:
-        return
-
-    raise MappingError(
-        "BAAC linked rows contain multiple Num_Acc values",
-        mapper=mapper,
-        source_record_id=record.source_record_id,
-        source_fields=("Num_Acc",),
-    )
-
-
-def _single_location_record(
-    *,
-    accident_id: str,
-    records: Sequence[RawRecord],
-) -> RawRecord:
-    if len(records) == 1:
-        return records[0]
-
-    raise MappingError(
-        "BAAC accident group must contain exactly one location row",
-        mapper=MapperVersion(mapper_id=COLLISION_MAPPER_ID, version=MAPPER_VERSION),
-        source_record_id=accident_id,
-        source_fields=("Num_Acc",),
-    )
-
-
-def _group_by_accident_id(
-    records: Iterable[RawRecord],
-    *,
-    mapper: MapperVersion,
-) -> dict[str, tuple[RawRecord, ...]]:
-    grouped: defaultdict[str, list[RawRecord]] = defaultdict(list)
-
-    for record in records:
-        accident_id = require_text(
-            record.raw_data.get("Num_Acc"),
-            field_name="Num_Acc",
-            mapper=mapper,
-            source_record_id=record.source_record_id,
-        )
-        grouped[accident_id].append(record)
-
-    return {key: tuple(group) for key, group in grouped.items()}
-
-
-def _merged_collision_raw(
-    characteristics: Mapping[str, Any],
-    locations: Mapping[str, Any],
-) -> dict[str, Any]:
-    merged = dict(locations)
-    merged.update(characteristics)
-
-    return merged
 
 
 def _build_provenance(

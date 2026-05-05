@@ -34,6 +34,66 @@ Each source package should usually contain:
 Tests mirror the package path under
 `tests/domains/<domain>/adapters/sources/...`.
 
+## Source Eligibility
+
+A production source slice must be backed by a confirmed, stable,
+machine-readable source contract. Before adding `adapter.py`,
+`mapper.py`, or `schema.py`, record the source facts in the plan or PR:
+
+- public dataset page or official documentation URL
+- concrete machine endpoint or downloadable resource URL used by the
+  adapter
+- source update cadence or pinned release/version, when available
+- licence or reuse terms, when available
+- row grain and stable source-record identifier
+- reason the endpoint is stable enough to support reproducible fetches
+
+Do not land a supported source slice when the only available input is a
+hand-staged extract, browser-only map, HTML landing page, undocumented
+private backing call, or guessed JSON shape. Those can be used for
+domain-model pressure tests or archived research notes, but not as
+production adapters.
+
+If a source has real public data but not in the shape initially
+imagined, either implement the adapter against the real source contract
+or defer the slice. Do not create fixture-shaped adapters that require
+callers to supply an arbitrary extract URL unless that is explicitly
+the source's documented distribution contract.
+
+## Standard Pipeline Contract
+
+The default public source product is one `SourceAdapter` plus one
+`Mapper[T]` that works with:
+
+```python
+await civix.core.pipeline.run(adapter, mapper)
+```
+
+Public mappers in source packages should satisfy:
+
+```python
+def __call__(self, record: RawRecord, snapshot: SourceSnapshot) -> MapResult[T]: ...
+```
+
+Grouped, linked, or multi-table orchestration is not the default source
+product. Only add it when the consumer contract is explicit and tested
+as a separate capability. Do not export grouped/linker helpers as the
+main mapper for a source slice, because they cannot be consumed by the
+standard pipeline runner.
+
+For multi-table sources, prefer exposing each table as a standard
+adapter + mapper pair. If one normalized record truly requires joining
+multiple raw tables, choose one of these deliberately:
+
+- keep the joined product out of the public source surface until a
+  first-class orchestration contract exists
+- map the primary table alone and mark fields that require missing
+  tables as `UNMAPPED` or `NOT_PROVIDED`
+- add a separately named composite runner with its own tests and docs
+
+Do not hide cross-table joins inside a mapper that claims to implement
+the standard `Mapper` protocol.
+
 ## Naming
 
 The domain is in the path, so city directories drop the redundant
@@ -85,9 +145,15 @@ Each source should usually include:
 - mapper unit tests for every normalized field and quality state
 - fixture-backed adapter integration tests
 - fixture-backed mapper or pipeline integration tests
+- at least one fixture-backed `core.pipeline.run(adapter, mapper)` test
+  for each public adapter + mapper pair
 - drift integration tests for schema and bounded taxonomies
 - optional live smoke tests marked out of the default suite
 
 Fixtures should be small and source-shaped. Include source quirks that
 matter, such as missing fields, unknown statuses, malformed dates,
 redacted values, invalid coordinates, and intentionally unmapped fields.
+
+Fixtures prove parser and mapper behavior; they do not prove a source
+exists. A new adapter also needs source-contract evidence from the
+eligibility checklist above.

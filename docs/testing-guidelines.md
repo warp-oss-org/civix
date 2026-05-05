@@ -30,11 +30,17 @@ When behavior spans fetching, mapping, reporting, and exporting, prefer an integ
 - Keep raw fixture shape close to the source API response.
 - Do not edit fixtures casually. A fixture change should reflect an intentional contract change or a newly discovered source behavior.
 - Prefer explicit fixture names that describe the civic scenario, not the implementation branch.
+- Fixtures are not source-contract evidence. For production source
+  slices, tests must be paired with documented proof of the official
+  endpoint or downloadable resource the adapter fetches.
 
 ## Network And Filesystem
 
 - Default tests must not call live civic APIs.
 - Mock or fake HTTP at the adapter boundary, not inside mapping code.
+- Adapter tests should mock the real documented URL or a caller-provided
+  URL field from the fetch config. Avoid testing against invented
+  fixture-only endpoints that cannot exist in production.
 - Use temporary directories for files written during tests.
 - Assert written artifact names, formats, and key contents when testing pipeline output.
 - Do not depend on local absolute paths, developer machines, current dates, or network availability.
@@ -148,6 +154,11 @@ Drift and mapping tests should cover:
 - inferred or derived normalized values
 
 Validation should fail loudly for breaking drift while still preserving raw fetched records when fetch succeeded.
+
+For every public source product, include a fixture-backed pipeline test
+that calls `core.pipeline.run(adapter, mapper)`. This guards against
+accidentally exposing grouped or multi-record mappers where consumers
+expect the standard adapter + mapper contract.
 
 ## Running Tests
 

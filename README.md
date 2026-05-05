@@ -31,13 +31,13 @@ Domains and source slices (each slice ships an `adapter.py`,
 
 - `business_licences` — Calgary, Edmonton, Toronto, Vancouver, NYC.
 - `transportation_safety` — Chicago crashes/people/vehicles, NYC
-  crashes/persons/vehicles, Toronto KSI, GB STATS19, France BAAC.
+  crashes/persons/vehicles, GB STATS19, France BAAC.
 - `mobility_observations` — Chicago Traffic Tracker (regions, segments),
   NYC bicycle/pedestrian counts, NYC traffic speeds, NYC traffic volume
   counts, Toronto bicycle counters, Toronto turning-movement counts,
   France TMJA, GB road-traffic counts.
-- `hazard_risk` — FEMA NRI, FEMA NFHL, NRCan FSI, PS FIFRA, France
-  Géorisques PPRN, GB BGS GeoSure, GB EA RoFRS.
+- `hazard_risk` — FEMA NRI, FEMA NFHL, France Géorisques PPRN,
+  GB BGS GeoSure, GB EA RoFRS.
 - `hazard_mitigation` — FEMA HMA, Canada DMAF, GB FCERM.
 - `building_energy_emissions` — NYC LL84, NYC LL97, Ontario EWRB.
 

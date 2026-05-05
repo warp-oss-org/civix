@@ -31,21 +31,6 @@ BAAC_CHARACTERISTICS_SCHEMA: Final[SourceSchemaSpec] = SourceSchemaSpec(
     ),
 )
 
-BAAC_LOCATIONS_SCHEMA: Final[SourceSchemaSpec] = SourceSchemaSpec(
-    spec_id="baac-lieux-raw",
-    version=BAAC_RELEASE,
-    fields=(
-        SchemaFieldSpec(name="Num_Acc", kinds=_STRING),
-        SchemaFieldSpec(name="catr", kinds=_STRING),
-        SchemaFieldSpec(name="voie", kinds=_STRING, nullable=True),
-        SchemaFieldSpec(name="circ", kinds=_STRING, nullable=True),
-        SchemaFieldSpec(name="surf", kinds=_STRING),
-        SchemaFieldSpec(name="infra", kinds=_STRING, nullable=True),
-        SchemaFieldSpec(name="situ", kinds=_STRING, nullable=True),
-        SchemaFieldSpec(name="vma", kinds=_STRING, nullable=True),
-    ),
-)
-
 BAAC_VEHICLES_SCHEMA: Final[SourceSchemaSpec] = SourceSchemaSpec(
     spec_id="baac-vehicules-raw",
     version=BAAC_RELEASE,
@@ -109,18 +94,6 @@ BAAC_INTERSECTION_TAXONOMY: Final[TaxonomySpec] = TaxonomySpec(
     source_field="int",
     known_values=frozenset({"1", "2", "3", "4", "5", "6", "7", "8", "9"}),
 )
-BAAC_ROAD_SURFACE_TAXONOMY: Final[TaxonomySpec] = TaxonomySpec(
-    taxonomy_id="baac-surf",
-    version=BAAC_RELEASE,
-    source_field="surf",
-    known_values=frozenset({"1", "2"}),
-)
-BAAC_SPEED_LIMIT_TAXONOMY: Final[TaxonomySpec] = TaxonomySpec(
-    taxonomy_id="baac-vma",
-    version=BAAC_RELEASE,
-    source_field="vma",
-    known_values=frozenset({"30", "50"}),
-)
 BAAC_VEHICLE_CATEGORY_TAXONOMY: Final[TaxonomySpec] = TaxonomySpec(
     taxonomy_id="baac-catv",
     version=BAAC_RELEASE,
@@ -170,10 +143,6 @@ BAAC_CHARACTERISTICS_TAXONOMIES: Final[tuple[TaxonomySpec, ...]] = (
     BAAC_COLLISION_TYPE_TAXONOMY,
     BAAC_INTERSECTION_TAXONOMY,
 )
-BAAC_LOCATIONS_TAXONOMIES: Final[tuple[TaxonomySpec, ...]] = (
-    BAAC_ROAD_SURFACE_TAXONOMY,
-    BAAC_SPEED_LIMIT_TAXONOMY,
-)
 BAAC_VEHICLES_TAXONOMIES: Final[tuple[TaxonomySpec, ...]] = (
     BAAC_VEHICLE_CATEGORY_TAXONOMY,
     BAAC_VEHICLE_MANOEUVRE_TAXONOMY,
@@ -186,8 +155,5 @@ BAAC_USERS_TAXONOMIES: Final[tuple[TaxonomySpec, ...]] = (
     BAAC_POSITION_TAXONOMY,
 )
 BAAC_TAXONOMIES: Final[tuple[TaxonomySpec, ...]] = (
-    BAAC_CHARACTERISTICS_TAXONOMIES
-    + BAAC_LOCATIONS_TAXONOMIES
-    + BAAC_VEHICLES_TAXONOMIES
-    + BAAC_USERS_TAXONOMIES
+    BAAC_CHARACTERISTICS_TAXONOMIES + BAAC_VEHICLES_TAXONOMIES + BAAC_USERS_TAXONOMIES
 )

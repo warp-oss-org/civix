@@ -170,16 +170,20 @@ CI runs the same command alongside `pytest`, `ruff`, and `pyright`.
 
 ### A new source slice
 
-1. Create
+1. Confirm the source is eligible under
+   [`source-package-conventions.md`](source-package-conventions.md):
+   it must have an official, stable, machine-readable endpoint or
+   downloadable resource that the adapter will fetch.
+2. Create
    `src/civix/domains/<domain>/adapters/sources/<country>/<city>/` with
    `adapter.py`, `mapper.py`, `schema.py`, `__init__.py`.
-2. Follow [`source-package-conventions.md`](source-package-conventions.md)
+3. Follow [`source-package-conventions.md`](source-package-conventions.md)
    for shape, naming, and boundaries.
-3. Mirror tests at
+4. Mirror tests at
    `tests/domains/<domain>/adapters/sources/<country>/<city>/`.
-4. Add the slice's dotted path to the **source slices stay independent**
+5. Add the slice's dotted path to the **source slices stay independent**
    contract in `pyproject.toml`.
-5. Reference: any of the existing five —
+6. Reference: any of the existing five —
    `domains/business_licences/adapters/sources/{ca/calgary,ca/edmonton,ca/toronto,ca/vancouver,us/nyc}`.
 
 ### A new exporter slice

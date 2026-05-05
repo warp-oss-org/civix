@@ -13,6 +13,7 @@ import respx
 
 from civix.core.drift import SchemaObserver, TaxonomyDriftKind, TaxonomyObserver
 from civix.core.identity.models.identifiers import DatasetId, SnapshotId
+from civix.core.pipeline import run
 from civix.core.ports.errors import FetchError
 from civix.core.ports.models.adapter import SourceAdapter
 from civix.core.quality.models.fields import FieldQuality
@@ -27,12 +28,6 @@ from civix.domains.transportation_safety.adapters.sources.fr.baac import (
     BAAC_DATASET_LAST_UPDATE,
     BAAC_JURISDICTION,
     BAAC_LICENCE,
-    BAAC_LOCATIONS_DATASET_ID,
-    BAAC_LOCATIONS_RESOURCE_ID,
-    BAAC_LOCATIONS_RESOURCE_TITLE,
-    BAAC_LOCATIONS_SCHEMA,
-    BAAC_LOCATIONS_TAXONOMIES,
-    BAAC_LOCATIONS_URL,
     BAAC_RELEASE,
     BAAC_RELEASE_CAVEATS,
     BAAC_SOURCE_SCOPE,
@@ -57,22 +52,19 @@ from civix.domains.transportation_safety.adapters.sources.fr.baac import (
     BaacCharacteristicsAdapter,
     BaacCollisionMapper,
     BaacFetchConfig,
-    BaacLinkedMapper,
-    BaacLocationsAdapter,
+    BaacUserMapper,
     BaacUsersAdapter,
+    BaacVehicleMapper,
     BaacVehiclesAdapter,
 )
-from civix.domains.transportation_safety.models.collision import CollisionSeverity
 from civix.domains.transportation_safety.models.parties import RoadUserRole
 from civix.domains.transportation_safety.models.person import InjuryOutcome
-from civix.domains.transportation_safety.models.road import SpeedLimitUnit
 from civix.domains.transportation_safety.models.time import OccurrenceTimePrecision
 from civix.domains.transportation_safety.models.vehicle import VehicleCategory
 
 PINNED_NOW = datetime(2026, 5, 1, 12, 0, tzinfo=UTC)
 FIXTURES = Path(__file__).parent / "fixtures"
 CHARACTERISTICS_CSV = FIXTURES / "caracteristiques.csv"
-LOCATIONS_CSV = FIXTURES / "lieux.csv"
 VEHICLES_CSV = FIXTURES / "vehicules.csv"
 USERS_CSV = FIXTURES / "usagers.csv"
 
@@ -120,13 +112,6 @@ def _characteristic_records() -> tuple[RawRecord, ...]:
     return _records(rows, snapshot=snapshot, source_id_fields=("Num_Acc",))
 
 
-def _location_records() -> tuple[RawRecord, ...]:
-    rows = _fixture("lieux.csv")
-    snapshot = _snapshot("snap-baac-lieux", BAAC_LOCATIONS_DATASET_ID, len(rows))
-
-    return _records(rows, snapshot=snapshot, source_id_fields=("Num_Acc",))
-
-
 def _vehicle_records() -> tuple[RawRecord, ...]:
     rows = _fixture("vehicules.csv")
     snapshot = _snapshot("snap-baac-vehicules", BAAC_VEHICLES_DATASET_ID, len(rows))
@@ -141,32 +126,6 @@ def _user_records() -> tuple[RawRecord, ...]:
     return _records(rows, snapshot=snapshot, source_id_fields=("Num_Acc", "id_usager"))
 
 
-def _linked_results():
-    characteristics = _characteristic_records()
-    locations = _location_records()
-    vehicles = _vehicle_records()
-    users = _user_records()
-
-    return BaacLinkedMapper().map_records(
-        characteristics=characteristics,
-        locations=locations,
-        vehicles=vehicles,
-        users=users,
-        characteristics_snapshot=_snapshot(
-            "snap-baac-caracteristiques",
-            BAAC_CHARACTERISTICS_DATASET_ID,
-            len(characteristics),
-        ),
-        locations_snapshot=_snapshot("snap-baac-lieux", BAAC_LOCATIONS_DATASET_ID, len(locations)),
-        vehicles_snapshot=_snapshot(
-            "snap-baac-vehicules",
-            BAAC_VEHICLES_DATASET_ID,
-            len(vehicles),
-        ),
-        users_snapshot=_snapshot("snap-baac-usagers", BAAC_USERS_DATASET_ID, len(users)),
-    )
-
-
 def _fetch_config(client: httpx.AsyncClient) -> BaacFetchConfig:
     return BaacFetchConfig(client=client, clock=lambda: PINNED_NOW)
 
@@ -178,11 +137,9 @@ def test_source_metadata_preserves_data_gouv_release_identity_scope_and_caveats(
     assert BAAC_DATASET_LAST_UPDATE == "2025-12-29T09:29:20.308000+00:00"
     assert BAAC_JURISDICTION.country == "FR"
     assert BAAC_CHARACTERISTICS_RESOURCE_TITLE == "Caract_2024.csv"
-    assert BAAC_LOCATIONS_RESOURCE_TITLE == "Lieux_2024.csv"
     assert BAAC_VEHICLES_RESOURCE_TITLE == "Vehicules_2024.csv"
     assert BAAC_USERS_RESOURCE_TITLE == "Usagers_2024.csv"
     assert BAAC_CHARACTERISTICS_RESOURCE_ID == "83f0fb0e-e0ef-47fe-93dd-9aaee851674a"
-    assert BAAC_LOCATIONS_RESOURCE_ID == "228b3cda-fdfb-4677-bd54-ab2107028d2d"
     assert BAAC_VEHICLES_RESOURCE_ID == "fd30513c-6b11-4a56-b6dc-5ac87728794b"
     assert BAAC_USERS_RESOURCE_ID == "f57b1f58-386d-4048-8f78-2ebe435df868"
     assert BAAC_LICENCE == "Licence Ouverte / Open Licence"
@@ -200,10 +157,6 @@ def test_upstream_urls_target_data_gouv_resources() -> None:
         f"https://www.data.gouv.fr/fr/datasets/r/{BAAC_CHARACTERISTICS_RESOURCE_ID}"
     )
 
-    assert BAAC_LOCATIONS_URL == (
-        f"https://www.data.gouv.fr/fr/datasets/r/{BAAC_LOCATIONS_RESOURCE_ID}"
-    )
-
     assert BAAC_VEHICLES_URL == (
         f"https://www.data.gouv.fr/fr/datasets/r/{BAAC_VEHICLES_RESOURCE_ID}"
     )
@@ -211,69 +164,49 @@ def test_upstream_urls_target_data_gouv_resources() -> None:
     assert BAAC_USERS_URL == (f"https://www.data.gouv.fr/fr/datasets/r/{BAAC_USERS_RESOURCE_ID}")
 
 
-def test_linked_fixture_maps_collisions_vehicles_and_users() -> None:
-    results = _linked_results()
-    first = results[0]
-    second = results[1]
+def test_collision_mapper_decodes_characteristics_and_marks_join_fields_unmapped() -> None:
+    records = _characteristic_records()
+    snapshot = _snapshot(
+        "snap-baac-caracteristiques",
+        BAAC_CHARACTERISTICS_DATASET_ID,
+        len(records),
+    )
 
-    assert len(results) == 2
-    assert first.collision.record.collision_id == "202400000001"
-    assert first.collision.record.provenance.source_record_id == "202400000001"
-    assert {vehicle.record.vehicle_id for vehicle in first.vehicles} == {
-        "202400000001:veh-001",
-        "202400000001:veh-002",
-    }
+    result = BaacCollisionMapper()(records[0], snapshot)
+    collision = result.record
 
-    assert {person.record.person_id for person in first.people} == {
-        "202400000001:usr-001",
-        "202400000001:usr-002",
-    }
-
-    assert first.people[0].record.vehicle_id == "202400000001:veh-001"
-    assert first.vehicles[0].record.provenance.source_record_id == "202400000001:veh-001"
-    assert first.people[0].record.provenance.source_record_id == "202400000001:usr-001"
-    assert second.people[0].record.vehicle_id is None
-
-
-def test_collision_mapper_decodes_context_counts_and_french_decimal_coordinates() -> None:
-    first = _linked_results()[0].collision
-    collision = first.record
-
-    assert collision.severity.value is CollisionSeverity.SERIOUS_INJURY
-    assert collision.severity.quality is FieldQuality.DERIVED
+    assert collision.collision_id == "202400000001"
+    assert collision.severity.quality is FieldQuality.UNMAPPED
     assert collision.occurred_at.value is not None
     assert collision.occurred_at.value.precision is OccurrenceTimePrecision.DATETIME
     assert collision.coordinate.value is not None
     assert collision.coordinate.value.latitude == 48.8566
     assert collision.coordinate.value.longitude == 2.3522
     assert collision.intersection_related.value is True
-    assert collision.road_names.value == ("D1",)
+    assert collision.location_description.value == "Built-up area"
     assert collision.weather.value is not None
-    assert collision.weather.value.code == "1"
     assert collision.weather.value.label == "Normal"
     assert collision.lighting.value is not None
-    assert collision.lighting.value.code == "1"
     assert collision.lighting.value.label == "Daylight"
-    assert collision.road_surface.value is not None
-    assert collision.road_surface.value.code == "1"
-    assert collision.road_surface.value.label == "Normal"
-    assert collision.traffic_control.quality is FieldQuality.UNMAPPED
-    assert collision.speed_limit.value is not None
-    assert collision.speed_limit.value.value == 50
-    assert collision.speed_limit.value.unit is SpeedLimitUnit.KILOMETRES_PER_HOUR
-    assert collision.serious_injury_count.value == 1
-    assert collision.minor_injury_count.value == 1
-    assert collision.total_injured_count.value == 2
-    assert collision.vehicle_count.value == 2
-    assert collision.person_count.value == 2
-    assert "catr" in first.report.unmapped_source_fields
-    assert "dep" in first.report.unmapped_source_fields
+    assert collision.road_names.quality is FieldQuality.UNMAPPED
+    assert collision.road_surface.quality is FieldQuality.UNMAPPED
+    assert collision.speed_limit.quality is FieldQuality.UNMAPPED
+    assert collision.total_injured_count.quality is FieldQuality.UNMAPPED
+    assert collision.vehicle_count.quality is FieldQuality.UNMAPPED
+    assert collision.person_count.quality is FieldQuality.UNMAPPED
+    assert "dep" in result.report.unmapped_source_fields
 
 
 def test_collision_mapper_handles_date_only_and_missing_coordinates() -> None:
-    collision = _linked_results()[1].collision.record
+    records = _characteristic_records()
+    snapshot = _snapshot(
+        "snap-baac-caracteristiques",
+        BAAC_CHARACTERISTICS_DATASET_ID,
+        len(records),
+    )
 
-    assert collision.severity.value is CollisionSeverity.FATAL
+    collision = BaacCollisionMapper()(records[1], snapshot).record
+
     assert collision.occurred_at.value is not None
     assert collision.occurred_at.value.precision is OccurrenceTimePrecision.DATE
     assert collision.coordinate.quality is FieldQuality.NOT_PROVIDED
@@ -281,36 +214,16 @@ def test_collision_mapper_handles_date_only_and_missing_coordinates() -> None:
     assert collision.weather.value is not None
     assert collision.weather.value.code == "2"
     assert collision.weather.value.label == "Light rain"
-    assert collision.fatal_count.value == 1
 
 
 def test_collision_mapper_does_not_treat_intersection_topology_as_traffic_control() -> None:
-    characteristic_rows = _fixture("caracteristiques.csv")
-    location_rows = _fixture("lieux.csv")
-    characteristic_rows[0]["int"] = "3"
-    characteristic_rows[0]["atm"] = "99"
-    characteristic_snapshot = _snapshot(
-        "snap-baac-caracteristiques",
-        BAAC_CHARACTERISTICS_DATASET_ID,
-        len(characteristic_rows),
-    )
-    location_snapshot = _snapshot("snap-baac-lieux", BAAC_LOCATIONS_DATASET_ID, len(location_rows))
-    characteristic_records = _records(
-        [characteristic_rows[0]],
-        snapshot=characteristic_snapshot,
-        source_id_fields=("Num_Acc",),
-    )
-    location_records = _records(
-        [location_rows[0]],
-        snapshot=location_snapshot,
-        source_id_fields=("Num_Acc",),
-    )
+    rows = _fixture("caracteristiques.csv")
+    rows[0]["int"] = "3"
+    rows[0]["atm"] = "99"
+    snapshot = _snapshot("snap-baac-caracteristiques", BAAC_CHARACTERISTICS_DATASET_ID, len(rows))
+    records = _records(rows, snapshot=snapshot, source_id_fields=("Num_Acc",))
 
-    result = BaacCollisionMapper()(
-        characteristic_records[0],
-        location_records[0],
-        characteristic_snapshot,
-    )
+    result = BaacCollisionMapper()(records[0], snapshot)
 
     assert result.record.intersection_related.value is True
     assert result.record.intersection_related.quality is FieldQuality.STANDARDIZED
@@ -320,42 +233,13 @@ def test_collision_mapper_does_not_treat_intersection_topology_as_traffic_contro
     assert result.record.weather.quality is FieldQuality.INFERRED
 
 
-def test_unknown_intersection_topology_still_marks_intersection_related() -> None:
-    characteristic_rows = _fixture("caracteristiques.csv")
-    location_rows = _fixture("lieux.csv")
-    characteristic_rows[0]["int"] = "99"
-    characteristic_snapshot = _snapshot(
-        "snap-baac-caracteristiques",
-        BAAC_CHARACTERISTICS_DATASET_ID,
-        len(characteristic_rows),
-    )
-    location_snapshot = _snapshot("snap-baac-lieux", BAAC_LOCATIONS_DATASET_ID, len(location_rows))
-    characteristic_records = _records(
-        [characteristic_rows[0]],
-        snapshot=characteristic_snapshot,
-        source_id_fields=("Num_Acc",),
-    )
-    location_records = _records(
-        [location_rows[0]],
-        snapshot=location_snapshot,
-        source_id_fields=("Num_Acc",),
-    )
-
-    result = BaacCollisionMapper()(
-        characteristic_records[0],
-        location_records[0],
-        characteristic_snapshot,
-    )
-
-    assert result.record.intersection_related.value is True
-    assert result.record.intersection_related.quality is FieldQuality.INFERRED
-
-
 def test_vehicle_mapper_decodes_categories_roles_and_unmapped_source_fields() -> None:
-    first = _linked_results()[0]
-    car = first.vehicles[0]
-    bicycle = first.vehicles[1]
-    motorcycle = _linked_results()[1].vehicles[0].record
+    records = _vehicle_records()
+    snapshot = _snapshot("snap-baac-vehicules", BAAC_VEHICLES_DATASET_ID, len(records))
+
+    car = BaacVehicleMapper()(records[0], snapshot)
+    bicycle = BaacVehicleMapper()(records[1], snapshot).record
+    motorcycle = BaacVehicleMapper()(records[2], snapshot).record
 
     assert car.record.category.value is VehicleCategory.PASSENGER_CAR
     assert car.record.road_user_role.value is RoadUserRole.UNKNOWN
@@ -365,17 +249,18 @@ def test_vehicle_mapper_decodes_categories_roles_and_unmapped_source_fields() ->
     assert car.record.maneuver.value.label == "Straight ahead"
     assert "obs" in car.report.unmapped_source_fields
     assert "choc" in car.report.unmapped_source_fields
-    assert bicycle.record.category.value is VehicleCategory.BICYCLE
-    assert bicycle.record.road_user_role.value is RoadUserRole.CYCLIST
+    assert bicycle.category.value is VehicleCategory.BICYCLE
+    assert bicycle.road_user_role.value is RoadUserRole.CYCLIST
     assert motorcycle.category.value is VehicleCategory.MOTORCYCLE
     assert motorcycle.road_user_role.value is RoadUserRole.MOTORCYCLIST
 
 
-def test_user_mapper_decodes_role_injury_safety_equipment_and_pedestrian_action() -> None:
-    first = _linked_results()[0]
-    second = _linked_results()[1]
-    driver = first.people[0]
-    pedestrian = second.people[0]
+def test_user_mapper_decodes_role_injury_and_optional_age_context() -> None:
+    records = _user_records()
+    snapshot = _snapshot("snap-baac-usagers", BAAC_USERS_DATASET_ID, len(records))
+
+    driver = BaacUserMapper()(records[0], snapshot, occurrence_year=2024)
+    pedestrian = BaacUserMapper()(records[2], snapshot, occurrence_year=2024)
 
     assert driver.record.role.value is RoadUserRole.DRIVER
     assert driver.record.injury_outcome.value is InjuryOutcome.SERIOUS
@@ -385,7 +270,6 @@ def test_user_mapper_decodes_role_injury_safety_equipment_and_pedestrian_action(
     assert driver.record.contributing_factors.quality is FieldQuality.NOT_PROVIDED
     assert pedestrian.record.role.value is RoadUserRole.PEDESTRIAN
     assert pedestrian.record.injury_outcome.value is InjuryOutcome.FATAL
-    assert pedestrian.record.safety_equipment.value is not None
     assert pedestrian.record.contributing_factors.value is not None
     assert pedestrian.record.contributing_factors.value[0].raw_label == "Crossing"
     assert pedestrian.record.contributing_factors.value[0].category is not None
@@ -401,12 +285,6 @@ def test_fixture_raw_records_match_schema_and_taxonomies() -> None:
             BAAC_CHARACTERISTICS_SCHEMA,
             BAAC_CHARACTERISTICS_TAXONOMIES,
             BAAC_CHARACTERISTICS_DATASET_ID,
-        ),
-        (
-            _location_records(),
-            BAAC_LOCATIONS_SCHEMA,
-            BAAC_LOCATIONS_TAXONOMIES,
-            BAAC_LOCATIONS_DATASET_ID,
         ),
         (
             _vehicle_records(),
@@ -479,6 +357,23 @@ def test_unknown_baac_place_surfaces_as_taxonomy_drift() -> None:
 
 
 class TestCharacteristicsAdapter:
+    async def test_pipeline_runs_characteristics_adapter_collision_mapper_pair(self) -> None:
+        async with respx.mock(assert_all_called=True) as respx_mock:
+            respx_mock.get(BAAC_CHARACTERISTICS_URL).mock(
+                return_value=httpx.Response(200, content=CHARACTERISTICS_CSV.read_bytes())
+            )
+
+            async with httpx.AsyncClient() as client:
+                result = await run(
+                    BaacCharacteristicsAdapter(fetch_config=_fetch_config(client)),
+                    BaacCollisionMapper(),
+                )
+                records = [record async for record in result.records]
+
+        assert result.snapshot.dataset_id == BAAC_CHARACTERISTICS_DATASET_ID
+        assert records[0].mapped.record.collision_id == "202400000001"
+        assert records[0].mapped.record.provenance.source_record_id == "202400000001"
+
     async def test_adapter_fetches_csv_and_streams_records(self) -> None:
         async with respx.mock(assert_all_called=True) as respx_mock:
             respx_mock.get(BAAC_CHARACTERISTICS_URL).mock(
@@ -588,25 +483,27 @@ class TestCharacteristicsAdapter:
                     await adapter.fetch()
 
 
-class TestLocationsAdapter:
-    async def test_adapter_fetches_and_yields_two_locations(self) -> None:
+class TestVehiclesAdapter:
+    async def test_pipeline_runs_vehicle_adapter_mapper_pair(self) -> None:
         async with respx.mock(assert_all_called=True) as respx_mock:
-            respx_mock.get(BAAC_LOCATIONS_URL).mock(
-                return_value=httpx.Response(200, content=LOCATIONS_CSV.read_bytes())
+            respx_mock.get(BAAC_VEHICLES_URL).mock(
+                return_value=httpx.Response(200, content=VEHICLES_CSV.read_bytes())
             )
 
             async with httpx.AsyncClient() as client:
-                adapter = BaacLocationsAdapter(fetch_config=_fetch_config(client))
-                result = await adapter.fetch()
+                result = await run(
+                    BaacVehiclesAdapter(fetch_config=_fetch_config(client)),
+                    BaacVehicleMapper(),
+                )
                 records = [record async for record in result.records]
 
-        assert result.snapshot.dataset_id == BAAC_LOCATIONS_DATASET_ID
-        assert result.snapshot.record_count == 2
-        assert records[0].source_record_id == "202400000001"
-        assert records[1].raw_data["voie"] == ""
+        assert result.snapshot.dataset_id == BAAC_VEHICLES_DATASET_ID
+        assert {record.mapped.record.vehicle_id for record in records} == {
+            "202400000001:veh-001",
+            "202400000001:veh-002",
+            "202400000002:veh-003",
+        }
 
-
-class TestVehiclesAdapter:
     async def test_adapter_fetches_and_yields_three_vehicles(self) -> None:
         async with respx.mock(assert_all_called=True) as respx_mock:
             respx_mock.get(BAAC_VEHICLES_URL).mock(
@@ -625,6 +522,27 @@ class TestVehiclesAdapter:
 
 
 class TestUsersAdapter:
+    async def test_pipeline_runs_user_adapter_mapper_pair(self) -> None:
+        async with respx.mock(assert_all_called=True) as respx_mock:
+            respx_mock.get(BAAC_USERS_URL).mock(
+                return_value=httpx.Response(200, content=USERS_CSV.read_bytes())
+            )
+
+            async with httpx.AsyncClient() as client:
+                result = await run(
+                    BaacUsersAdapter(fetch_config=_fetch_config(client)),
+                    BaacUserMapper(),
+                )
+                records = [record async for record in result.records]
+
+        assert result.snapshot.dataset_id == BAAC_USERS_DATASET_ID
+        assert {record.mapped.record.person_id for record in records} == {
+            "202400000001:usr-001",
+            "202400000001:usr-002",
+            "202400000002:usr-003",
+        }
+        assert records[0].mapped.record.age.quality is FieldQuality.UNMAPPED
+
     async def test_adapter_fetches_and_yields_three_users(self) -> None:
         async with respx.mock(assert_all_called=True) as respx_mock:
             respx_mock.get(BAAC_USERS_URL).mock(

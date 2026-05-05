@@ -2,8 +2,7 @@
 
 from __future__ import annotations
 
-from collections import defaultdict
-from collections.abc import Iterable, Mapping
+from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import date, datetime
 from typing import Any, Final
@@ -170,15 +169,6 @@ _CASUALTY_CLASS_LABELS: Final[dict[str, str]] = {
     "2": "Passenger",
     "3": "Pedestrian",
 }
-
-
-@dataclass(frozen=True, slots=True)
-class Stats19LinkedResult:
-    """Mapped records for one linked STATS19 accident group."""
-
-    collision: MapResult[TrafficCollision]
-    vehicles: tuple[MapResult[CollisionVehicle], ...]
-    people: tuple[MapResult[CollisionPerson], ...]
 
 
 @dataclass(frozen=True, slots=True)
@@ -409,68 +399,6 @@ class Stats19CasualtyMapper:
         report = MappingReport(unmapped_source_fields=_unmapped_source_fields(raw, person))
 
         return MapResult[CollisionPerson](record=person, report=report)
-
-
-@dataclass(frozen=True, slots=True)
-class Stats19LinkedMapper:
-    """Maps linked STATS19 collision, vehicle, and casualty rows by accident index.
-
-    This fixture linker is collision-led. Full-file ingestion should add orphan
-    vehicle/casualty diagnostics before reusing it for downloaded extracts.
-    """
-
-    collision_mapper: Stats19CollisionMapper = Stats19CollisionMapper()
-    vehicle_mapper: Stats19VehicleMapper = Stats19VehicleMapper()
-    casualty_mapper: Stats19CasualtyMapper = Stats19CasualtyMapper()
-
-    def map_records(
-        self,
-        *,
-        collisions: Iterable[RawRecord],
-        vehicles: Iterable[RawRecord],
-        casualties: Iterable[RawRecord],
-        collision_snapshot: SourceSnapshot,
-        vehicle_snapshot: SourceSnapshot,
-        casualty_snapshot: SourceSnapshot,
-    ) -> tuple[Stats19LinkedResult, ...]:
-        vehicle_groups = _group_by_accident_index(vehicles, mapper=self.vehicle_mapper.version)
-        casualty_groups = _group_by_accident_index(casualties, mapper=self.casualty_mapper.version)
-
-        results: list[Stats19LinkedResult] = []
-        for collision_record in sorted(
-            collisions,
-            key=lambda record: require_text(
-                record.raw_data.get("accident_index"),
-                field_name="accident_index",
-                mapper=self.collision_mapper.version,
-                source_record_id=record.source_record_id,
-            ),
-        ):
-            accident_index = require_text(
-                collision_record.raw_data.get("accident_index"),
-                field_name="accident_index",
-                mapper=self.collision_mapper.version,
-                source_record_id=collision_record.source_record_id,
-            )
-            collision = self.collision_mapper(collision_record, collision_snapshot)
-            mapped_vehicles = tuple(
-                self.vehicle_mapper(record, vehicle_snapshot)
-                for record in vehicle_groups.get(accident_index, ())
-            )
-            mapped_people = tuple(
-                self.casualty_mapper(record, casualty_snapshot)
-                for record in casualty_groups.get(accident_index, ())
-            )
-
-            results.append(
-                Stats19LinkedResult(
-                    collision=collision,
-                    vehicles=mapped_vehicles,
-                    people=mapped_people,
-                )
-            )
-
-        return tuple(results)
 
 
 def _map_occurred_at(raw: Mapping[str, Any]) -> MappedField[OccurrenceTime]:
@@ -937,25 +865,6 @@ def _build_provenance(
         mapper=mapper,
         source_record_id=record.source_record_id,
     )
-
-
-def _group_by_accident_index(
-    records: Iterable[RawRecord],
-    *,
-    mapper: MapperVersion,
-) -> dict[str, tuple[RawRecord, ...]]:
-    grouped: defaultdict[str, list[RawRecord]] = defaultdict(list)
-
-    for record in records:
-        accident_index = require_text(
-            record.raw_data.get("accident_index"),
-            field_name="accident_index",
-            mapper=mapper,
-            source_record_id=record.source_record_id,
-        )
-        grouped[accident_index].append(record)
-
-    return {key: tuple(group) for key, group in grouped.items()}
 
 
 def _unmapped_source_fields(

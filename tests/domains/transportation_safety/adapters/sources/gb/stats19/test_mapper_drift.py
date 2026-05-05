@@ -14,6 +14,7 @@ import respx
 from civix.core.drift import SchemaObserver, TaxonomyDriftKind, TaxonomyObserver
 from civix.core.identity.models.identifiers import DatasetId, SnapshotId
 from civix.core.mapping.errors import MappingError
+from civix.core.pipeline import run
 from civix.core.ports.errors import FetchError
 from civix.core.ports.models.adapter import SourceAdapter
 from civix.core.quality.models.fields import FieldQuality
@@ -45,7 +46,6 @@ from civix.domains.transportation_safety.adapters.sources.gb.stats19 import (
     Stats19CollisionMapper,
     Stats19CollisionsAdapter,
     Stats19FetchConfig,
-    Stats19LinkedMapper,
     Stats19VehicleMapper,
     Stats19VehiclesAdapter,
 )
@@ -151,55 +151,6 @@ def test_upstream_urls_target_dft_open_data() -> None:
     assert "collision-2024.csv" in STATS19_COLLISIONS_URL
     assert "vehicle-2024.csv" in STATS19_VEHICLES_URL
     assert "casualty-2024.csv" in STATS19_CASUALTIES_URL
-
-
-def test_linked_fixture_maps_collision_vehicles_and_casualties() -> None:
-    collision_records = _collision_records()
-    vehicle_records = _vehicle_records()
-    casualty_records = _casualty_records()
-    result = Stats19LinkedMapper().map_records(
-        collisions=collision_records,
-        vehicles=vehicle_records,
-        casualties=casualty_records,
-        collision_snapshot=_snapshot(
-            "snap-stats19-collisions",
-            STATS19_COLLISIONS_DATASET_ID,
-            len(collision_records),
-        ),
-        vehicle_snapshot=_snapshot(
-            "snap-stats19-vehicles",
-            STATS19_VEHICLES_DATASET_ID,
-            len(vehicle_records),
-        ),
-        casualty_snapshot=_snapshot(
-            "snap-stats19-casualties",
-            STATS19_CASUALTIES_DATASET_ID,
-            len(casualty_records),
-        ),
-    )
-
-    linked = result[0]
-    collision = linked.collision.record
-    vehicles = [vehicle.record for vehicle in linked.vehicles]
-    people = [person.record for person in linked.people]
-
-    assert len(result) == 1
-    assert collision.collision_id == "2024010000001"
-    assert {vehicle.vehicle_id for vehicle in vehicles} == {
-        "2024010000001:1",
-        "2024010000001:2",
-    }
-
-    assert {person.person_id for person in people} == {
-        "2024010000001:1",
-        "2024010000001:2",
-    }
-
-    assert people[0].vehicle_id == "2024010000001:1"
-    assert people[1].vehicle_id is None
-    assert linked.collision.record.provenance.source_record_id == "2024010000001"
-    assert linked.vehicles[0].record.provenance.source_record_id == "2024010000001:1"
-    assert linked.people[0].record.provenance.source_record_id == "2024010000001:1"
 
 
 def test_collision_mapper_decodes_core_context_fields() -> None:
@@ -404,6 +355,23 @@ def test_unknown_stats19_code_surfaces_as_taxonomy_drift() -> None:
 
 
 class TestCollisionsAdapter:
+    async def test_pipeline_runs_collision_adapter_mapper_pair(self) -> None:
+        async with respx.mock(assert_all_called=True) as respx_mock:
+            respx_mock.get(STATS19_COLLISIONS_URL).mock(
+                return_value=httpx.Response(200, content=COLLISIONS_CSV.read_bytes())
+            )
+
+            async with httpx.AsyncClient() as client:
+                result = await run(
+                    Stats19CollisionsAdapter(fetch_config=_fetch_config(client)),
+                    Stats19CollisionMapper(),
+                )
+                records = [record async for record in result.records]
+
+        assert result.snapshot.dataset_id == STATS19_COLLISIONS_DATASET_ID
+        assert records[0].mapped.record.collision_id == "2024010000001"
+        assert records[0].mapped.record.provenance.source_record_id == "2024010000001"
+
     async def test_adapter_fetches_csv_and_streams_records(self) -> None:
         async with respx.mock(assert_all_called=True) as respx_mock:
             respx_mock.get(STATS19_COLLISIONS_URL).mock(
@@ -477,6 +445,25 @@ class TestCollisionsAdapter:
 
 
 class TestVehiclesAdapter:
+    async def test_pipeline_runs_vehicle_adapter_mapper_pair(self) -> None:
+        async with respx.mock(assert_all_called=True) as respx_mock:
+            respx_mock.get(STATS19_VEHICLES_URL).mock(
+                return_value=httpx.Response(200, content=VEHICLES_CSV.read_bytes())
+            )
+
+            async with httpx.AsyncClient() as client:
+                result = await run(
+                    Stats19VehiclesAdapter(fetch_config=_fetch_config(client)),
+                    Stats19VehicleMapper(),
+                )
+                records = [record async for record in result.records]
+
+        assert result.snapshot.dataset_id == STATS19_VEHICLES_DATASET_ID
+        assert {record.mapped.record.vehicle_id for record in records} == {
+            "2024010000001:1",
+            "2024010000001:2",
+        }
+
     async def test_adapter_fetches_and_yields_two_vehicles(self) -> None:
         async with respx.mock(assert_all_called=True) as respx_mock:
             respx_mock.get(STATS19_VEHICLES_URL).mock(
@@ -495,6 +482,25 @@ class TestVehiclesAdapter:
 
 
 class TestCasualtiesAdapter:
+    async def test_pipeline_runs_casualty_adapter_mapper_pair(self) -> None:
+        async with respx.mock(assert_all_called=True) as respx_mock:
+            respx_mock.get(STATS19_CASUALTIES_URL).mock(
+                return_value=httpx.Response(200, content=CASUALTIES_CSV.read_bytes())
+            )
+
+            async with httpx.AsyncClient() as client:
+                result = await run(
+                    Stats19CasualtiesAdapter(fetch_config=_fetch_config(client)),
+                    Stats19CasualtyMapper(),
+                )
+                records = [record async for record in result.records]
+
+        assert result.snapshot.dataset_id == STATS19_CASUALTIES_DATASET_ID
+        assert {record.mapped.record.person_id for record in records} == {
+            "2024010000001:1",
+            "2024010000001:2",
+        }
+
     async def test_adapter_fetches_and_yields_two_casualties(self) -> None:
         async with respx.mock(assert_all_called=True) as respx_mock:
             respx_mock.get(STATS19_CASUALTIES_URL).mock(

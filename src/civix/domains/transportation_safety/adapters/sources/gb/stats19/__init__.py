@@ -25,8 +25,6 @@ from civix.domains.transportation_safety.adapters.sources.gb.stats19.mapper impo
     VEHICLE_MAPPER_ID,
     Stats19CasualtyMapper,
     Stats19CollisionMapper,
-    Stats19LinkedMapper,
-    Stats19LinkedResult,
     Stats19VehicleMapper,
 )
 from civix.domains.transportation_safety.adapters.sources.gb.stats19.schema import (
@@ -67,8 +65,6 @@ __all__ = [
     "Stats19CollisionMapper",
     "Stats19CollisionsAdapter",
     "Stats19FetchConfig",
-    "Stats19LinkedMapper",
-    "Stats19LinkedResult",
     "Stats19VehicleMapper",
     "Stats19VehiclesAdapter",
     "VEHICLE_MAPPER_ID",

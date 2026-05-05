@@ -29,23 +29,19 @@ BAAC_DATASET_LAST_UPDATE: Final[str] = "2025-12-29T09:29:20.308000+00:00"
 BAAC_JURISDICTION: Final[Jurisdiction] = Jurisdiction(country="FR")
 
 BAAC_CHARACTERISTICS_DATASET_ID: Final[DatasetId] = DatasetId("baac-caracteristiques-2024")
-BAAC_LOCATIONS_DATASET_ID: Final[DatasetId] = DatasetId("baac-lieux-2024")
 BAAC_VEHICLES_DATASET_ID: Final[DatasetId] = DatasetId("baac-vehicules-2024")
 BAAC_USERS_DATASET_ID: Final[DatasetId] = DatasetId("baac-usagers-2024")
 
 BAAC_CHARACTERISTICS_RESOURCE_ID: Final[str] = "83f0fb0e-e0ef-47fe-93dd-9aaee851674a"
-BAAC_LOCATIONS_RESOURCE_ID: Final[str] = "228b3cda-fdfb-4677-bd54-ab2107028d2d"
 BAAC_VEHICLES_RESOURCE_ID: Final[str] = "fd30513c-6b11-4a56-b6dc-5ac87728794b"
 BAAC_USERS_RESOURCE_ID: Final[str] = "f57b1f58-386d-4048-8f78-2ebe435df868"
 
 BAAC_CHARACTERISTICS_RESOURCE_TITLE: Final[str] = "Caract_2024.csv"
-BAAC_LOCATIONS_RESOURCE_TITLE: Final[str] = "Lieux_2024.csv"
 BAAC_VEHICLES_RESOURCE_TITLE: Final[str] = "Vehicules_2024.csv"
 BAAC_USERS_RESOURCE_TITLE: Final[str] = "Usagers_2024.csv"
 
 BAAC_RESOURCE_LAST_MODIFIED: Final[dict[DatasetId, str]] = {
     BAAC_CHARACTERISTICS_DATASET_ID: "2025-10-21T11:59:01.081000+00:00",
-    BAAC_LOCATIONS_DATASET_ID: "2025-10-21T11:58:13.699000+00:00",
     BAAC_VEHICLES_DATASET_ID: "2025-12-29T09:29:20.308000+00:00",
     BAAC_USERS_DATASET_ID: "2025-10-21T11:56:56.552000+00:00",
 }
@@ -53,9 +49,6 @@ BAAC_RESOURCE_LAST_MODIFIED: Final[dict[DatasetId, str]] = {
 BAAC_RESOURCE_URL_TEMPLATE: Final[str] = "https://www.data.gouv.fr/fr/datasets/r/{resource_id}"
 BAAC_CHARACTERISTICS_URL: Final[str] = BAAC_RESOURCE_URL_TEMPLATE.format(
     resource_id=BAAC_CHARACTERISTICS_RESOURCE_ID
-)
-BAAC_LOCATIONS_URL: Final[str] = BAAC_RESOURCE_URL_TEMPLATE.format(
-    resource_id=BAAC_LOCATIONS_RESOURCE_ID
 )
 BAAC_VEHICLES_URL: Final[str] = BAAC_RESOURCE_URL_TEMPLATE.format(
     resource_id=BAAC_VEHICLES_RESOURCE_ID
@@ -91,16 +84,6 @@ _CHARACTERISTICS_FIELDS: Final[tuple[str, ...]] = (
     "long",
     "dep",
     "com",
-)
-_LOCATIONS_FIELDS: Final[tuple[str, ...]] = (
-    "Num_Acc",
-    "catr",
-    "voie",
-    "circ",
-    "surf",
-    "infra",
-    "situ",
-    "vma",
 )
 _VEHICLES_FIELDS: Final[tuple[str, ...]] = (
     "Num_Acc",
@@ -147,12 +130,6 @@ _CHARACTERISTICS_TABLE: Final[_TableSpec] = _TableSpec(
     expected_fields=_CHARACTERISTICS_FIELDS,
     source_record_id_fields=("Num_Acc",),
 )
-_LOCATIONS_TABLE: Final[_TableSpec] = _TableSpec(
-    dataset_id=BAAC_LOCATIONS_DATASET_ID,
-    resource_id=BAAC_LOCATIONS_RESOURCE_ID,
-    expected_fields=_LOCATIONS_FIELDS,
-    source_record_id_fields=("Num_Acc",),
-)
 _VEHICLES_TABLE: Final[_TableSpec] = _TableSpec(
     dataset_id=BAAC_VEHICLES_DATASET_ID,
     resource_id=BAAC_VEHICLES_RESOURCE_ID,
@@ -174,7 +151,6 @@ class BaacFetchConfig:
     client: httpx.AsyncClient
     clock: Clock = field(default=utc_now)
     characteristics_url: str = BAAC_CHARACTERISTICS_URL
-    locations_url: str = BAAC_LOCATIONS_URL
     vehicles_url: str = BAAC_VEHICLES_URL
     users_url: str = BAAC_USERS_URL
 
@@ -200,30 +176,6 @@ class BaacCharacteristicsAdapter:
     async def fetch(self) -> FetchResult:
         return await _fetch_table(
             self.fetch_config, self.fetch_config.characteristics_url, _CHARACTERISTICS_TABLE
-        )
-
-
-@dataclass(frozen=True, slots=True)
-class BaacLocationsAdapter:
-    """Fetches the BAAC locations CSV (Lieux_2024.csv) for the pinned year."""
-
-    fetch_config: BaacFetchConfig
-
-    @property
-    def source_id(self) -> SourceId:
-        return SOURCE_ID
-
-    @property
-    def dataset_id(self) -> DatasetId:
-        return _LOCATIONS_TABLE.dataset_id
-
-    @property
-    def jurisdiction(self) -> Jurisdiction:
-        return BAAC_JURISDICTION
-
-    async def fetch(self) -> FetchResult:
-        return await _fetch_table(
-            self.fetch_config, self.fetch_config.locations_url, _LOCATIONS_TABLE
         )
 
 

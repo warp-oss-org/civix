@@ -39,6 +39,7 @@ When tradeoffs exist, prioritize in this order:
 - Group related logic inside functions with blank lines when it improves scanability, especially in core logic and tests. Separate setup, transformation, validation branches, side-effect groups, and return/assert blocks when doing so lowers cognitive overhead. Adjacent `if`/`try`/loop blocks that enforce different rules should usually have a blank line between them; compact one-step guards can stay tight when a blank line would add noise. Inside `try` blocks, separate distinct phases such as network calls, status checks, JSON parsing, model construction, and filesystem writes with blank lines; keep genuinely single-step `try` blocks compact.
 - Do not introduce unrelated refactors or churn. Keep changes scoped to the behavior being added or fixed.
 - Verify current external facts before treating them as current, stable, or recommended, especially open-data portals, API schemas, package tooling, and standards.
+- Do not land production source slices from fixture-only data, staged extracts, browser-only pages, or guessed endpoint shapes. Source packages must follow [`docs/source-package-conventions.md`](docs/source-package-conventions.md), including stable source-contract evidence and a standard adapter + mapper pipeline path unless an explicit composite contract exists.
 
 ## Architecture Boundaries
 
@@ -135,6 +136,7 @@ At a minimum:
 - test behavior and data contracts, not implementation details
 - use fixtures instead of live civic APIs by default
 - mock only true boundaries such as HTTP clients, clocks, filesystems, and third-party services
+- include a fixture-backed `core.pipeline.run(adapter, mapper)` test for each public source product
 - keep tests deterministic, readable, and cheap enough to run during normal development
 - separate Arrange, Act, and Assert with one blank line per test, even for short tests
 - test through the public interface; do not promote `_`-prefixed helpers or suppress the resulting type/lint warnings (`# type: ignore`, `# pyright: ignore`, `# noqa`, `warnings.filterwarnings`)

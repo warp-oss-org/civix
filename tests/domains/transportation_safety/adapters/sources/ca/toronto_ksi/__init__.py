@@ -1,1 +1,0 @@
-"""Toronto KSI source tests."""

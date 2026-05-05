@@ -403,21 +403,6 @@ class TestSourceDesignShapes:
 
         assert collision.collision_id == vehicle.collision_id == person.collision_id
 
-    def test_toronto_ksi_person_grain_shape(self) -> None:
-        collision = _collision(
-            collision_id="toronto-ksi-1",
-            severity=_mapped(CollisionSeverity.SERIOUS_INJURY, "acclass"),
-        )
-        person = _person(
-            collision_id="toronto-ksi-1",
-            person_id="person-4",
-            vehicle_id=None,
-            role=_mapped(RoadUserRole.PASSENGER, "road_user", quality=FieldQuality.STANDARDIZED),
-        )
-
-        assert collision.severity.value is CollisionSeverity.SERIOUS_INJURY
-        assert person.vehicle_id is None
-
     def test_stats19_shape(self) -> None:
         collision = _collision(
             collision_id="stats19-accident-1",
@@ -440,7 +425,7 @@ class TestSourceDesignShapes:
     def test_france_baac_shape(self) -> None:
         collision = _collision(
             collision_id="baac-accident-1",
-            location_description=_mapped("agglomeration road", "lieu"),
+            location_description=_mapped("built-up area", "agg"),
         )
         vehicle = _vehicle(
             collision_id="baac-accident-1",
