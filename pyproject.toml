@@ -96,6 +96,12 @@ type = "forbidden"
 source_modules = ["civix.infra"]
 forbidden_modules = ["civix.domains"]
 
+[[tool.importlinter.contracts]]
+name = "lower layers do not import sdk"
+type = "forbidden"
+source_modules = ["civix.core", "civix.domains", "civix.infra"]
+forbidden_modules = ["civix.sdk"]
+
 # Per-domain layering: a domain's models stay pure (no adapter or infra
 # dependency). One entry per domain — extend when a new domain lands.
 [[tool.importlinter.contracts]]

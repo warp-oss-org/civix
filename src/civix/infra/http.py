@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import httpx
 
-from civix import __version__
+from civix._version import __version__
 
 DEFAULT_TIMEOUT_SECONDS: float = 30.0
 DEFAULT_RETRIES: int = 3
