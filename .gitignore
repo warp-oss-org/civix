@@ -1,5 +1,6 @@
 .venv
 __pycache__
+**/__pycache__/
 .pytest_cache
 .ruff_cache
 dist
@@ -7,5 +8,8 @@ build
 *.pyc
 .DS_Store
 plans/
+examples/out/
 notebooks/out/
+notebooks/**/out/
 notebooks/.ipynb_checkpoints/
+notebooks/**/.ipynb_checkpoints/
